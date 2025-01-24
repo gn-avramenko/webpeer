@@ -39,7 +39,7 @@ public abstract class BaseWebAppServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
         try {
             String pathInfo = req.getPathInfo();
-            if (pathInfo.equals("/")) {
+            if (pathInfo == null || pathInfo.isEmpty() || pathInfo.equals("/")) {
                 doGetIndexHtml(resp);
                 return;
             }
@@ -94,9 +94,7 @@ public abstract class BaseWebAppServlet extends HttpServlet {
                 .map(it -> "<script type=\"text/javascript\" src=\"_resources/%s\"></script>\n".formatted(it.name())).reduce("", (a,b) -> a+b);
         String links = getModules().stream().flatMap(it -> it.links.stream())
                 .map(it -> "<link rel=\"%s\" type=\"%s\" src=\"_resources/%s\"></link>\n".formatted(it.rel(), it.type(), it.name())).reduce("", (a,b) -> a+b);
-        if(getFaviconUrl() != null) {
-            content = content.replace("${favicon}", "<link rel=\"icon\" type=\"image/x-icon\" href=\"/fav.ico\">");
-        }
+        content = content.replace("${favicon}", getFaviconUrl() == null? "": "<link rel=\"icon\" type=\"image/x-icon\" href=\"/fav.ico\">");
         content = content.replace("${links}", links);
         content = content.replace("${scripts}", scripts);
         writeStringContent(content, resp);

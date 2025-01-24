@@ -27,8 +27,9 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DemoAppConfiguration {
+    @Bean
     public ServletRegistrationBean<DemoLoginWebAppServlet> demoLoginWebAppServletServletRegistrationBean(){
-        return new ServletRegistrationBean<>(new DemoLoginWebAppServlet(), "/login/*");
+        return new ServletRegistrationBean<>(new DemoLoginWebAppServlet(), "/login/*","/login");
     }
 
     @Bean
