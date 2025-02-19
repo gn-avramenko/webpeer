@@ -23,5 +23,16 @@ package com.gridnine.webpeer.core.servlet;
 
 import java.net.URL;
 
-public record HtmlScriptWrapper(String name, URL url, String jsMapName, URL jsMapUrl){
+public final class  HtmlScriptWrapper{
+    public final String name;
+    public final URL url;
+    public final String jsMapName;
+    public final URL jsMapUrl;
+
+    public HtmlScriptWrapper(String name, URL url, String jsMapName, URL jsMapUrl) {
+        this.name = name;
+        this.url = url;
+        this.jsMapName = jsMapName;
+        this.jsMapUrl = jsMapUrl;
+    }
 }

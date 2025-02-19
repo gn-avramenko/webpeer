@@ -21,11 +21,14 @@
 
 package com.gridnine.webpeer.core.servlet;
 
+import com.gridnine.webpeer.core.utils.WebPeerException;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -36,42 +39,40 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class WebSocketEndpoint {
 
-    Map<String, Session> sessions = new ConcurrentHashMap<>();
+    public final static Map<String, Map<String, Session>> sessions = new ConcurrentHashMap<>();
 
-    private final Timer timer;
-
-    public WebSocketEndpoint(){
-        timer = new Timer(true);
-        timer.schedule(new TimerTask() {
-            private AtomicInteger counter = new AtomicInteger(0);
-            @Override
-            public void run() {
-                counter.incrementAndGet();
-                sessions.forEach((key,value) ->{
-                    try {
-                        value.getBasicRemote().sendText("Hello-"+counter.get());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-        }, 1000L, 1000L);
-    }
-    @OnMessage
-    public String sayHello(String name) {
-        System.out.println("Say hello to '" + name + "'");
-        return ("Hello" + name);
-    }
+    private final Logger log = LoggerFactory.getLogger(WebSocketEndpoint.class);
 
     @OnOpen
-    public void helloOnOpen(Session session) {
-        sessions.put(session.getId(), session);
-        System.out.println("WebSocket opened: " + session.getId());
+    public void onOpen(Session session) {
+        var queryString = session.getQueryString();
+        String clientId = null;
+        String path = null;
+        for(var item: queryString.split("&")){
+            var values = item.split("=");
+            if(values[0].equals("clientId")){
+                clientId = values[1];
+            } else if (values[0].equals("path")) {
+                path = values[1];
+            }
+        }
+        if(path == null){
+            throw new WebPeerException("path is null");
+        }
+        if(clientId == null){
+            throw new WebPeerException("clientId is null");
+        }
+        sessions.computeIfAbsent(path, k -> new ConcurrentHashMap<>()).put(clientId, session);
+        session.getUserProperties().put("clientId", clientId);
+        session.getUserProperties().put("path", path);
+        log.debug("created ws session with path={} cientId={} sessionId={}", path, clientId, session.getId());
     }
 
     @OnClose
-    public void helloOnClose(Session session, CloseReason reason) {
-        sessions.remove(session.getId());
-        System.out.println("WebSocket connection closed with CloseCode: " + reason.getCloseCode()+" with id " + session.getId());
+    public void onClose(Session session, CloseReason reason) {
+        String clientId = (String) session.getUserProperties().get("clientId");
+        String path = (String) session.getUserProperties().get("path");
+        sessions.get(path).remove(clientId);
+        log.debug("closed ws session with path={} cientId={} sessionId={} reason = {}", path, clientId, session.getId(), reason);
     }
 }

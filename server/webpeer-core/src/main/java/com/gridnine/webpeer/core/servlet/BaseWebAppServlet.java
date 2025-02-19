@@ -21,17 +21,21 @@
 
 package com.gridnine.webpeer.core.servlet;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.stream.JsonWriter;
+import com.gridnine.webpeer.core.ui.UiHandler;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class BaseWebAppServlet extends HttpServlet {
 
@@ -54,21 +58,37 @@ public abstract class BaseWebAppServlet extends HttpServlet {
             if (pathInfo.startsWith("/_resources/")) {
                 String resourceName = pathInfo.substring(pathInfo.lastIndexOf("/") + 1);
                 HtmlLinkWrapper linkWrapper = getModules().stream().flatMap(it -> it.links.stream())
-                        .filter(it -> it.name().equals(resourceName)).findFirst().orElse(null);
+                        .filter(it -> it.name.equals(resourceName)).findFirst().orElse(null);
                 if (linkWrapper != null) {
-                    writeResource(linkWrapper.url(), resp);
+                    writeResource(linkWrapper.url, resp);
                     return;
                 }
                 HtmlScriptWrapper scriptWrapper = getModules().stream().flatMap(it -> it.scripts.stream())
-                        .filter(it -> it.name().equals(resourceName) || resourceName.equals(it.jsMapName())).findFirst().orElse(null);
+                        .filter(it -> it.name.equals(resourceName) || resourceName.equals(it.jsMapName)).findFirst().orElse(null);
                 if (scriptWrapper != null) {
-                    writeResource(resourceName.equals(scriptWrapper.name())? scriptWrapper.url(): scriptWrapper.jsMapUrl(), resp);
+                    writeResource(resourceName.equals(scriptWrapper.name)? scriptWrapper.url: scriptWrapper.jsMapUrl, resp);
                     return;
                 }
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
-        } catch (Exception e){
+            if (pathInfo.startsWith("/_ui")) {
+                JsonElement request;
+                try(var is = req.getInputStream()){
+                    request = new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonElement.class);
+                }
+                Map<String, Object> context = new HashMap<>();
+                context.put(UiHandler.REQUEST_KEY, req);
+                context.put(UiHandler.RESPONSE_KEY, resp);
+                var result = getUiHandler().processCommand(request, context);
+                try(var os= resp.getOutputStream()){
+                    var jw = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
+                    new Gson().toJson(result, jw);
+                    jw.flush();
+                }
+                resp.setStatus(HttpServletResponse.SC_OK);
+            }
+        } catch (Throwable e){
             throw  new ServletException(e);
         }
     }
@@ -87,16 +107,20 @@ public abstract class BaseWebAppServlet extends HttpServlet {
         }
     }
 
+
     protected void doGetIndexHtml(HttpServletResponse resp) throws Exception {
         String content = getContent(getIndexHtmlUrl());
         content = content.replace("${title}", getTitle());
         String scripts = getModules().stream().flatMap(it -> it.scripts.stream())
-                .map(it -> "<script type=\"text/javascript\" src=\"_resources/%s\"></script>\n".formatted(it.name())).reduce("", (a,b) -> a+b);
+                .map(it -> String.format("<script type=\"text/javascript\" src=\"_resources/%s\"></script>\n", it.name)).reduce("", (a,b) -> a+b);
         String links = getModules().stream().flatMap(it -> it.links.stream())
-                .map(it -> "<link rel=\"%s\" type=\"%s\" src=\"_resources/%s\"></link>\n".formatted(it.rel(), it.type(), it.name())).reduce("", (a,b) -> a+b);
+                .map(it -> String.format("<link rel=\"%s\" type=\"%s\" src=\"_resources/%s\"></link>\n", it.rel, it.type, it.name)).reduce("", (a,b) -> a+b);
+        String parameters = getWebAppParameters().entrySet().stream()
+                .map(it -> String.format("%s: \"%s\",\n", it.getKey(), it.getValue())).reduce("", (a,b) -> a+b);
         content = content.replace("${favicon}", getFaviconUrl() == null? "": "<link rel=\"icon\" type=\"image/x-icon\" href=\"/fav.ico\">");
         content = content.replace("${links}", links);
         content = content.replace("${scripts}", scripts);
+        content = content.replace("${parameters}", String.format("window.webPeer = {parameters: {\n%s\n}\n}", parameters));
         writeStringContent(content, resp);
     }
 
@@ -119,7 +143,11 @@ public abstract class BaseWebAppServlet extends HttpServlet {
         return baos.toString(StandardCharsets.UTF_8);
     }
 
+    protected abstract Map<String,String> getWebAppParameters();
+
     protected abstract String getTitle();
+
+    protected abstract UiHandler getUiHandler();
 
     protected URL getIndexHtmlUrl(){
         return getClass().getClassLoader().getResource("webpeerCore/index.html");

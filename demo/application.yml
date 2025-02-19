@@ -7,3 +7,4 @@ spring:
 logging:
   level:
     root: INFO
+    com.gridnine: DEBUG

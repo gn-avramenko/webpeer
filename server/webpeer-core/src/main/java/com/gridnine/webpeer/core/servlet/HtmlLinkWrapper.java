@@ -23,5 +23,16 @@ package com.gridnine.webpeer.core.servlet;
 
 import java.net.URL;
 
-public record HtmlLinkWrapper(String name, URL url, String rel, String type){
+public final class HtmlLinkWrapper{
+    public final String name;
+    public final URL url;
+    public final String rel;
+    public final String type;
+
+    public HtmlLinkWrapper(String name, URL url, String rel, String type) {
+        this.name = name;
+        this.url = url;
+        this.rel = rel;
+        this.type = type;
+    }
 }

@@ -25,5 +25,5 @@ replay_pid*
 /.gradle/
 /build/
 /server/webpeer-core/build/
-/build/
 /demo/build/
+/out/

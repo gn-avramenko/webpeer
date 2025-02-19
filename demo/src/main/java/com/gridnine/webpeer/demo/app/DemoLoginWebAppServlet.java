@@ -23,9 +23,11 @@ package com.gridnine.webpeer.demo.app;
 
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
 import com.gridnine.webpeer.core.servlet.WebAppModule;
+import com.gridnine.webpeer.core.ui.UiHandler;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 
 public class DemoLoginWebAppServlet extends BaseWebAppServlet {
     @Override
@@ -39,7 +41,17 @@ public class DemoLoginWebAppServlet extends BaseWebAppServlet {
     }
 
     @Override
+    protected Map<String, String> getWebAppParameters() {
+        return Map.of();
+    }
+
+    @Override
     protected String getTitle() {
         return "Demo App Login";
+    }
+
+    @Override
+    protected UiHandler getUiHandler() {
+        return null;
     }
 }
