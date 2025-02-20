@@ -14,6 +14,7 @@
             <option value="$PROJECT_DIR$/server" />
             <option value="$PROJECT_DIR$/server/webpeer-core" />
             <option value="$PROJECT_DIR$/web" />
+            <option value="$PROJECT_DIR$/web/webpeer-antd" />
             <option value="$PROJECT_DIR$/web/webpeer-core" />
           </set>
         </option>

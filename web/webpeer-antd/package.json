@@ -1,7 +1,7 @@
 {
-  "name": "@webpeer/core",
+  "name": "@ldocs/websocket",
   "version": "0.0.1",
-  "description": "Web socket communication with platform",
+  "description": "Web peer ant design",
   "license": "MIT",
   "main": "./dist/index.js",
   "type": "module",
@@ -48,6 +48,7 @@
       "vite-dts": "^1.0.4"
   },
   "dependencies": {
+    "@webpeer/core": "file:../webpeer-core",
       "tsdef": "^0.0.14",
       "vite-plugin-dts": "^3.7.2"
   },

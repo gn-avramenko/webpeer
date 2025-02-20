@@ -24,20 +24,57 @@ package com.gridnine.webpeer.core.servlet;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonWriter;
+import com.gridnine.webpeer.core.ui.UiContext;
 import com.gridnine.webpeer.core.ui.UiHandler;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.websocket.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public abstract class BaseWebAppServlet extends HttpServlet {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    public BaseWebAppServlet(){
+        var timerTask = new TimerTask() {
+
+            @Override
+            public void run() {
+                var now = Instant.now();
+                UiContext.context.keySet().forEach(it -> {
+                   var clients = new HashMap<>(UiContext.context.get(it));
+                   clients.forEach((k, v) -> {
+                       var upd = (Instant)v.get(UiContext.LAST_UPDATED);
+                       if(upd == null || Duration.between(upd, now).getSeconds() > TimeUnit.HOURS.toSeconds(1)){
+                           UiContext.context.get(it).remove(k);
+                           Session s = (Session) v.get(UiContext.WS_SESSION_KEY);
+                           if(s != null){
+                               try {
+                                   s.close();
+                               } catch (Throwable e) {
+                                   logger.error("Error closing session", e);
+                               }
+                           }
+                       }
+                   });
+                });
+            }
+        };
+        Timer cleanupSessionTimer = new Timer(true);
+        cleanupSessionTimer.schedule(timerTask, 60_000, 60_000);
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
@@ -77,9 +114,14 @@ public abstract class BaseWebAppServlet extends HttpServlet {
                 try(var is = req.getInputStream()){
                     request = new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonElement.class);
                 }
+                String clientId = req.getHeader("X-Client-Id");
                 Map<String, Object> context = new HashMap<>();
-                context.put(UiHandler.REQUEST_KEY, req);
-                context.put(UiHandler.RESPONSE_KEY, resp);
+                context.put(UiContext.REQUEST_KEY, req);
+                context.put(UiContext.RESPONSE_KEY, resp);
+                context.put(UiContext.CLIENT_ID_KEY, clientId);
+                var pi = URLEncoder.encode(pathInfo, StandardCharsets.UTF_8);
+                context.put(UiContext.PATH_KEY, pi);
+                UiContext.setParameter(pi, clientId, UiContext.LAST_UPDATED, Instant.now());
                 var result = getUiHandler().processCommand(request, context);
                 try(var os= resp.getOutputStream()){
                     var jw = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));

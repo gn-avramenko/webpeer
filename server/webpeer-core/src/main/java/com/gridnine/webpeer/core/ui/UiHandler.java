@@ -21,13 +21,11 @@
 
 package com.gridnine.webpeer.core.ui;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
 import java.util.Map;
 
 public interface UiHandler {
-    public final static String REQUEST_KEY = "request";
-    public final static String RESPONSE_KEY = "response";
+
     JsonElement processCommand(JsonElement request, Map<String, Object> context) throws Exception;
 }

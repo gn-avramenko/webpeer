@@ -15,7 +15,7 @@ const defineConfig = ({ mode, command }: ConfigEnv): UserConfig => {
             ],
             build: {
                 lib: {
-                    entry: resolve('src', 'webpeer.ts'),
+                    entry: resolve('src', 'index.ts'),
                     name: 'webpeer',
                     fileName: (format) => `index.js`,
                 },
@@ -33,11 +33,6 @@ const defineConfig = ({ mode, command }: ConfigEnv): UserConfig => {
                 // Leave minification up to applications.
                 minify: false,
             },
-        };
-        return config;
-    } else if (command === 'serve') {
-        const config = {
-            publicDir: 'example',
         };
         return config;
     }

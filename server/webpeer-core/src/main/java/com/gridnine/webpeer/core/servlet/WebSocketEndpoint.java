@@ -21,6 +21,7 @@
 
 package com.gridnine.webpeer.core.servlet;
 
+import com.gridnine.webpeer.core.ui.UiContext;
 import com.gridnine.webpeer.core.utils.WebPeerException;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
@@ -38,8 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class WebSocketEndpoint {
-
-    public final static Map<String, Map<String, Session>> sessions = new ConcurrentHashMap<>();
 
     private final Logger log = LoggerFactory.getLogger(WebSocketEndpoint.class);
 
@@ -62,9 +61,9 @@ public class WebSocketEndpoint {
         if(clientId == null){
             throw new WebPeerException("clientId is null");
         }
-        sessions.computeIfAbsent(path, k -> new ConcurrentHashMap<>()).put(clientId, session);
         session.getUserProperties().put("clientId", clientId);
         session.getUserProperties().put("path", path);
+        UiContext.setParameter(path, clientId, UiContext.WS_SESSION_KEY, session);
         log.debug("created ws session with path={} cientId={} sessionId={}", path, clientId, session.getId());
     }
 
@@ -72,7 +71,7 @@ public class WebSocketEndpoint {
     public void onClose(Session session, CloseReason reason) {
         String clientId = (String) session.getUserProperties().get("clientId");
         String path = (String) session.getUserProperties().get("path");
-        sessions.get(path).remove(clientId);
+        UiContext.setParameter(path, clientId, UiContext.WS_SESSION_KEY, null);
         log.debug("closed ws session with path={} cientId={} sessionId={} reason = {}", path, clientId, session.getId(), reason);
     }
 }
