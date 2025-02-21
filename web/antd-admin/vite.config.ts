@@ -37,7 +37,7 @@ const defineConfig = ({ mode, command }: ConfigEnv): UserConfig => {
                 },
                 {
                     find: '@webpeer/core',
-                    replacement: fileURLToPath(new URL("../webpeer-core/src/index.ts", import.meta.url)),
+                    replacement: fileURLToPath(new URL("../core/src/index.ts", import.meta.url)),
                 },
             ],
         },

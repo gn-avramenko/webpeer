@@ -12,10 +12,10 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/demo" />
             <option value="$PROJECT_DIR$/server" />
-            <option value="$PROJECT_DIR$/server/webpeer-core" />
+            <option value="$PROJECT_DIR$/server/core" />
             <option value="$PROJECT_DIR$/web" />
-            <option value="$PROJECT_DIR$/web/webpeer-antd" />
-            <option value="$PROJECT_DIR$/web/webpeer-core" />
+            <option value="$PROJECT_DIR$/web/antd-admin" />
+            <option value="$PROJECT_DIR$/web/core" />
           </set>
         </option>
       </GradleProjectSettings>
