@@ -21,11 +21,119 @@
 
 package com.gridnine.webpeer.core.utils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class WebPeerUtils {
+    public static void wrapException(RunnableWithException body) {
+        try {
+            body.run();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
+    public static <T> T wrapException(Callable<T> body) {
+        try {
+            return body.call();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
+
+    private static JsonElement getElement(JsonObject json, String key) {
+        if(json.has(key)){
+            return json.get(key);
+        }
+        Map.Entry<String, JsonElement> entry = json.entrySet().stream().filter(it -> it.getKey().equalsIgnoreCase(key)).findFirst().orElse(null);
+        if(entry == null){
+            return null;
+        }
+        return entry.getValue();
+    }
+
+    public static String getString(JsonObject json, String key) {
+        JsonElement jsonElement = getElement(json, key);
+        return jsonElement == null ? null : jsonElement.getAsString();
+    }
+    public static long getLong(JsonObject json, String key, long defaultValue) {
+        JsonElement jsonElement = getElement(json, key);
+        return jsonElement == null ? defaultValue : jsonElement.getAsLong();
+    }
+
+    public static int getInt(JsonObject json, String key, int defaultValue) {
+        JsonElement jsonElement =getElement(json, key);
+        return jsonElement == null ? defaultValue : jsonElement.getAsInt();
+    }
+
+    public static boolean getBoolean(JsonObject json, String key, boolean defaultValue) {
+        JsonElement jsonElement = getElement(json, key);
+        return jsonElement == null ? defaultValue : jsonElement.getAsBoolean();
+    }
+
+    private static List<JsonElement> toList(JsonArray json) {
+        List<JsonElement> res = new ArrayList<>();
+        json.iterator().forEachRemaining(res::add);
+        return res;
+    }
+    public static<C> List<C> getEnumsList(JsonObject json, String key, Function<String, C> converter) {
+        JsonElement element = getElement(json, key);
+        if(element == null) {
+            return Collections.emptyList();
+        }
+        return toList(element.getAsJsonArray()).stream().map(it -> converter.apply(it.getAsString())).collect(Collectors.toList());
+    }
+    public static<C> C getEnum(JsonObject json, String key, Function<String, C> converter) {
+        JsonElement element = getElement(json, key);
+        if(element == null) {
+            return null;
+        }
+        return converter.apply(element.getAsString());
+    }
+
+
+
+
+    public static List<String> getStringsList(JsonObject json, String key) {
+        JsonElement element = getElement(json, key);
+        if(element == null) {
+            return Collections.emptyList();
+        }
+        return toList(element.getAsJsonArray()).stream().map(JsonElement::getAsString).collect(Collectors.toList());
+    }
+
+
+    public static Instant getInstant(JsonObject json, String key) {
+        JsonElement element = getElement(json, key);
+        if(element == null) {
+            return null;
+        }
+        String str = element.getAsString();
+        return ZonedDateTime.parse(str, DateTimeFormatter.ISO_DATE_TIME).toInstant();
+    }
+
+    public static BigDecimal getBigDecimal(JsonObject json, String key) {
+        JsonElement element = getElement(json, key);
+        if(element == null) {
+            return null;
+        }
+        return element.getAsBigDecimal();
+    }
+
+    public static JsonElement getDynamic(JsonObject obj, String key) {
+        return getElement(obj, key);
+    }
 }
