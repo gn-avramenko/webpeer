@@ -36,21 +36,21 @@
   },
   "module": "dist/index.js",
   "devDependencies": {
-    "@babel/core": "^7.13.10",
-    "@faker-js/faker": "^8.4.0",
-    "@types/jquery": "^3.5.30",
-    "@types/node": "^22.5.4",
-    "babel-loader": "^8.2.2",
     "size-limit": "^4.10.1",
     "tslib": "^2.1.0",
     "typescript": "^5.7.3",
     "vite": "^6.1.1",
-    "vite-dts": "^1.0.4"
+    "vite-dts": "^1.0.4",
+    "tsdef": "^0.0.14",
+    "vite-plugin-dts": "^4.5.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4"
   },
   "dependencies": {
     "@webpeer/core": "file:../core",
-    "tsdef": "^0.0.14",
-    "vite-plugin-dts": "^4.5.0"
+    "antd": "^5.24.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.9.6"

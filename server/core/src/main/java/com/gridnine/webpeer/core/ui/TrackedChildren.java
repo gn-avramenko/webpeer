@@ -19,40 +19,16 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.demo.app;
+package com.gridnine.webpeer.core.ui;
 
-import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
-import com.gridnine.webpeer.core.servlet.WebAppModule;
-import com.gridnine.webpeer.core.ui.UiElement;
+import java.util.ArrayList;
 
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
+public class TrackedChildren extends ArrayList<UiNode> {
+    private final UiNode node;
 
-public class DemoLoginWebAppServlet extends BaseWebAppServlet {
-    @Override
-    protected UiElement createRootElement() throws Exception {
-        return null;
-    }
-
-    @Override
-    protected List<WebAppModule> getModules() throws Exception {
-        return List.of();
-    }
-
-    @Override
-    protected URL getFaviconUrl() {
-        return null;
-    }
-
-    @Override
-    protected Map<String, String> getWebAppParameters() {
-        return Map.of();
-    }
-
-    @Override
-    protected String getTitle() {
-        return "Demo App Login";
+    public TrackedChildren( UiNode node) {
+        super();
+        this.node = node;
     }
 
 }

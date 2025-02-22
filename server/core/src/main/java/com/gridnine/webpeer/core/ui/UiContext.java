@@ -31,7 +31,8 @@ public class UiContext {
     public final static String CLIENT_ID_KEY = "clientId";
     public final static String WS_SESSION_KEY = "ws-session";
     public final static String LAST_UPDATED = "last-updated";
-
+    public final static String VERSION = "version";
+    public final static String UI_MODEL = "ui-model";
 
     public final static Map<String, Map<String, Map<String, Object>>> context = new ConcurrentHashMap<>();
 

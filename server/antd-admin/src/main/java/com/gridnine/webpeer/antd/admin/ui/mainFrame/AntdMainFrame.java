@@ -19,40 +19,30 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.demo.app;
+package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
-import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
-import com.gridnine.webpeer.core.servlet.WebAppModule;
 import com.gridnine.webpeer.core.ui.UiElement;
+import com.gridnine.webpeer.core.ui.UiNode;
 
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-public class DemoLoginWebAppServlet extends BaseWebAppServlet {
-    @Override
-    protected UiElement createRootElement() throws Exception {
-        return null;
-    }
+public class AntdMainFrame implements UiElement {
 
-    @Override
-    protected List<WebAppModule> getModules() throws Exception {
-        return List.of();
-    }
+    private UiNode node;
+
+    private AntdMainFrameMenu menu = new AntdMainFrameMenu();
 
     @Override
-    protected URL getFaviconUrl() {
-        return null;
+    public void bindToModel(UiNode model) throws Exception {
+        node = model;
+        model.properties.put("menu", menu, true);
     }
 
-    @Override
-    protected Map<String, String> getWebAppParameters() {
-        return Map.of();
+    public void setMenu(AntdMainFrameMenu menu) {
+        this.menu = menu;
+        if(node != null){
+            node.properties.put("menu", menu);
+        }
     }
-
-    @Override
-    protected String getTitle() {
-        return "Demo App Login";
-    }
-
 }

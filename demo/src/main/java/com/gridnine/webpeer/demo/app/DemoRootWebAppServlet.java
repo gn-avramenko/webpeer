@@ -21,10 +21,14 @@
 
 package com.gridnine.webpeer.demo.app;
 
+import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrame;
+import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrameMenu;
+import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrameMenuItem;
+import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrameMenuItemType;
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
 import com.gridnine.webpeer.core.servlet.CoreWebAppModule;
 import com.gridnine.webpeer.core.servlet.WebAppModule;
-import com.gridnine.webpeer.core.ui.UiHandler;
+import com.gridnine.webpeer.core.ui.UiElement;
 
 import java.net.URL;
 import java.util.List;
@@ -51,10 +55,26 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
         return "Demo App";
     }
 
+
     @Override
-    protected UiHandler getUiHandler() {
-        return null;
+    protected UiElement createRootElement() throws Exception {
+        var mainFrame = new AntdMainFrame();
+        var menu = new AntdMainFrameMenu();
+        for(var n =1; n<10;n++){
+            var group = new AntdMainFrameMenuItem();
+            group.setId("group-"+n);
+            group.setName("group "+ n);
+            group.setType(AntdMainFrameMenuItemType.GROUP);
+            menu.getMenuItems().add(group);
+            for(var m =1; m<10;m++){
+                var item = new AntdMainFrameMenuItem();
+                item.setId("item "+n+" "+m);
+                item.setName("item "+n+" "+m);
+                item.setType(AntdMainFrameMenuItemType.LEAF);
+                group.getChildren().add(item);
+            }
+        }
+        mainFrame.setMenu(menu);
+        return mainFrame;
     }
-
-
 }

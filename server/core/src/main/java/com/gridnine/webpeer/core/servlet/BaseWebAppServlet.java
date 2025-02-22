@@ -23,9 +23,12 @@ package com.gridnine.webpeer.core.servlet;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.gridnine.webpeer.core.ui.UiContext;
-import com.gridnine.webpeer.core.ui.UiHandler;
+import com.gridnine.webpeer.core.ui.UiElement;
+import com.gridnine.webpeer.core.ui.UiModel;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,6 +45,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class BaseWebAppServlet extends HttpServlet {
 
@@ -84,7 +88,7 @@ public abstract class BaseWebAppServlet extends HttpServlet {
                 doGetIndexHtml(resp);
                 return;
             }
-            if (pathInfo.equals("/fav.ico")) {
+            if (pathInfo.equals("/fav.ico") || pathInfo.equals("/favicon.ico")) {
                 if (getFaviconUrl() != null) {
                     writeResource(getFaviconUrl(), resp);
                     return;
@@ -109,27 +113,73 @@ public abstract class BaseWebAppServlet extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        } catch (Throwable e){
+            throw  new ServletException(e);
+        }
+    }
+
+    protected abstract UiElement createRootElement() throws Exception;
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            String pathInfo = req.getPathInfo();
             if (pathInfo.startsWith("/_ui")) {
-                JsonElement request;
+                JsonObject request;
                 try(var is = req.getInputStream()){
-                    request = new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonElement.class);
+                    request = (JsonObject) new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonElement.class);
                 }
-                String clientId = req.getHeader("X-Client-Id");
-                Map<String, Object> context = new HashMap<>();
-                context.put(UiContext.REQUEST_KEY, req);
-                context.put(UiContext.RESPONSE_KEY, resp);
-                context.put(UiContext.CLIENT_ID_KEY, clientId);
+                String clientId = req.getHeader("x-client-id");
                 var pi = URLEncoder.encode(pathInfo, StandardCharsets.UTF_8);
-                context.put(UiContext.PATH_KEY, pi);
                 UiContext.setParameter(pi, clientId, UiContext.LAST_UPDATED, Instant.now());
-                var result = getUiHandler().processCommand(request, context);
-                try(var os= resp.getOutputStream()){
+                var model = UiContext.getParameter(pi, clientId, UiContext.UI_MODEL, UiModel.class);
+                if(model == null){
+                    model = new UiModel();
+                    UiContext.setParameter(pi, clientId, UiContext.UI_MODEL, model);
+                }
+                var version = UiContext.getParameter(pi, clientId, UiContext.VERSION, AtomicLong.class);
+                if(version == null){
+                    version = new AtomicLong(-1);
+                    UiContext.setParameter(pi, clientId, UiContext.VERSION, version);
+                }
+                var command  = WebPeerUtils.getString(request,"command");
+                long xVersion = Long.parseLong(req.getHeader("x-version"));
+                String respCommand=null;
+                JsonElement respPayload = null;
+                if("init".equals(command)){
+                    var elm = createRootElement();
+                    elm.bindToModel(model);
+                    respCommand = "init";
+                    respPayload = model.serialize();
+                } else {
+                    if(version.get() != xVersion){
+                        command = "resync";
+                    }
+                    throw new IllegalArgumentException("unsupported");
+
+//                    Map<String, Object> context = new HashMap<>();
+//                    context.put(UiContext.REQUEST_KEY, req);
+//                    context.put(UiContext.RESPONSE_KEY, resp);
+//                    context.put(UiContext.CLIENT_ID_KEY, clientId);
+//                    context.put(UiContext.PATH_KEY, pi);
+                }
+               resp.setHeader("x-version", String.valueOf(version.incrementAndGet()));
+                resp.setHeader("Content-Type", "application/json");
+                var result = new JsonObject();
+                result.addProperty("command", respCommand);
+                if(respPayload != null){
+                    result.add("payload", respPayload);
+                }
+                try (var os = resp.getOutputStream()) {
                     var jw = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
                     new Gson().toJson(result, jw);
                     jw.flush();
                 }
                 resp.setStatus(HttpServletResponse.SC_OK);
+                return;
             }
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
         } catch (Throwable e){
             throw  new ServletException(e);
         }
@@ -162,7 +212,7 @@ public abstract class BaseWebAppServlet extends HttpServlet {
         content = content.replace("${favicon}", getFaviconUrl() == null? "": "<link rel=\"icon\" type=\"image/x-icon\" href=\"/fav.ico\">");
         content = content.replace("${links}", links);
         content = content.replace("${scripts}", scripts);
-        content = content.replace("${parameters}", String.format("window.webPeer = {parameters: {\n%s\n}\n}", parameters));
+        content = content.replace("${parameters}", String.format("<script>\nwindow.webPeer = {parameters: {\n%s\n}\n}\n</script>", parameters));
         writeStringContent(content, resp);
     }
 
@@ -188,8 +238,6 @@ public abstract class BaseWebAppServlet extends HttpServlet {
     protected abstract Map<String,String> getWebAppParameters();
 
     protected abstract String getTitle();
-
-    protected abstract UiHandler getUiHandler();
 
     protected URL getIndexHtmlUrl(){
         return getClass().getClassLoader().getResource("webpeerCore/index.html");

@@ -5,9 +5,17 @@ import {fileURLToPath, URL} from "url";
 
 // https://vitejs.dev/config/
 const defineConfig = ({ mode, command }: ConfigEnv): UserConfig => {
-    const definedConfig = {};
 
     const config = {
+        server: {
+            open: true,
+            proxy: {
+                '/_ui': {
+                    target: 'http://localhost:8080/',
+                    changeOrigin: false,
+                },
+            },
+        },
         plugins: [
             dts({
                 exclude: ['src/main.tsx'],
@@ -18,14 +26,8 @@ const defineConfig = ({ mode, command }: ConfigEnv): UserConfig => {
                 include: ["@webpeer/core", /node_modules/],
             },
             rollupOptions: {
-                output: {
-                    manualChunks: (
-                        id: string
-                    ) => {
-                        if (id.indexOf("node_modules/@fedorov/chonky/") !== -1) {
-                            return "chonky";
-                        }
-                    },
+                input: {
+                    app: './index.html', // default
                 },
             },
         },
