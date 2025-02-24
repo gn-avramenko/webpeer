@@ -29,14 +29,16 @@ import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
 public class UiNode {
     public final String type;
-    public final long id;
+    public final long index;
+    public final String id;
     public final TrackedProperties properties;
     private UiNode parent;
     public final TrackedChildren children;
 
-    public UiNode(String type, long id) {
-        this.type = type;
+    public UiNode(String id, String type, long index) {
         this.id = id;
+        this.type = type;
+        this.index = index;
         children = new TrackedChildren(this);
         properties = new TrackedProperties(this);
     }
@@ -71,6 +73,7 @@ public class UiNode {
     public JsonElement serialize() throws Exception{
         var result= new JsonObject();
         result.addProperty("type", type);
+        result.addProperty("index", index);
         result.addProperty("id", id);
         if(!properties.isEmpty()){
             JsonObject props = new JsonObject();
@@ -82,9 +85,10 @@ public class UiNode {
                             props.addProperty(k, (String) v);
                         } else if(v instanceof Long){
                             props.addProperty(k, (long) v);
+                        } else {
+                            var s = (GsonSerializable) v;
+                            props.add(k, s.serialize());
                         }
-                        var s = (GsonSerializable) v;
-                        props.add(k, s.serialize());
                     });
                 }
             });

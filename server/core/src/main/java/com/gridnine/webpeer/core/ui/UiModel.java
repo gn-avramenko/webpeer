@@ -23,9 +23,15 @@ package com.gridnine.webpeer.core.ui;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public class UiModel extends UiNode{
-    public final AtomicLong elementId = new AtomicLong();
-    public UiModel() {
-        super("root", 0);
+public class UiModel{
+    public final AtomicLong elementIndex = new AtomicLong();
+    private UiNode rootNode;
+
+    public UiNode getRootNode() {
+        return rootNode;
+    }
+
+    public void setRootNode(UiNode rootNode) {
+        this.rootNode = rootNode;
     }
 }

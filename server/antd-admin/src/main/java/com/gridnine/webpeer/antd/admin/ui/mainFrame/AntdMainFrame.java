@@ -21,28 +21,37 @@
 
 package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
+import com.gridnine.webpeer.core.ui.UiContext;
 import com.gridnine.webpeer.core.ui.UiElement;
+import com.gridnine.webpeer.core.ui.UiModel;
 import com.gridnine.webpeer.core.ui.UiNode;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 public class AntdMainFrame implements UiElement {
 
-    private UiNode node;
-
     private AntdMainFrameMenu menu = new AntdMainFrameMenu();
 
-    @Override
-    public void bindToModel(UiNode model) throws Exception {
-        node = model;
-        model.properties.put("menu", menu, true);
-    }
+    private UiElement header;
 
     public void setMenu(AntdMainFrameMenu menu) {
         this.menu = menu;
-        if(node != null){
-            node.properties.put("menu", menu);
+        //TODO update node
+    }
+
+    public void setHeader(UiElement header) {
+        this.header = header;
+        //TODO update node
+    }
+
+    @Override
+    public UiNode createNode(Map<String, Object> context) throws Exception {
+        var result = new UiNode("root", "root", 0);
+        result.properties.put("menu", menu, true);
+        UiModel root = (UiModel) context.get(UiContext.UI_MODEL);
+        if(header != null) {
+            result.children.add(header.createNode(context));
         }
+        return result;
     }
 }

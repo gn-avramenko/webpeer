@@ -136,4 +136,12 @@ public class WebPeerUtils {
     public static JsonElement getDynamic(JsonObject obj, String key) {
         return getElement(obj, key);
     }
+
+    public static boolean isBlank(String text){
+        return text == null || text.trim().isEmpty();
+    }
+    public static boolean isNotBlank(String text){
+        return !isBlank(text);
+    }
+
 }

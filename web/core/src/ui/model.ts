@@ -1,5 +1,6 @@
 export class UiNode{
     id: string = ""
+    index = 0
     type: string = ""
     properties?: any
     children: UiNode[] = []
@@ -8,6 +9,7 @@ export class UiNode{
     deserialize(obj:any){
         this.id = obj.id
         this.type = obj.type
+        this.index = obj.index
         this.properties = obj.properties||{}
         if(obj.children){
             (obj.children as any[]).forEach(item =>{

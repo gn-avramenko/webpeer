@@ -1,7 +1,8 @@
 package com.gridnine.webpeer.core.ui;
 
 
-public interface UiElement {
-    void bindToModel(UiNode model) throws Exception;
+import java.util.Map;
 
+public interface UiElement {
+    UiNode createNode(Map<String, Object> context) throws Exception;
 }

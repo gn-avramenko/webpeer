@@ -21,6 +21,7 @@
 
 package com.gridnine.webpeer.demo.app;
 
+import com.gridnine.webpeer.antd.admin.ui.div.AntdDiv;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrame;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrameMenu;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrameMenuItem;
@@ -75,6 +76,9 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
             }
         }
         mainFrame.setMenu(menu);
+        var header = new AntdDiv("header");
+        header.setContent("Hello div header");
+        mainFrame.setHeader(header);
         return mainFrame;
     }
 }

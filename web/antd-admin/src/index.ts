@@ -1,16 +1,12 @@
-import * as webpeerCore from '../../core/src/index';
 import {UiModel} from "../../core/src/ui/model.ts";
 import {createRoot} from "react-dom/client";
-import { ReactElementHandlerFactory} from "@/ui/common.ts";
+import {antdWebpeerExt} from "@/ui/common.tsx";
 import {RootAdminAntdElementHandlerFactory} from "@/ui/root.tsx";
+import {DivAntdElementHandlerFactory} from "@/ui/div.tsx";
 
-type AntdWebpeerExtension = webpeerCore.WebPeerExtension &{
-    elementHandlersFactories: Map<string, ReactElementHandlerFactory>
-}
-const antdWebpeerExt = webpeerCore.webpeerExt as AntdWebpeerExtension
-antdWebpeerExt.elementHandlersFactories = new Map()
 
 antdWebpeerExt.elementHandlersFactories.set("root", new RootAdminAntdElementHandlerFactory())
+antdWebpeerExt.elementHandlersFactories.set("div", new DivAntdElementHandlerFactory())
 
 antdWebpeerExt.uiHandler = {
  drawUi(model: UiModel) {

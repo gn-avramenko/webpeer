@@ -147,22 +147,24 @@ public abstract class BaseWebAppServlet extends HttpServlet {
                 long xVersion = Long.parseLong(req.getHeader("x-version"));
                 String respCommand=null;
                 JsonElement respPayload = null;
+                    Map<String, Object> context = new HashMap<>();
+                    context.put(UiContext.REQUEST_KEY, req);
+                    context.put(UiContext.RESPONSE_KEY, resp);
+                    context.put(UiContext.CLIENT_ID_KEY, clientId);
+                    context.put(UiContext.PATH_KEY, pi);
+                    context.put(UiContext.UI_MODEL, model);
                 if("init".equals(command)){
                     var elm = createRootElement();
-                    elm.bindToModel(model);
+                    model.setRootNode(elm.createNode(context));
                     respCommand = "init";
-                    respPayload = model.serialize();
+                    respPayload = model.getRootNode().serialize();
                 } else {
                     if(version.get() != xVersion){
                         command = "resync";
                     }
                     throw new IllegalArgumentException("unsupported");
 
-//                    Map<String, Object> context = new HashMap<>();
-//                    context.put(UiContext.REQUEST_KEY, req);
-//                    context.put(UiContext.RESPONSE_KEY, resp);
-//                    context.put(UiContext.CLIENT_ID_KEY, clientId);
-//                    context.put(UiContext.PATH_KEY, pi);
+
                 }
                resp.setHeader("x-version", String.valueOf(version.incrementAndGet()));
                 resp.setHeader("Content-Type", "application/json");
