@@ -14,6 +14,10 @@ const defineConfig = ({ mode, command }: ConfigEnv): UserConfig => {
                     target: 'http://localhost:8080/',
                     changeOrigin: false,
                 },
+                '/_resources': {
+                    target: 'http://localhost:8080/',
+                    changeOrigin: false,
+                },
             },
         },
         plugins: [
@@ -39,7 +43,7 @@ const defineConfig = ({ mode, command }: ConfigEnv): UserConfig => {
                 },
                 {
                     find: '@webpeer/core',
-                    replacement: fileURLToPath(new URL("../core/src/index.ts", import.meta.url)),
+                    replacement: fileURLToPath(new URL("../core/src/index.tsx", import.meta.url)),
                 },
             ],
         },

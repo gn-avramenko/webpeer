@@ -21,14 +21,13 @@
 
 package com.gridnine.webpeer.demo.app;
 
-import com.gridnine.webpeer.antd.admin.ui.div.AntdDiv;
+import com.gridnine.webpeer.antd.admin.ui.AntdIcons;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrame;
-import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrameMenu;
-import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrameMenuItem;
-import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrameMenuItemType;
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
 import com.gridnine.webpeer.core.servlet.CoreWebAppModule;
 import com.gridnine.webpeer.core.servlet.WebAppModule;
+import com.gridnine.webpeer.core.ui.GlobalUiContext;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.UiElement;
 
 import java.net.URL;
@@ -56,29 +55,42 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
         return "Demo App";
     }
 
-
     @Override
-    protected UiElement createRootElement() throws Exception {
-        var mainFrame = new AntdMainFrame();
-        var menu = new AntdMainFrameMenu();
-        for(var n =1; n<10;n++){
-            var group = new AntdMainFrameMenuItem();
-            group.setId("group-"+n);
-            group.setName("group "+ n);
-            group.setType(AntdMainFrameMenuItemType.GROUP);
-            menu.getMenuItems().add(group);
-            for(var m =1; m<10;m++){
-                var item = new AntdMainFrameMenuItem();
-                item.setId("item "+n+" "+m);
-                item.setName("item "+n+" "+m);
-                item.setType(AntdMainFrameMenuItemType.LEAF);
-                group.getChildren().add(item);
-            }
-        }
-        mainFrame.setMenu(menu);
-        var header = new AntdDiv("header");
-        header.setContent("Hello div header");
-        mainFrame.setHeader(header);
-        return mainFrame;
+    protected UiElement createRootElement(OperationUiContext operationUiContext) throws Exception {
+        return new AntdMainFrame(GlobalUiContext.getParameter(GlobalUiContext.UI_MODEL), frame ->{
+            frame.menu(menu ->{
+                for(var n =1; n<10;n++){
+                    var fn = n;
+                    menu.group(String.format("group-%s", n), String.format("Group %s", n), g->{
+                       for(var m =1; m<10;m++){
+                           g.item(String.format("g-%s-i-%s", fn, m), String.format("Item %s-%s", fn, m));
+                       }
+                   });
+                }
+            });
+            frame.header("padding=0;height=90px;display=flex;flexDirection=row;alignItems=center", d ->{
+                d.img("demo/logo.svg", null, "60px", null);
+                d.div("fontSize=token:fontSizeHeading1;fontWeight=token:fontWeightStrong", "Web peer");
+                d.hGlue();
+                d.dropdownImage(null, dd ->{
+                    dd.menuItem("en", "classpath/demo/en-flag.png", "english", "20px", null, (ctx)->{
+                        System.out.println("en");
+                    });
+                    dd.menuItem("ru", "classpath/demo/ru-flag.png", "русский", "20px", null, (ctx)->{
+                        System.out.println("ru");
+                    });
+                    dd.selectItem("en");
+                });
+                d.dropdownIcon(null,  dd ->{
+                    dd.menuItem("light", AntdIcons.SUN_OUTLINED.name(), "Light", (ctx)->{
+                        AntdMainFrame.lookup().setToken(Constants.LIGHT_TOKEN, ctx);
+                    });
+                    dd.menuItem("dark", AntdIcons.MOON_FILLED.name(), "Dark", (ctx)->{
+                        AntdMainFrame.lookup().setToken(Constants.DARK_TOKEN, ctx);
+                    });
+                    dd.selectItem("light");
+                });
+            });
+        });
     }
 }

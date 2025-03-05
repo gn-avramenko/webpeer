@@ -21,14 +21,7 @@
 
 package com.gridnine.webpeer.core.ui;
 
-import java.util.ArrayList;
 
-public class TrackedChildren extends ArrayList<UiNode> {
-    private final UiNode node;
-
-    public TrackedChildren( UiNode node) {
-        super();
-        this.node = node;
-    }
-
+public interface UiRootElement extends UiElement{
+    UiModel getModel();
 }

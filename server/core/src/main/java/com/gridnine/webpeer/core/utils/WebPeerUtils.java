@@ -24,6 +24,7 @@ package com.gridnine.webpeer.core.utils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.gridnine.webpeer.core.ui.GsonSerializable;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -144,4 +145,34 @@ public class WebPeerUtils {
         return !isBlank(text);
     }
 
+    public static JsonObject serialize(Map<String,Object> map) {
+        JsonObject json = new JsonObject();
+        map.forEach((k,v)->{
+            addProperty(json, k, v);
+        });
+        return json;
+    }
+
+    private static void addProperty(JsonObject props, String k, Object v) {
+       wrapException(() ->{
+            if(v instanceof String){
+                props.addProperty(k, (String) v);
+            } else if(v instanceof Number){
+                props.addProperty(k, (Number) v);
+            } else if(v instanceof Map){
+                JsonObject obj = new JsonObject();
+                var map = (Map<String,Object>) v;
+                map.forEach((k2, v2)->{
+                    WebPeerUtils.wrapException(()->{
+                        addProperty(obj, k2, v2);
+                    });
+                });
+                props.add(k, obj);
+            } else {
+                var s = (GsonSerializable) v;
+                props.add(k, s.serialize());
+            }
+        });
+
+    }
 }

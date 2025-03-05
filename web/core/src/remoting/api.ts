@@ -1,4 +1,5 @@
 import { isNull} from "../utils/utils.ts";
+import {UiModel} from "@/model/model.ts";
 
 export type Context = {
     request?: any,
@@ -38,13 +39,11 @@ export class Configuration {
     clientId: string= "";
     restPath: string = ""; // override base path
     webSocketUrl?: string;
-    model: any;
+    uiModel: UiModel = {} as UiModel
     middleware?: Middleware[]; // middleware to apply before/after fetch requests
     headers?: HTTPHeaders //header params we want to use on every request
     subscriptionHandler?: SubscriptionHandler
 }
-
-
 
 
 export interface SubscriptionHandler {
@@ -116,7 +115,7 @@ export class API {
                     const queueItem = {
                         payload: {
                             command: 'resync',
-                            model: this.configuration.model
+                            model: this.configuration.uiModel.rootElement.serialize()
                         },
                         reject: () => {
                             this.queue.forEach(it => {

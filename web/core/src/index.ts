@@ -1,9 +1,9 @@
-import {UiModel} from "./ui/model.ts";
 import {API, Middleware, SubscriptionHandler} from "./remoting/api.ts";
 import {generateUUID} from "./utils/utils.ts";
+import {UiModel} from "./model/model.ts";
 
 export interface UiHandler{
-    drawUi(model:UiModel):void
+    drawUi(model:any):void
 }
 export type WebPeerExtension = {
     parameters: any
@@ -13,9 +13,11 @@ export type WebPeerExtension = {
 }
 export const webpeerExt = (window as any).webPeer as WebPeerExtension
 
+const uiModel = new UiModel()
+
 export const api = new API({
     clientId: generateUUID(),
-    model: new UiModel(),
+    uiModel,
     restPath: webpeerExt.parameters.restPath,
     webSocketUrl: webpeerExt.parameters.webSocketUrl,
     middleware: webpeerExt.middleware,
@@ -26,9 +28,7 @@ async function init(){
     const initResp = await api.request({
         command: "init"
     })
-    const uiModel = new UiModel();
-    uiModel.deserialize(initResp.payload)
-    webpeerExt.uiHandler.drawUi(uiModel)
+    webpeerExt.uiHandler.drawUi(initResp.payload)
 }
 
 document.addEventListener("DOMContentLoaded", init);

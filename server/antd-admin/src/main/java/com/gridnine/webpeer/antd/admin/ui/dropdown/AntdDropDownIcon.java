@@ -19,7 +19,7 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.div;
+package com.gridnine.webpeer.antd.admin.ui.dropdown;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -34,31 +34,41 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-public class AntdDiv implements UiElement {
+public class AntdDropDownIcon implements UiElement {
+    private List<IconMenuItem> menu = new ArrayList<IconMenuItem>();
+    private String selectedItemId;
+    private final long id;
+    private UiElement parent;
 
     private Map<String,Object> style = new HashMap<>();
 
-    private String content;
-
-    private final long id;
-
-    private UiElement parent;
-
-    private List<UiElement> children = new ArrayList<UiElement>();
-
-    public AntdDiv() {
+    public AntdDropDownIcon() {
         this.id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public String getSelectedItemId() {
+        return selectedItemId;
     }
 
-    public void setStyleProperty(String property, Object value){
-        style.put(property, value);
+    public void setSelectedItemId(String selectedItemId) {
+        this.selectedItemId = selectedItemId;
     }
 
+    public List<IconMenuItem> getMenu() {
+        return menu;
+    }
+
+    public void setMenu(List<IconMenuItem> menu) {
+        this.menu = menu;
+    }
+
+    public void setStyle(Map<String, Object> style) {
+        this.style = style;
+    }
+
+    public Map<String, Object> getStyle() {
+        return style;
+    }
 
     @Override
     public void setParent(UiElement parent) {
@@ -70,38 +80,48 @@ public class AntdDiv implements UiElement {
         return parent;
     }
 
+    @Override
     public List<UiElement> getChildren() {
-        return children;
+        return List.of();
     }
 
-    public void setChildren(List<UiElement> children) {
-        this.children = children;
-    }
-
-    public void setStyle(Map<String, Object> style) {
-        this.style = style;
-    }
     @Override
     public JsonElement serialize() throws Exception {
         var result = new JsonObject();
         result.addProperty("id", id);
-        result.addProperty("type", "div");
+        result.addProperty("type", "dropdown-icon");
+        result.addProperty("selectedItemId", selectedItemId);
         result.add("style", WebPeerUtils.serialize(style));
-        if(WebPeerUtils.isNotBlank(content)){
-            result.addProperty("content", content);
-        } else {
-            var chs = new JsonArray();
-            result.add("children", chs);;
-            children.forEach( ch ->{
-                WebPeerUtils.wrapException(() -> chs.add(ch.serialize()));
-            });
-        }
+        var its = new JsonArray();
+        menu.forEach(it ->{
+            var obj = new JsonObject();
+            obj.addProperty("id", it.getId());
+            obj.addProperty("icon", it.getIcon());
+            obj.addProperty("name", it.getName());
+            its.add(obj);
+        });
+        result.add("menu", its);
         return result;
     }
 
     @Override
     public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
-        //noops
+        var cmd = operationUiContext.getCommand(command);
+        if("pc".equals(cmd)){
+            var pn = operationUiContext.getChangedPropertyName(command);
+            if("si".equals(pn)){
+                String itemId = operationUiContext.getChangedPropertyStringValue(command);
+                if(!itemId.equals(selectedItemId)){
+                    menu.stream().filter(it -> it.getId().equals(itemId)).findFirst().ifPresent(it -> {
+                        WebPeerUtils.wrapException(()->{
+                            it.getOnClick().run(operationUiContext);
+                            selectedItemId = itemId;
+                            operationUiContext.sendElementPropertyChange(id, "si", itemId);
+                        });
+                    });
+                }
+            }
+        }
     }
 
     @Override

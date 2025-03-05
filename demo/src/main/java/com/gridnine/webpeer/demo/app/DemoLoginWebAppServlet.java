@@ -23,6 +23,7 @@ package com.gridnine.webpeer.demo.app;
 
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
 import com.gridnine.webpeer.core.servlet.WebAppModule;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.UiElement;
 
 import java.net.URL;
@@ -31,7 +32,7 @@ import java.util.Map;
 
 public class DemoLoginWebAppServlet extends BaseWebAppServlet {
     @Override
-    protected UiElement createRootElement() throws Exception {
+    protected UiElement createRootElement(OperationUiContext operationUiContext) throws Exception {
         return null;
     }
 

@@ -1,11 +1,13 @@
 import {
     antdWebpeerExt,
-    emptyReactElementHandler,
-    ReactElementHandler,
-    ReactElementHandlerFactory
+    emptyAntdUiElement,
+    AntdUiElement,
+    AntdUiElementFactory
 } from "@/ui/common.tsx";
 import React, { useEffect, useState} from "react";
-import {UiModel, UiNode} from "../../../core/src/ui/model.ts";
+import {ConfigProvider, Layout, theme} from "antd";
+import {Content, Header} from "antd/es/layout/layout";
+import Sider from "antd/es/layout/Sider";
 
 type MenuItem = {
     icon?: string,
@@ -14,37 +16,77 @@ type MenuItem = {
     id?: string
     children?: MenuItem[]
 }
-type RootAdminAntdElementInternal = {
+type AntdMainFrameInternal = {
     setMenuSetter: (setter: (menu: MenuItem[]) => void) => void
-    setHeaderSetter: (setter: (header:ReactElementHandler) => void) => void
+    setHeaderSetter: (setter: (header:AntdUiElement) => void) => void
     onAfterInitialized: () => void
 }
 
-function RootAdminAntdElement(props: { component: RootAdminAntdElementInternal }): React.ReactElement {
+function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.ReactElement {
     const [menuData, setMenuData] = useState<MenuItem[]>([])
-    const [header, setHeader] = useState<ReactElementHandler>(emptyReactElementHandler)
+    const [header, setHeader] = useState<AntdUiElement>(emptyAntdUiElement)
     props.component.setMenuSetter(setMenuData)
     props.component.setHeaderSetter(setHeader)
     useEffect(() => {
         props.component.onAfterInitialized()
     }, []);
-    return <div><div>Hello world {menuData.length}</div>
-        {header && header.createReactElement()}
-    </div>
-}
-
-class RootAdminAntdElementHandler implements ReactElementHandler, RootAdminAntdElementInternal {
-    private menuSetter?: (menu: MenuItem[]) => void
-    private headerSetter?: (header:ReactElementHandler) => void
-
-    private readonly rootNode: UiModel
-
-    constructor(model: UiNode) {
-        model.uiElement = this
-        this.rootNode = model
+    const {
+        token: {colorBgContainer, borderRadiusLG},
+    } = theme.useToken();
+    let headerStyle = ((header as any)?.style || {}) as any
+    if(!headerStyle.background){
+        headerStyle.background = colorBgContainer
+    }
+    if(!headerStyle.width){
+        headerStyle.width = '100%'
     }
 
-    setHeaderSetter= (setter: (header: ReactElementHandler) => void) => {
+    return (<ConfigProvider>
+            <Layout
+                style={{background: colorBgContainer, borderRadius: borderRadiusLG, height: '100%'}}
+            >
+                <Header style={headerStyle}>
+                    {((header?.children || []) as AntdUiElement[]).map(ch => ch.createReactElement())}
+                </Header>
+                <Content style={{height: '100%'}}>
+                    <Layout style={{height: '100%'}}>
+                        <Sider style={{background: colorBgContainer}} width={200}>
+                                        Hello
+                        </Sider>
+                        <Content style={{width: '100%', height: '100%'}}>Center content {menuData.length}</Content>
+                    </Layout>
+                </Content>
+            </Layout>
+        </ConfigProvider>)
+}
+
+class AntdMainFrameElement implements AntdUiElement, AntdMainFrameInternal {
+    private menuSetter?: (menu: MenuItem[]) => void
+    private headerSetter?: (header:AntdUiElement) => void
+    private menu: MenuItem[] = []
+    children: any[] = []
+
+    constructor(model: any) {
+        this.menu = model.menu
+        this.id = model.id
+        this.index = model.index
+        this.children = (model.children || []).map((ch:any)=>{
+            return antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch)!
+        })
+
+    }
+
+    id: string;
+    index: number;
+    serialize= () => {
+        const result = {} as any;
+        result.menu = this.menu;
+        result.id = this.id;
+        result.index = this.index;
+        result.children = this.children.map(ch =>ch.serialize())
+    };
+
+    setHeaderSetter= (setter: (header: AntdUiElement) => void) => {
         this.headerSetter = setter
     };
 
@@ -53,22 +95,19 @@ class RootAdminAntdElementHandler implements ReactElementHandler, RootAdminAntdE
     }
 
     onAfterInitialized() {
-        this.menuSetter!((this.rootNode.properties.menu.items || []) as MenuItem[])
-        const header = this.rootNode.children.find((it) => it.id === "header");
-        if(header){
-            const handler =antdWebpeerExt.elementHandlersFactories.get(header.type)?.createHandler(header)!
-            this.headerSetter!(handler)
-        }
+        this.menuSetter!(this.menu)
+        const header = this.children.find((it) => it.id === "header");
+        this.headerSetter!(header);
     }
 
     createReactElement(): React.ReactElement {
-        return React.createElement(RootAdminAntdElement, {component: this})
+        return React.createElement(AntdMainFrame, {component: this})
     }
 
 }
 
-export class RootAdminAntdElementHandlerFactory implements ReactElementHandlerFactory {
-    createHandler(node: UiNode): ReactElementHandler {
-        return new RootAdminAntdElementHandler(node)
+export class AntdMainFrameElementFactory implements AntdUiElementFactory {
+    createElement(node: any): AntdUiElement {
+        return new AntdMainFrameElement(node)
     }
 }

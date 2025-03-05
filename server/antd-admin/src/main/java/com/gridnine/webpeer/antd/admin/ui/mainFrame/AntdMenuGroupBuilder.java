@@ -19,10 +19,20 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.common;
+package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
-import java.util.HashMap;
+public class AntdMenuGroupBuilder {
+    private final AntdMainFrameMenuItem group;
 
-public class AntdStyle extends HashMap<String, Object> {
+    public AntdMenuGroupBuilder(AntdMainFrameMenuItem item) {
+        this.group = item;
+    }
 
+    public void item(String id, String name){
+        var item = new AntdMainFrameMenuItem();
+        item.setId(id);
+        item.setName(name);
+        item.setType(AntdMainFrameMenuItemType.LEAF);
+        group.getChildren().add(item);
+    }
 }

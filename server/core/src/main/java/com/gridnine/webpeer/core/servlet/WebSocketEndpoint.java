@@ -21,22 +21,14 @@
 
 package com.gridnine.webpeer.core.servlet;
 
-import com.gridnine.webpeer.core.ui.UiContext;
+import com.gridnine.webpeer.core.ui.GlobalUiContext;
 import com.gridnine.webpeer.core.utils.WebPeerException;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
-import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class WebSocketEndpoint {
 
@@ -63,7 +55,7 @@ public class WebSocketEndpoint {
         }
         session.getUserProperties().put("clientId", clientId);
         session.getUserProperties().put("path", path);
-        UiContext.setParameter(path, clientId, UiContext.WS_SESSION_KEY, session);
+        GlobalUiContext.setParameter(path, clientId, GlobalUiContext.WS_SESSION, session);
         log.debug("created ws session with path={} cientId={} sessionId={}", path, clientId, session.getId());
     }
 
@@ -71,7 +63,7 @@ public class WebSocketEndpoint {
     public void onClose(Session session, CloseReason reason) {
         String clientId = (String) session.getUserProperties().get("clientId");
         String path = (String) session.getUserProperties().get("path");
-        UiContext.setParameter(path, clientId, UiContext.WS_SESSION_KEY, null);
+        GlobalUiContext.setParameter(path, clientId, GlobalUiContext.WS_SESSION, null);
         log.debug("closed ws session with path={} cientId={} sessionId={} reason = {}", path, clientId, session.getId(), reason);
     }
 }

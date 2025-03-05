@@ -1,23 +1,45 @@
-import React from "react";
-import {UiNode} from "../../../core/src/ui/model.ts";
-import * as webpeerCore from "@webpeer/core";
+import React, {ReactElement} from "react";
+import * as webpeerCore from "../../../core/src/index.ts";
+import {UiElement} from "../../../core/src/model/model.ts";
+import {generateUUID} from "../../../core/src/utils/utils.ts";
 
 export type AntdWebpeerExtension = webpeerCore.WebPeerExtension &{
-   elementHandlersFactories: Map<string, ReactElementHandlerFactory>
+   elementHandlersFactories: Map<string, AntdUiElementFactory>
+   icons: Map<string, () => ReactElement>;
 }
 export const antdWebpeerExt = webpeerCore.webpeerExt as AntdWebpeerExtension
 antdWebpeerExt.elementHandlersFactories = new Map()
+antdWebpeerExt.icons = new Map()
 
-export interface ReactElementHandler {
+export interface AntdUiElement extends UiElement{
    createReactElement(): React.ReactElement
 }
 
-export interface ReactElementHandlerFactory {
-   createHandler(node: UiNode):ReactElementHandler
+export interface AntdUiElementFactory {
+   createElement(model: any):AntdUiElement
 }
 
-export const emptyReactElementHandler:ReactElementHandler = {
+export const emptyAntdUiElement:AntdUiElement = {
+   id: "",
+   index: 0,
+   serialize(): any {
+   },
    createReactElement(): React.ReactElement {
-      return <div></div>;
+      return <div key={generateUUID()}></div>;
+   }
+}
+
+export const updateStyle = (style:any, token:any)=>{
+   Object.keys(style).forEach(prop => {
+      var value =style[prop]
+      if(typeof value ==='string'){
+         if(value.indexOf("token:") > -1){
+            value = token[value.substring(6)]
+         }
+         style[prop] = value;
+      }
+   })
+   if(!style.padding){
+      style.padding = token.padding
    }
 }

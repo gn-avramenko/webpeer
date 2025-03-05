@@ -21,37 +21,116 @@
 
 package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
-import com.gridnine.webpeer.core.ui.UiContext;
-import com.gridnine.webpeer.core.ui.UiElement;
-import com.gridnine.webpeer.core.ui.UiModel;
-import com.gridnine.webpeer.core.ui.UiNode;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.gridnine.webpeer.antd.admin.ui.div.AntdDiv;
+import com.gridnine.webpeer.core.ui.*;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
-public class AntdMainFrame implements UiElement {
+public class AntdMainFrame implements UiRootElement {
 
     private AntdMainFrameMenu menu = new AntdMainFrameMenu();
 
-    private UiElement header;
+    private AntdDiv header;
 
-    public void setMenu(AntdMainFrameMenu menu) {
-        this.menu = menu;
-        //TODO update node
+    private final long id;
+
+    private final UiModel model;
+
+    private final List<UiElement> children = new ArrayList<>();
+
+    public static AntdMainFrame lookup(){
+        return (AntdMainFrame) GlobalUiContext.getParameter(GlobalUiContext.UI_MODEL).getRootElement();
     }
 
-    public void setHeader(UiElement header) {
-        this.header = header;
-        //TODO update node
+    public AntdMainFrame(UiModel model, Consumer<AntdMainFrameBuilder> configurator){
+        id =  GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
+        this.model = model;
+        var builder = new AntdMainFrameBuilder(this);
+        configurator.accept(builder);
+    }
+
+    public void setMenu(AntdMainFrameMenu menu, OperationUiContext context) {
+        this.menu = menu;
+        if(context != null){
+            WebPeerUtils.wrapException(()->context.sendElementPropertyChange(id, "menu",  menu.serialize()));
+        }
+    }
+
+    public void setHeader(AntdDiv header, OperationUiContext context) {
+        if(this.header != header){
+            if(this.header != null){
+                UiModel.removeElement(this.header);
+                if(context != null){
+                    context.sendRemoveChildCommand(this.header.getId());
+                }
+            }
+            this.header = header;
+            if(header != null){
+                UiModel.addElement(header, this);
+                if(context != null){
+                    context.sendAddChildCommand(this.header.getId(), header, id);
+                }
+            }
+        }
     }
 
     @Override
-    public UiNode createNode(Map<String, Object> context) throws Exception {
-        var result = new UiNode("root", "root", 0);
-        result.properties.put("menu", menu, true);
-        UiModel root = (UiModel) context.get(UiContext.UI_MODEL);
+    public JsonElement serialize() throws Exception {
+        var result = new JsonObject();
+        result.addProperty("id", "root");
+        result.addProperty("type", "root");
+        result.addProperty("index", id);
+        if(menu != null) {
+            result.add("menu", menu.serialize());
+        }
+        JsonArray children = new JsonArray();
+        result.add("children", children);
         if(header != null) {
-            result.children.add(header.createNode(context));
+            children.add(header.serialize());
         }
         return result;
+    }
+
+    public void setToken(JsonObject token, OperationUiContext context) {
+        if(context != null){
+            context.sendElementPropertyChange(id, "token", token);
+        }
+    }
+
+    @Override
+    public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
+
+    }
+
+    @Override
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public UiModel getModel() {
+        return this.model;
+    }
+
+    @Override
+    public void setParent(UiElement parent) {
+        //noops
+    }
+
+    @Override
+    public UiElement getParent() {
+        return null;
+    }
+
+    @Override
+    public List<UiElement> getChildren() {
+        return children;
     }
 }

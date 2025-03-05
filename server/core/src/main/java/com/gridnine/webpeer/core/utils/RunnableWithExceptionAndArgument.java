@@ -19,18 +19,8 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.core.ui;
+package com.gridnine.webpeer.core.utils;
 
-import java.util.HashMap;
-
-public class TrackedProperties extends HashMap<String, Object> {
-    private final UiNode node;
-
-    public TrackedProperties(UiNode node) {
-        super();
-        this.node = node;
-    }
-    public void put(String key, Object value, boolean dontTrack) {
-        put(key, value);
-    }
+public interface RunnableWithExceptionAndArgument<A> {
+    void run(A  arg) throws Exception;
 }

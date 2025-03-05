@@ -21,17 +21,83 @@
 
 package com.gridnine.webpeer.core.ui;
 
-import java.util.concurrent.atomic.AtomicLong;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UiModel{
-    public final AtomicLong elementIndex = new AtomicLong();
-    private UiNode rootNode;
+    private UiElement rootElement;
 
-    public UiNode getRootNode() {
-        return rootNode;
+    private final Map<Long, UiElement> elements = new ConcurrentHashMap<>();
+
+    public static void removeElement(UiElement element) {
+        if(element.getParent() != null){
+            element.getParent().getChildren().remove(element);
+        }
+        UiModel model = findModel(element);
+        if(model == null){
+            return;
+        }
+        removeElement(model, element);
     }
 
-    public void setRootNode(UiNode rootNode) {
-        this.rootNode = rootNode;
+    public static void addElement(UiElement element, UiElement parent) {
+        if(parent == null){
+            return;
+        }
+        element.setParent(parent);
+        parent.getChildren().add(element);
+        UiModel model = findModel(element);
+        if(model == null){
+            return;
+        }
+        addElement(model, element);
+    }
+
+    private static void addElement(UiModel model, UiElement element) {
+        WebPeerUtils.wrapException(() ->{
+            model.elements.put(element.getId(), element);
+            element.getChildren().forEach((ch) ->{
+                addElement(model, ch);
+            });
+        });
+    }
+
+
+    private static void removeElement(UiModel model, UiElement element) {
+        WebPeerUtils.wrapException(() ->{
+            element.destroy();
+            model.elements.remove(element.getId());
+            element.getChildren().forEach((ch) ->{
+                removeElement(model, ch);
+            });
+        });
+    }
+
+    private static UiModel findModel(UiElement element) {
+        if(element instanceof UiRootElement){
+            return ((UiRootElement) element).getModel();
+        }
+        if(element.getParent() == null){
+            return null;
+        }
+        return findModel(element.getParent());
+    }
+
+    public UiElement getRootElement() {
+        return rootElement;
+    }
+
+    public void setRootElement(UiElement rootElement) {
+        if(this.rootElement != null){
+            removeElement(this, this.rootElement);
+        }
+        this.rootElement = rootElement;
+        addElement(this, rootElement);
+    }
+
+    public UiElement findElement(long id) {
+        return elements.get(id);
     }
 }

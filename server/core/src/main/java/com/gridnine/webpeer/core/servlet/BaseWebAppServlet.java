@@ -22,10 +22,12 @@
 package com.gridnine.webpeer.core.servlet;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
-import com.gridnine.webpeer.core.ui.UiContext;
+import com.gridnine.webpeer.core.ui.GlobalUiContext;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.UiElement;
 import com.gridnine.webpeer.core.ui.UiModel;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
@@ -45,6 +47,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class BaseWebAppServlet extends HttpServlet {
@@ -57,13 +60,13 @@ public abstract class BaseWebAppServlet extends HttpServlet {
             @Override
             public void run() {
                 var now = Instant.now();
-                UiContext.context.keySet().forEach(it -> {
-                   var clients = new HashMap<>(UiContext.context.get(it));
+                GlobalUiContext.context.keySet().forEach(it -> {
+                   var clients = new HashMap<>(GlobalUiContext.context.get(it));
                    clients.forEach((k, v) -> {
-                       var upd = (Instant)v.get(UiContext.LAST_UPDATED);
+                       var upd = (Instant)v.get(GlobalUiContext.LAST_UPDATED);
                        if(upd == null || Duration.between(upd, now).getSeconds() > TimeUnit.HOURS.toSeconds(1)){
-                           UiContext.context.get(it).remove(k);
-                           Session s = (Session) v.get(UiContext.WS_SESSION_KEY);
+                           GlobalUiContext.context.get(it).remove(k);
+                           Session s = (Session) v.get(GlobalUiContext.WS_SESSION.name);
                            if(s != null){
                                try {
                                    s.close();
@@ -97,6 +100,11 @@ public abstract class BaseWebAppServlet extends HttpServlet {
                 return;
             }
             if (pathInfo.startsWith("/_resources/")) {
+                if(pathInfo.startsWith("/_resources/classpath/")){
+                    var path = pathInfo.substring("/_resources/classpath/".length());
+                    writeResource(getClass().getClassLoader().getResource(path), resp);
+                    return;
+                }
                 String resourceName = pathInfo.substring(pathInfo.lastIndexOf("/") + 1);
                 HtmlLinkWrapper linkWrapper = getModules().stream().flatMap(it -> it.links.stream())
                         .filter(it -> it.name.equals(resourceName)).findFirst().orElse(null);
@@ -119,66 +127,65 @@ public abstract class BaseWebAppServlet extends HttpServlet {
         }
     }
 
-    protected abstract UiElement createRootElement() throws Exception;
+    protected abstract UiElement createRootElement(OperationUiContext operationUiContext) throws Exception;
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             String pathInfo = req.getPathInfo();
             if (pathInfo.startsWith("/_ui")) {
-                JsonObject request;
+                List<JsonObject> requestCommands;
                 try(var is = req.getInputStream()){
-                    request = (JsonObject) new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonElement.class);
+                    requestCommands = (List) new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonArray.class).asList();
                 }
                 String clientId = req.getHeader("x-client-id");
                 var pi = URLEncoder.encode(pathInfo, StandardCharsets.UTF_8);
-                UiContext.setParameter(pi, clientId, UiContext.LAST_UPDATED, Instant.now());
-                var model = UiContext.getParameter(pi, clientId, UiContext.UI_MODEL, UiModel.class);
-                if(model == null){
-                    model = new UiModel();
-                    UiContext.setParameter(pi, clientId, UiContext.UI_MODEL, model);
-                }
-                var version = UiContext.getParameter(pi, clientId, UiContext.VERSION, AtomicLong.class);
-                if(version == null){
-                    version = new AtomicLong(-1);
-                    UiContext.setParameter(pi, clientId, UiContext.VERSION, version);
-                }
-                var command  = WebPeerUtils.getString(request,"command");
-                long xVersion = Long.parseLong(req.getHeader("x-version"));
-                String respCommand=null;
-                JsonElement respPayload = null;
-                    Map<String, Object> context = new HashMap<>();
-                    context.put(UiContext.REQUEST_KEY, req);
-                    context.put(UiContext.RESPONSE_KEY, resp);
-                    context.put(UiContext.CLIENT_ID_KEY, clientId);
-                    context.put(UiContext.PATH_KEY, pi);
-                    context.put(UiContext.UI_MODEL, model);
-                if("init".equals(command)){
-                    var elm = createRootElement();
-                    model.setRootNode(elm.createNode(context));
-                    respCommand = "init";
-                    respPayload = model.getRootNode().serialize();
-                } else {
-                    if(version.get() != xVersion){
-                        command = "resync";
+                GlobalUiContext.setOperationContext(pi, clientId);
+                try {
+                    GlobalUiContext.setParameter(GlobalUiContext.LAST_UPDATED, Instant.now());
+                    var model = GlobalUiContext.getParameter(GlobalUiContext.UI_MODEL);
+                    if (model == null) {
+                        model = new UiModel();
+                        GlobalUiContext.setParameter(GlobalUiContext.UI_MODEL, model);
+                        GlobalUiContext.setParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER, new AtomicLong(-1));
+                        GlobalUiContext.setParameter(GlobalUiContext.VERSION_PROVIDER, new AtomicInteger(-1));
                     }
-                    throw new IllegalArgumentException("unsupported");
-
-
+                    OperationUiContext operationUiContext = new OperationUiContext();
+                    operationUiContext.setParameter(OperationUiContext.RESPONSE_COMMANDS, new JsonArray());
+                    if(requestCommands.stream().anyMatch(it -> Objects.equals(WebPeerUtils.getString(it, "command"), "init"))){
+                        model.setRootElement(createRootElement(operationUiContext));
+                        var command = new JsonObject();
+                        command.addProperty("cmd", "init");
+                        command.add("payload", model.getRootElement().serialize());
+                        operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
+                    } else {
+                        long xVersion = Long.parseLong(req.getHeader("x-version"));
+                        if (GlobalUiContext.getParameter(GlobalUiContext.VERSION_PROVIDER).get() != xVersion) {
+                            var command = new JsonObject();
+                            command.addProperty("cmd", "resync");
+                            operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
+                        } else {
+                            var fModel = model;
+                            requestCommands.forEach(cmdData -> WebPeerUtils.wrapException(() ->{
+                                var rc = WebPeerUtils.getString(cmdData, "cmd");
+                                if("ec".equals(rc)){
+                                    var elementId = Long.parseLong(WebPeerUtils.getString(cmdData, "id"));
+                                    fModel.findElement(elementId).executeCommand(cmdData.get("data").getAsJsonObject(), operationUiContext);
+                                }
+                            }));
+                        }
+                    }
+                    resp.setHeader("x-version", String.valueOf(GlobalUiContext.getParameter(GlobalUiContext.VERSION_PROVIDER).incrementAndGet()));
+                    resp.setHeader("Content-Type", "application/json");
+                    try (var os = resp.getOutputStream()) {
+                        var jw = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
+                        new Gson().toJson(operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS), jw);
+                        jw.flush();
+                    }
+                    resp.setStatus(HttpServletResponse.SC_OK);
+                } finally {
+                    GlobalUiContext.clearOperationContext();
                 }
-               resp.setHeader("x-version", String.valueOf(version.incrementAndGet()));
-                resp.setHeader("Content-Type", "application/json");
-                var result = new JsonObject();
-                result.addProperty("command", respCommand);
-                if(respPayload != null){
-                    result.add("payload", respPayload);
-                }
-                try (var os = resp.getOutputStream()) {
-                    var jw = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
-                    new Gson().toJson(result, jw);
-                    jw.flush();
-                }
-                resp.setStatus(HttpServletResponse.SC_OK);
                 return;
             }
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -193,6 +200,9 @@ public abstract class BaseWebAppServlet extends HttpServlet {
 
     protected void writeResource(URL url, HttpServletResponse resp) throws IOException {
         resp.setStatus(HttpServletResponse.SC_OK);
+        if(url.toString().endsWith(".svg")) {
+            resp.setHeader("Content-Type", "image/svg+xml");
+        }
         try(var is = url.openStream()) {
             try (var os = resp.getOutputStream()) {
                 is.transferTo(os);
