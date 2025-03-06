@@ -30,7 +30,6 @@ import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 public class AntdMainFrame implements UiRootElement {
@@ -44,6 +43,8 @@ public class AntdMainFrame implements UiRootElement {
     private final UiModel model;
 
     private final List<UiElement> children = new ArrayList<>();
+
+    private JsonObject theme;
 
     public static AntdMainFrame lookup(){
         return (AntdMainFrame) GlobalUiContext.getParameter(GlobalUiContext.UI_MODEL).getRootElement();
@@ -84,9 +85,11 @@ public class AntdMainFrame implements UiRootElement {
     @Override
     public JsonElement serialize() throws Exception {
         var result = new JsonObject();
-        result.addProperty("id", "root");
         result.addProperty("type", "root");
-        result.addProperty("index", id);
+        result.addProperty("id", String.valueOf(id));
+        if(this.theme != null){
+            result.add("theme", this.theme);
+        }
         if(menu != null) {
             result.add("menu", menu.serialize());
         }
@@ -98,9 +101,10 @@ public class AntdMainFrame implements UiRootElement {
         return result;
     }
 
-    public void setToken(JsonObject token, OperationUiContext context) {
+    public void setTheme(JsonObject theme, OperationUiContext context) {
+        this.theme = theme;
         if(context != null){
-            context.sendElementPropertyChange(id, "token", token);
+            context.sendElementPropertyChange(id, "theme", theme);
         }
     }
 

@@ -20,8 +20,9 @@ export interface AntdUiElementFactory {
 }
 
 export const emptyAntdUiElement:AntdUiElement = {
-   id: "",
-   index: 0,
+   executeCommand(): void {
+   },
+   id: "0",
    serialize(): any {
    },
    createReactElement(): React.ReactElement {

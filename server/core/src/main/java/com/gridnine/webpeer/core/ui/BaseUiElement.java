@@ -19,27 +19,24 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.demo.app;
+package com.gridnine.webpeer.core.ui;
 
-import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-public class Constants {
-    public static final JsonObject LIGHT_THEME = new JsonObject();
-    public static final JsonObject DARK_THEME = new JsonObject();
-    static {
-        var arr = new JsonArray();
-        arr.add("darkAlgorithm");
-        DARK_THEME.add("algorithm", arr);
-        {
-            var components = new JsonObject();
-            LIGHT_THEME.add("components", components);
-            var layout = new JsonObject();
-            components.add("Layout", layout);
-            layout.addProperty( "headerColor", "rgb(255,255,255)");
-            layout.addProperty( "siderBg", "rgb(255,255,255)");
-            layout.addProperty( "lightTriggerColor", "rgb(255,255,255)");
-            layout.addProperty( "triggerBg", "rgb(255,255,255)");
+public abstract class BaseUiElement implements UiElement{
+    @Override
+    public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
+        var cmd = command.get("cmd").getAsString();
+        if("pc".equals(cmd)){
+            var data = command.get("data").getAsJsonObject();
+            var propertyName = data.get("pn").getAsString();
+            var propertyValue = data.has("pv")? data.get("pv"): null;
+            updatePropertyValue(propertyName, propertyValue, operationUiContext);
         }
+    }
+
+    protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext){
+        throw new UnsupportedOperationException();
     }
 }

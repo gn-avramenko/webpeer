@@ -94,7 +94,7 @@ public class GlobalUiContext {
         public final String clientId;
         public final String path;
 
-         OperationContext(String clientId, String path) {
+         OperationContext(String path, String clientId) {
             this.clientId = clientId;
             this.path = path;
         }

@@ -21,6 +21,7 @@
 
 package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
+import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.common.AntdUtils;
 import com.gridnine.webpeer.antd.admin.ui.div.AntdDiv;
 import com.gridnine.webpeer.antd.admin.ui.div.AntdDivBuilder;
@@ -42,6 +43,9 @@ public class AntdMainFrameBuilder {
         frame.setMenu(menu, null);
     }
 
+    public void theme(JsonObject theme){
+        frame.setTheme(theme, null);
+    }
     public void header(String style, Consumer<AntdDivBuilder> configurator){
         var header = new AntdDiv();
         header.setStyle(AntdUtils.parseStyle(style));

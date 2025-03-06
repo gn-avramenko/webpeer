@@ -1,6 +1,8 @@
 import {AntdUiElement, AntdUiElementFactory, antdWebpeerExt, updateStyle} from "@/ui/common.tsx";
 import React, {useEffect, useState} from "react";
 import {Dropdown, MenuProps, theme} from "antd";
+import {BaseUiElement} from "../../../core/src/model/model.ts";
+import {api} from "../../../core/src/index.ts"
 
 type AntdMenuItem = {
     id: string,
@@ -27,7 +29,7 @@ function AntdDropdownIcon(props: { component: AntdDropdownIconInternal }): React
         props.component.onAfterInitialized()
     }, []);
     const { token } = theme.useToken()
-    const hs = style || {} as any
+    const hs = (style && {...style} || {}) as any
     updateStyle(hs, token)
     if(!hs.display){
         hs.display = "inline-block"
@@ -38,8 +40,9 @@ function AntdDropdownIcon(props: { component: AntdDropdownIconInternal }): React
     }))
     const selectedItem = menu.find(it => it.id === selectedMenuItemId)
     return (<Dropdown placement="bottomLeft" menu={{
-        items, onSelect: (item) => {
-            console.log(item.key)
+        items,
+        onClick: (item) => {
+            api.sendPropertyChanged(props.component.id, "si", item.key)
         }
     }
     }>
@@ -47,7 +50,7 @@ function AntdDropdownIcon(props: { component: AntdDropdownIconInternal }): React
     </Dropdown>)
 }
 
-class AntdDropdownIconElement implements AntdUiElement, AntdDropdownIconInternal {
+class AntdDropdownIconElement extends BaseUiElement implements AntdDropdownIconInternal {
 
     private selectedMenuItemIdSetter?: (id: string) => void;
     private menuSetter?: (menu: AntdMenuItem[]) => void
@@ -56,13 +59,13 @@ class AntdDropdownIconElement implements AntdUiElement, AntdDropdownIconInternal
     private  menu: AntdMenuItem[] = []
     private selectedItemId: string = ""
     private style: any | undefined
+    parent?: AntdUiElement
 
     id = "";
-    index: number;
 
     constructor(model: any) {
+        super()
         this.id = model.id
-        this.index = model.index
         this.selectedItemId = model.selectedItemId || ""
         this.menu = model.menu
     }
@@ -84,7 +87,6 @@ class AntdDropdownIconElement implements AntdUiElement, AntdDropdownIconInternal
     serialize = () => {
         const result = {} as any
         result.id = this.id;
-        result.index = this.index;
         result.type = "dropdown-icon";
         result.selectedItemId = this.selectedItemId;
         result.menu = this.menu
@@ -96,6 +98,13 @@ class AntdDropdownIconElement implements AntdUiElement, AntdDropdownIconInternal
         this.menuSetter!(this.menu)
         this.selectedMenuItemIdSetter!(this.selectedItemId)
         this.styleSetter!(this.style)
+    }
+
+    updatePropertyValue(propertyName: string, propertyValue: any) {
+        if("si" === propertyName){
+            this.selectedItemId = propertyValue
+            this.selectedMenuItemIdSetter!(propertyValue)
+        }
     }
 
     createReactElement(): React.ReactElement {

@@ -63,7 +63,7 @@ public abstract class BaseWebAppServlet extends HttpServlet {
                 GlobalUiContext.context.keySet().forEach(it -> {
                    var clients = new HashMap<>(GlobalUiContext.context.get(it));
                    clients.forEach((k, v) -> {
-                       var upd = (Instant)v.get(GlobalUiContext.LAST_UPDATED);
+                       var upd = (Instant)v.get(GlobalUiContext.LAST_UPDATED.name);
                        if(upd == null || Duration.between(upd, now).getSeconds() > TimeUnit.HOURS.toSeconds(1)){
                            GlobalUiContext.context.get(it).remove(k);
                            Session s = (Session) v.get(GlobalUiContext.WS_SESSION.name);
@@ -152,11 +152,11 @@ public abstract class BaseWebAppServlet extends HttpServlet {
                     }
                     OperationUiContext operationUiContext = new OperationUiContext();
                     operationUiContext.setParameter(OperationUiContext.RESPONSE_COMMANDS, new JsonArray());
-                    if(requestCommands.stream().anyMatch(it -> Objects.equals(WebPeerUtils.getString(it, "command"), "init"))){
+                    if(requestCommands.stream().anyMatch(it -> Objects.equals(WebPeerUtils.getString(it, "cmd"), "init"))){
                         model.setRootElement(createRootElement(operationUiContext));
                         var command = new JsonObject();
                         command.addProperty("cmd", "init");
-                        command.add("payload", model.getRootElement().serialize());
+                        command.add("data", model.getRootElement().serialize());
                         operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
                     } else {
                         long xVersion = Long.parseLong(req.getHeader("x-version"));

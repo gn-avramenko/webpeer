@@ -1,5 +1,5 @@
 import { isNull} from "../utils/utils.ts";
-import {UiModel} from "@/model/model.ts";
+import {uiModel, webpeerExt} from "../index.ts";
 
 export type Context = {
     request?: any,
@@ -39,7 +39,6 @@ export class Configuration {
     clientId: string= "";
     restPath: string = ""; // override base path
     webSocketUrl?: string;
-    uiModel: UiModel = {} as UiModel
     middleware?: Middleware[]; // middleware to apply before/after fetch requests
     headers?: HTTPHeaders //header params we want to use on every request
     subscriptionHandler?: SubscriptionHandler
@@ -83,13 +82,28 @@ export class API {
         this.sortMiddleware()
     }
 
-    async request(payload: any, initOverrides?: RequestInit | InitOverrideFunction): Promise<any> {
+    async sendPropertyChanged(elementId:string, propertyName: string, propertyValue: any|null|undefined){
+        await this.sendCommand({
+            cmd: 'ec',
+            id: elementId,
+            data: {
+                cmd: 'pc',
+                data: {
+                    pn: propertyName,
+                    pv: propertyValue
+                }
+            }
+        })
+    }
+
+
+    async sendCommand(payload: any, initOverrides?: RequestInit | InitOverrideFunction): Promise<any> {
         const prom = new Promise((resolve, reject) => {
             this.queue.push({
                 resolve,
                 reject,
                 initOverrides,
-                payload
+                payload:[payload]
             })
         })
         this.processQueue()
@@ -111,11 +125,12 @@ export class API {
                     context: new Map()
                 } as Context
                 const res = await this.requestWithMiddleware(req, 0, item.initOverrides)
-                if (res.response?.command === 'resync') {
+                const commands = (res.response || []) as any[]
+                if(commands.find(it => it.cmd === "resync")){
                     const queueItem = {
                         payload: {
                             command: 'resync',
-                            model: this.configuration.uiModel.rootElement.serialize()
+                            model: uiModel.getRootElement()!.serialize()
                         },
                         reject: () => {
                             this.queue.forEach(it => {
@@ -129,6 +144,19 @@ export class API {
                     this.queue = [queueItem, ...this.queue]
                     break;
                 }
+                if(commands.find(it => it.cmd === "init")){
+                    if (item.resolve) {
+                        item.resolve(res.response)
+                    }
+                    webpeerExt.uiHandler.drawUi(commands.find(it => it.cmd === "init").data)
+                    break;
+                }
+                commands.forEach((cmd:any) =>{
+                    if(cmd.cmd === 'ec'){
+                        const node = uiModel.findNode(cmd.id)!
+                        node.executeCommand(cmd.data)
+                    }
+                })
                 if (item.resolve) {
                     item.resolve(res.response)
                 }
@@ -236,7 +264,7 @@ export class API {
                 throw new FetchError(e as Error, 'Response returned an error code');
             }
             context.rawResponse = result;
-            context.response = result.json()
+            context.response = await result.json()
             this.serverVersion = result.headers.get('x-version')??"-1"
             return context
         }

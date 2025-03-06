@@ -2,6 +2,7 @@ import {AntdUiElement, AntdUiElementFactory, updateStyle} from "@/ui/common.tsx"
 import React, {useEffect, useState} from "react";
 import {generateUUID} from "../../../core/src/utils/utils.ts";
 import {theme} from "antd";
+import { UiElement } from "node_modules/@webpeer/core/src/model/model.ts";
 
 type AntdImgInternal = {
     id: string
@@ -17,8 +18,8 @@ function AntdImg(props: { component: AntdImgInternal }): React.ReactElement {
     const [style, setStyle] = useState({})
     const [width, setWidth] = useState<string | undefined>(undefined)
     const [height, setHeight] = useState<string | undefined>(undefined)
-    const { token } = theme.useToken()
-    const hs = style || {}
+    const {token} = theme.useToken()
+    const hs = (style && {...style} || {}) as any
     updateStyle(hs, token)
     props.component.setSrcSetter(setSrc)
     props.component.setWidthSetter(setWidth)
@@ -63,15 +64,19 @@ class ImgAntdElement implements AntdUiElement, AntdImgInternal {
         this.width = model.width
         this.height = model.height
         this.style = model.style
-        this.index = model.index
     }
 
-    index: number;
+    children?: UiElement[] | undefined;
+    executeCommand= () => {
+        //noops
+    }
+
+    parent?: AntdUiElement
+
     serialize = () => {
         const result = {} as any
         result.style = this.style;
         result.id = this.id;
-        result.index = this.index;
         result.src = this.src
         result.width = this.width
         result.height = this.height

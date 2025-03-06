@@ -47,16 +47,18 @@ public class OperationUiContext extends HashMap<String, Object> {
         command.addProperty("id", String.valueOf(elementId));
         var data = new JsonObject();
         data.addProperty("cmd", "pc");
-        data.addProperty("pn", property);
+        var commandData = new JsonObject();
+        data.add("data", commandData);
+        commandData.addProperty("pn", property);
         if(value != null){
             if(value instanceof String){
-                data.addProperty("pv", (String) value);
+                commandData.addProperty("pv", (String) value);
             } else if (value instanceof Number){
-                data.addProperty("pv", (Number) value);
+                commandData.addProperty("pv", (Number) value);
             } else if (value instanceof Boolean){
-                data.addProperty("pv", (Boolean) value);
+                commandData.addProperty("pv", (Boolean) value);
             } else if (value instanceof JsonElement){
-                data.add("pv", (JsonElement) value);
+                commandData.add("pv", (JsonElement) value);
             }
         }
         command.add("data", data);

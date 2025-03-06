@@ -68,9 +68,10 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
                    });
                 }
             });
-            frame.header("padding=0;height=90px;display=flex;flexDirection=row;alignItems=center", d ->{
+            frame.theme(Constants.LIGHT_THEME);
+            frame.header("padding=0;height=60px;display=flex;flexDirection=row;alignItems=center", d ->{
                 d.img("demo/logo.svg", null, "60px", null);
-                d.div("fontSize=token:fontSizeHeading1;fontWeight=token:fontWeightStrong", "Web peer");
+                d.div("fontSize=token:fontSizeHeading2;fontWeight=token:fontWeightStrong;padding=0px", "Web peer");
                 d.hGlue();
                 d.dropdownImage(null, dd ->{
                     dd.menuItem("en", "classpath/demo/en-flag.png", "english", "20px", null, (ctx)->{
@@ -83,10 +84,10 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
                 });
                 d.dropdownIcon(null,  dd ->{
                     dd.menuItem("light", AntdIcons.SUN_OUTLINED.name(), "Light", (ctx)->{
-                        AntdMainFrame.lookup().setToken(Constants.LIGHT_TOKEN, ctx);
+                        AntdMainFrame.lookup().setTheme(Constants.LIGHT_THEME, ctx);
                     });
                     dd.menuItem("dark", AntdIcons.MOON_FILLED.name(), "Dark", (ctx)->{
-                        AntdMainFrame.lookup().setToken(Constants.DARK_TOKEN, ctx);
+                        AntdMainFrame.lookup().setTheme(Constants.DARK_THEME, ctx);
                     });
                     dd.selectItem("light");
                 });

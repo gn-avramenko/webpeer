@@ -84,7 +84,7 @@ public class AntdDiv implements UiElement {
     @Override
     public JsonElement serialize() throws Exception {
         var result = new JsonObject();
-        result.addProperty("id", id);
+        result.addProperty("id", String.valueOf(id));
         result.addProperty("type", "div");
         result.add("style", WebPeerUtils.serialize(style));
         if(WebPeerUtils.isNotBlank(content)){

@@ -13,11 +13,10 @@ export type WebPeerExtension = {
 }
 export const webpeerExt = (window as any).webPeer as WebPeerExtension
 
-const uiModel = new UiModel()
+export const uiModel = new UiModel()
 
 export const api = new API({
     clientId: generateUUID(),
-    uiModel,
     restPath: webpeerExt.parameters.restPath,
     webSocketUrl: webpeerExt.parameters.webSocketUrl,
     middleware: webpeerExt.middleware,
@@ -25,10 +24,7 @@ export const api = new API({
 })
 
 async function init(){
-    const initResp = await api.request({
-        command: "init"
-    })
-    webpeerExt.uiHandler.drawUi(initResp.payload)
+    await api.sendCommand({cmd: 'init'})
 }
 
 document.addEventListener("DOMContentLoaded", init);

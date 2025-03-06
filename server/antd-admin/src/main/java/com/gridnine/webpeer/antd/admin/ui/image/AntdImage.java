@@ -96,9 +96,8 @@ public class AntdImage implements UiElement {
     @Override
     public JsonElement serialize() throws Exception {
         var result = new JsonObject();
-        result.addProperty("id", id);
         result.addProperty("type", "img");
-        result.addProperty("index", this.id);
+        result.addProperty("id", String.valueOf(id));
         result.add("style", WebPeerUtils.serialize(style));
         result.addProperty("width", this.width);
         result.addProperty("height", this.height);

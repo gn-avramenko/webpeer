@@ -8,6 +8,8 @@ import React, { useEffect, useState} from "react";
 import {ConfigProvider, Layout, theme} from "antd";
 import {Content, Header} from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
+import { UiElement } from "node_modules/@webpeer/core/src/model/model";
+import {BaseUiElement} from "../../../core/src/model/model.ts";
 
 type MenuItem = {
     icon?: string,
@@ -17,72 +19,86 @@ type MenuItem = {
     children?: MenuItem[]
 }
 type AntdMainFrameInternal = {
+    setThemeSetter: (setter: (theme: any) => void) => void
     setMenuSetter: (setter: (menu: MenuItem[]) => void) => void
-    setHeaderSetter: (setter: (header:AntdUiElement) => void) => void
+    setHeaderSetter: (setter: (header: AntdUiElement) => void) => void
     onAfterInitialized: () => void
 }
 
 function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.ReactElement {
     const [menuData, setMenuData] = useState<MenuItem[]>([])
     const [header, setHeader] = useState<AntdUiElement>(emptyAntdUiElement)
+    const [customTheme, setCustomTheme] = useState<any>({})
     props.component.setMenuSetter(setMenuData)
     props.component.setHeaderSetter(setHeader)
+    props.component.setThemeSetter(setCustomTheme)
     useEffect(() => {
         props.component.onAfterInitialized()
     }, []);
-    const {
-        token: {colorBgContainer, borderRadiusLG},
-    } = theme.useToken();
+    const {token} = theme.useToken();
     let headerStyle = ((header as any)?.style || {}) as any
-    if(!headerStyle.background){
-        headerStyle.background = colorBgContainer
-    }
-    if(!headerStyle.width){
+    if (!headerStyle.width) {
         headerStyle.width = '100%'
     }
-
-    return (<ConfigProvider>
-            <Layout
-                style={{background: colorBgContainer, borderRadius: borderRadiusLG, height: '100%'}}
-            >
-                <Header style={headerStyle}>
-                    {((header?.children || []) as AntdUiElement[]).map(ch => ch.createReactElement())}
-                </Header>
-                <Content style={{height: '100%'}}>
-                    <Layout style={{height: '100%'}}>
-                        <Sider style={{background: colorBgContainer}} width={200}>
-                                        Hello
-                        </Sider>
-                        <Content style={{width: '100%', height: '100%'}}>Center content {menuData.length}</Content>
-                    </Layout>
-                </Content>
-            </Layout>
-        </ConfigProvider>)
+    const ct = customTheme;
+    if(ct.algorithm){
+        ct.algorithm = (ct.algorithm as string[]).map(a => (theme as any)[a])
+    }
+    return (<ConfigProvider theme={ct}>
+        <Layout
+            style={{borderRadius: token.borderRadiusLG, height: '100%'}}
+        >
+            <Header style={headerStyle}>
+                {((header?.children || []) as AntdUiElement[]).map(ch => ch.createReactElement())}
+            </Header>
+            <Content style={{height: '100%'}}>
+                <Layout style={{height: '100%'}}>
+                    <Sider width={200}>
+                        Hello
+                    </Sider>
+                    <Content style={{width: '100%', height: '100%'}}>Center content {menuData.length}</Content>
+                </Layout>
+            </Content>
+        </Layout>
+    </ConfigProvider>)
 }
 
-class AntdMainFrameElement implements AntdUiElement, AntdMainFrameInternal {
+class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInternal {
     private menuSetter?: (menu: MenuItem[]) => void
-    private headerSetter?: (header:AntdUiElement) => void
+    private headerSetter?: (header: AntdUiElement) => void
+    private themeSetter?: (token: any) => void
     private menu: MenuItem[] = []
+    private theme: any = {}
+    private headerId = "";
     children: any[] = []
 
     constructor(model: any) {
+        super();
         this.menu = model.menu
         this.id = model.id
-        this.index = model.index
-        this.children = (model.children || []).map((ch:any)=>{
-            return antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch)!
+        this.theme = model.theme
+        this.children = (model.children || []).map((ch: any, idx:number) => {
+            const elm = antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch)!
+            if(idx == 0){
+                this.headerId = ch.id;
+            }
+            elm.parent = this
+            return elm
         })
 
     }
 
+    setThemeSetter = (setter: (theme: any) => void) => {
+        this.themeSetter = setter
+    }
+
+    parent?: UiElement | undefined;
+
     id: string;
-    index: number;
     serialize= () => {
         const result = {} as any;
         result.menu = this.menu;
         result.id = this.id;
-        result.index = this.index;
         result.children = this.children.map(ch =>ch.serialize())
     };
 
@@ -96,8 +112,16 @@ class AntdMainFrameElement implements AntdUiElement, AntdMainFrameInternal {
 
     onAfterInitialized() {
         this.menuSetter!(this.menu)
-        const header = this.children.find((it) => it.id === "header");
+        const header = this.children.find((it) => it.id === this.headerId);
         this.headerSetter!(header);
+        this.themeSetter!(this.theme)
+    }
+
+    updatePropertyValue(propertyName: string, propertyValue: any) {
+        if("theme" == propertyName){
+            this.theme = propertyValue
+            this.themeSetter!(this.theme)
+        }
     }
 
     createReactElement(): React.ReactElement {

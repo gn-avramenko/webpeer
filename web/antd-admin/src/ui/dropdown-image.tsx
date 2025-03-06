@@ -2,6 +2,7 @@ import {AntdUiElement, AntdUiElementFactory, updateStyle} from "@/ui/common.tsx"
 import React, {useEffect, useState} from "react";
 import {Dropdown, MenuProps, theme} from "antd";
 import {generateUUID} from "../../../core/src/utils/utils.ts";
+import {BaseUiElement} from "../../../core/src/model/model.ts";
 
 type AntdMenuItem = {
     id: string,
@@ -30,7 +31,7 @@ function AntdDropdownImage(props: { component: AntdDropdownImageInternal }): Rea
         props.component.onAfterInitialized()
     }, []);
     const { token } = theme.useToken()
-    const hs = style || {} as any
+    const hs = (style && {...style} || {}) as any
     updateStyle(hs, token)
     if(!hs.display){
         hs.display = "flex"
@@ -55,7 +56,7 @@ function AntdDropdownImage(props: { component: AntdDropdownImageInternal }): Rea
     </Dropdown>)
 }
 
-class AntdDropdownImageElement implements AntdUiElement, AntdDropdownImageInternal {
+class AntdDropdownImageElement extends BaseUiElement implements AntdDropdownImageInternal {
 
     private selectedMenuItemIdSetter?: (id: string) => void;
     private menuSetter?: (menu: AntdMenuItem[]) => void
@@ -70,6 +71,7 @@ class AntdDropdownImageElement implements AntdUiElement, AntdDropdownImageIntern
 
 
     constructor(model: any) {
+        super()
         this.id = model.id
         this.index = model.index
         this.selectedItemId = model.selectedItemId || ""
@@ -89,7 +91,7 @@ class AntdDropdownImageElement implements AntdUiElement, AntdDropdownImageIntern
     }
 
     children = undefined
-
+    parent?: AntdUiElement
 
     serialize = () => {
         const result = {} as any
@@ -107,6 +109,13 @@ class AntdDropdownImageElement implements AntdUiElement, AntdDropdownImageIntern
         this.selectedMenuItemIdSetter!(this.selectedItemId)
         this.menuSetter!(this.menu)
         this.styleSetter!(this.style)
+    }
+
+    updatePropertyValue(propertyName: string, propertyValue: any) {
+        if("si" === propertyName){
+            this.selectedItemId = propertyValue
+            this.selectedMenuItemIdSetter!(propertyValue)
+        }
     }
 
     createReactElement(): React.ReactElement {

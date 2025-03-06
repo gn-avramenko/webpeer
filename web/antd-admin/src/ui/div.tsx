@@ -17,10 +17,11 @@ function AntdDiv(props: { component: AntdDivInternal }): React.ReactElement {
     const [style, setStyle] = useState({} as any)
     const { token } = theme.useToken()
     const padding = token.padding;
-    if(!style.padding){
-        style.padding = padding
+    const hs = ((style && {...style}) || {}) as any
+    if(!hs.padding){
+        hs.padding = padding
     }
-    updateStyle(style, token)
+    updateStyle(hs, token)
     props.component.setContentSetter(setContent)
     props.component.setChildrenSetter(setChildren)
     props.component.setStyleSetter(setStyle)
@@ -28,38 +29,42 @@ function AntdDiv(props: { component: AntdDivInternal }): React.ReactElement {
         props.component.onAfterInitialized()
     }, []);
     if (isBlank(content)) {
-        return <div key={props.component.id} style={style}>
+        return <div key={props.component.id} style={hs}>
             {children.map(ch => ch.createReactElement())}
         </div>
     }
-    return <div key={props.component.id} style={style} dangerouslySetInnerHTML={{__html: content!!}}/>
+    return <div key={props.component.id} style={hs} dangerouslySetInnerHTML={{__html: content!!}}/>
 }
 
 class AntdDivElement implements AntdUiElement, AntdDivInternal {
     id = ""
-    index: number;
     private contentSetter?: (content: string | undefined | null) => void
     private childrenSetter?: (children: AntdUiElement[]) => void
     private styleSetter?: (style: any) => void
     private style: any = {}
     private content: string|undefined
     children: AntdUiElement[] = []
+    parent?: AntdUiElement
     constructor(model: any) {
         this.id = model.id;
-        this.index = model.index;
         this.style = model.style || {};
         this.content = model.content;
         (model.children || []).forEach((ch:any) =>{
-            this.children.push(antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch))
+            const elm = antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch)
+            elm.parent = this
+            this.children.push(elm)
         })
     }
+
+    executeCommand = () => {
+        //noops
+    };
 
 
     serialize = () => {
         const result = {} as any;
         result.style = this.style;
         result.id = this.id;
-        result.index = this.index;
         result.content = this.content;
         result.type = "div";
         result.children = this.children.map(ch =>ch.serialize())

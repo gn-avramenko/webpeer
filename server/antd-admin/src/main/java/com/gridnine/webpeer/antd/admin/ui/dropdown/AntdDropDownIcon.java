@@ -24,6 +24,7 @@ package com.gridnine.webpeer.antd.admin.ui.dropdown;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.gridnine.webpeer.core.ui.BaseUiElement;
 import com.gridnine.webpeer.core.ui.GlobalUiContext;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.UiElement;
@@ -34,7 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AntdDropDownIcon implements UiElement {
+public class AntdDropDownIcon extends BaseUiElement {
     private List<IconMenuItem> menu = new ArrayList<IconMenuItem>();
     private String selectedItemId;
     private final long id;
@@ -88,7 +89,7 @@ public class AntdDropDownIcon implements UiElement {
     @Override
     public JsonElement serialize() throws Exception {
         var result = new JsonObject();
-        result.addProperty("id", id);
+        result.addProperty("id", String.valueOf(id));
         result.addProperty("type", "dropdown-icon");
         result.addProperty("selectedItemId", selectedItemId);
         result.add("style", WebPeerUtils.serialize(style));
@@ -105,21 +106,17 @@ public class AntdDropDownIcon implements UiElement {
     }
 
     @Override
-    public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
-        var cmd = operationUiContext.getCommand(command);
-        if("pc".equals(cmd)){
-            var pn = operationUiContext.getChangedPropertyName(command);
-            if("si".equals(pn)){
-                String itemId = operationUiContext.getChangedPropertyStringValue(command);
-                if(!itemId.equals(selectedItemId)){
-                    menu.stream().filter(it -> it.getId().equals(itemId)).findFirst().ifPresent(it -> {
-                        WebPeerUtils.wrapException(()->{
-                            it.getOnClick().run(operationUiContext);
-                            selectedItemId = itemId;
-                            operationUiContext.sendElementPropertyChange(id, "si", itemId);
-                        });
+    protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext) {
+        if("si".equals(propertyName)){
+            String itemId = propertyValue.getAsString();
+            if(!itemId.equals(selectedItemId)){
+                menu.stream().filter(it -> it.getId().equals(itemId)).findFirst().ifPresent(it -> {
+                    WebPeerUtils.wrapException(()->{
+                        it.getOnClick().run(operationUiContext);
+                        selectedItemId = itemId;
+                        operationUiContext.sendElementPropertyChange(id, "si", itemId);
                     });
-                }
+                });
             }
         }
     }
