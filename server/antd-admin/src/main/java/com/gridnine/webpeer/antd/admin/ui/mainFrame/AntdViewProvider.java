@@ -21,18 +21,8 @@
 
 package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
-public class AntdMenuGroupBuilder {
-    private final AntdMainFrameMenuItem group;
+import com.gridnine.webpeer.core.ui.UiElement;
 
-    public AntdMenuGroupBuilder(AntdMainFrameMenuItem item) {
-        this.group = item;
-    }
-
-    public void item(String name, String link){
-        var item = new AntdMainFrameMenuItem();
-        item.setLink(link);
-        item.setName(name);
-        item.setType(AntdMainFrameMenuItemType.LEAF);
-        group.getChildren().add(item);
-    }
+public interface AntdViewProvider {
+    UiElement createElement(String path) throws Exception;
 }

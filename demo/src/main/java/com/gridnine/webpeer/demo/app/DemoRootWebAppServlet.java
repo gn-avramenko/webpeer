@@ -22,6 +22,7 @@
 package com.gridnine.webpeer.demo.app;
 
 import com.gridnine.webpeer.antd.admin.ui.AntdIcons;
+import com.gridnine.webpeer.antd.admin.ui.div.AntdDiv;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrame;
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
 import com.gridnine.webpeer.core.servlet.CoreWebAppModule;
@@ -58,39 +59,59 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
     @Override
     protected UiElement createRootElement(OperationUiContext operationUiContext) throws Exception {
         return new AntdMainFrame(GlobalUiContext.getParameter(GlobalUiContext.UI_MODEL), frame ->{
+            var lang = operationUiContext.getStringLocalStorageParam("lang");
             frame.menu(menu ->{
                 for(var n =1; n<10;n++){
                     var fn = n;
-                    menu.group(String.format("group-%s", n), String.format("Group %s", n), g->{
+                    menu.group(String.format("%s %s","ru".equals(lang)? "Группа": "Group", n), AntdIcons.SUN_OUTLINED.name(), g->{
                        for(var m =1; m<10;m++){
-                           g.item(String.format("g-%s-i-%s", fn, m), String.format("Item %s-%s", fn, m));
+                           g.item(String.format("%s %s - %s","ru".equals(lang)? "Элемент": "Item", fn, m), String.format("/view-%s", fn));
                        }
                    });
                 }
             });
-            frame.theme(Constants.LIGHT_THEME);
+            if("dark".equals(operationUiContext.getStringLocalStorageParam("theme"))){
+                frame.theme(Constants.DARK_THEME);
+            } else {
+                frame.theme(Constants.LIGHT_THEME);
+            }
             frame.header("padding=0;height=60px;display=flex;flexDirection=row;alignItems=center", d ->{
                 d.img("demo/logo.svg", null, "60px", null);
-                d.div("fontSize=token:fontSizeHeading2;fontWeight=token:fontWeightStrong;padding=0px", "Web peer");
+                d.div("fontSize=token:fontSizeHeading2;fontWeight=token:fontWeightStrong;padding=0px", "ru".equals(lang)? "Веб аватар": "Web peer");
                 d.hGlue();
                 d.dropdownImage(null, dd ->{
                     dd.menuItem("en", "classpath/demo/en-flag.png", "english", "20px", null, (ctx)->{
-                        System.out.println("en");
+                       AntdMainFrame.lookup().setLang("en", ctx);
                     });
                     dd.menuItem("ru", "classpath/demo/ru-flag.png", "русский", "20px", null, (ctx)->{
-                        System.out.println("ru");
+                        AntdMainFrame.lookup().setLang("ru", ctx);
                     });
-                    dd.selectItem("en");
+                    if("ru".equals(operationUiContext.getStringLocalStorageParam("lang"))){
+                        dd.selectItem("ru");
+                    } else {
+                        dd.selectItem("en");
+                    }
                 });
                 d.dropdownIcon(null,  dd ->{
                     dd.menuItem("light", AntdIcons.SUN_OUTLINED.name(), "Light", (ctx)->{
                         AntdMainFrame.lookup().setTheme(Constants.LIGHT_THEME, ctx);
+                        ctx.setLocalStorageParam("theme", "light");
                     });
                     dd.menuItem("dark", AntdIcons.MOON_FILLED.name(), "Dark", (ctx)->{
                         AntdMainFrame.lookup().setTheme(Constants.DARK_THEME, ctx);
+                        ctx.setLocalStorageParam("theme", "dark");
                     });
-                    dd.selectItem("light");
+                    if("dark".equals(operationUiContext.getStringLocalStorageParam("theme"))){
+                        dd.selectItem("dark");
+                    } else {
+                        dd.selectItem("light");
+                    }
                 });
+            });
+            frame.viewProvider(operationUiContext.getPath(), path ->{
+                var div = new AntdDiv();
+                div.setContent(String.format("Content of %s", path));
+                return div;
             });
         });
     }

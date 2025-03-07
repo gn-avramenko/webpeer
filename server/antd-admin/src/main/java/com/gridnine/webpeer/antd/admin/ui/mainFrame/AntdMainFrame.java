@@ -32,11 +32,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class AntdMainFrame implements UiRootElement {
+public class AntdMainFrame extends BaseUiElement implements UiRootElement {
 
     private AntdMainFrameMenu menu = new AntdMainFrameMenu();
 
-    private AntdDiv header;
+    private long headerId;
+
+    private long contentId;
 
     private final long id;
 
@@ -46,38 +48,98 @@ public class AntdMainFrame implements UiRootElement {
 
     private JsonObject theme;
 
-    public static AntdMainFrame lookup(){
+    private String lang;
+
+    private String path;
+
+    private AntdViewProvider viewProvider;
+
+    public static AntdMainFrame lookup() {
         return (AntdMainFrame) GlobalUiContext.getParameter(GlobalUiContext.UI_MODEL).getRootElement();
     }
 
-    public AntdMainFrame(UiModel model, Consumer<AntdMainFrameBuilder> configurator){
-        id =  GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
+    public AntdMainFrame(UiModel model, Consumer<AntdMainFrameBuilder> configurator) {
+        id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
         this.model = model;
         var builder = new AntdMainFrameBuilder(this);
         configurator.accept(builder);
     }
 
+    public void setViewProvider(AntdViewProvider viewProvider) {
+        this.viewProvider = viewProvider;
+        if (path != null) {
+            updateCenterContent(null);
+        }
+    }
+
+    public void setPath(String path, OperationUiContext context) {
+        this.path = path;
+        if (this.viewProvider != null) {
+            updateCenterContent(context);
+        }
+        if (context != null) {
+            context.sendElementPropertyChange(id, "path", path);
+        }
+    }
+
+    private void updateCenterContent(OperationUiContext context) {
+        WebPeerUtils.wrapException(() -> {
+            var existing = children.stream().filter(it -> it.getId() != this.headerId).findFirst().orElse(null);
+            if (existing != null) {
+                UiModel.removeElement(existing);
+                if (context != null) {
+                    context.sendRemoveChildCommand(existing.getId());
+                }
+            }
+            var elm = this.viewProvider.createElement(this.path);
+            this.contentId = elm.getId();
+            UiModel.addElement(elm, this);
+            if (context != null) {
+                context.sendAddChildCommand(elm, this.id);
+                context.sendElementPropertyChange(this.id, "contentId", String.valueOf(this.contentId));
+            }
+        });
+    }
+
     public void setMenu(AntdMainFrameMenu menu, OperationUiContext context) {
         this.menu = menu;
-        if(context != null){
-            WebPeerUtils.wrapException(()->context.sendElementPropertyChange(id, "menu",  menu.serialize()));
+        if (context != null) {
+            WebPeerUtils.wrapException(() -> context.sendElementPropertyChange(id, "menu", menu.serialize()));
         }
     }
 
     public void setHeader(AntdDiv header, OperationUiContext context) {
-        if(this.header != header){
-            if(this.header != null){
-                UiModel.removeElement(this.header);
-                if(context != null){
-                    context.sendRemoveChildCommand(this.header.getId());
+        var currentHeader = this.children.stream().filter(it -> it.getId() == headerId).findFirst().orElse(null);
+        if (currentHeader != header) {
+            if (currentHeader != null) {
+                UiModel.removeElement(currentHeader);
+                if (context != null) {
+                    context.sendRemoveChildCommand(currentHeader.getId());
                 }
             }
-            this.header = header;
-            if(header != null){
-                UiModel.addElement(header, this);
-                if(context != null){
-                    context.sendAddChildCommand(this.header.getId(), header, id);
+            this.headerId = header.getId();
+            UiModel.addElement(header, this);
+            if (context != null) {
+                context.sendAddChildCommand(header, id);
+                context.sendElementPropertyChange(id, "headerId", String.valueOf(headerId));
+            }
+        }
+    }
+
+    public void setContent(UiElement content, OperationUiContext context) {
+        var currentContent = this.children.stream().filter(it -> it.getId() == contentId).findFirst().orElse(null);
+        if (currentContent != content) {
+            if (currentContent != null) {
+                UiModel.removeElement(currentContent);
+                if (context != null) {
+                    context.sendRemoveChildCommand(currentContent.getId());
                 }
+            }
+            this.contentId = content.getId();
+            UiModel.addElement(content, this);
+            if (context != null) {
+                context.sendAddChildCommand(content, id);
+                context.sendElementPropertyChange(id, "contentId", String.valueOf(contentId));
             }
         }
     }
@@ -87,31 +149,32 @@ public class AntdMainFrame implements UiRootElement {
         var result = new JsonObject();
         result.addProperty("type", "root");
         result.addProperty("id", String.valueOf(id));
-        if(this.theme != null){
+        result.addProperty("path", path);
+        result.addProperty("headerId", String.valueOf(headerId));
+        result.addProperty("contentId", String.valueOf(contentId));
+        if (this.theme != null) {
             result.add("theme", this.theme);
         }
-        if(menu != null) {
+        if (menu != null) {
             result.add("menu", menu.serialize());
         }
-        JsonArray children = new JsonArray();
-        result.add("children", children);
-        if(header != null) {
-            children.add(header.serialize());
-        }
+        JsonArray chs = new JsonArray();
+        result.add("children", chs);
+        children.forEach(child -> {
+            WebPeerUtils.wrapException(() -> {
+                chs.add(child.serialize());
+            });
+        });
         return result;
     }
 
     public void setTheme(JsonObject theme, OperationUiContext context) {
         this.theme = theme;
-        if(context != null){
+        if (context != null) {
             context.sendElementPropertyChange(id, "theme", theme);
         }
     }
 
-    @Override
-    public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
-
-    }
 
     @Override
     public long getId() {
@@ -136,5 +199,24 @@ public class AntdMainFrame implements UiRootElement {
     @Override
     public List<UiElement> getChildren() {
         return children;
+    }
+
+    public String getLang() {
+        return lang;
+    }
+
+    public void setLang(String lang, OperationUiContext context) {
+        this.lang = lang;
+        if (context != null) {
+            context.setLocalStorageParam("lang", lang);
+            context.reload();
+        }
+    }
+
+    @Override
+    protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext) {
+        if ("path".equals(propertyName)) {
+            this.setPath(propertyValue.getAsString(), operationUiContext);
+        }
     }
 }

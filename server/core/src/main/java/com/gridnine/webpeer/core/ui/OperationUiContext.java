@@ -24,14 +24,18 @@ package com.gridnine.webpeer.core.ui;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.gridnine.webpeer.core.utils.TypedParameter;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class OperationUiContext extends HashMap<String, Object> {
+    public final static TypedParameter<HttpServletRequest> REQUEST = new TypedParameter<>("request") ;
     public final static TypedParameter<JsonArray> RESPONSE_COMMANDS = new TypedParameter<>("response-commands") ;
+    public final static TypedParameter<JsonObject> LOCAL_STORAGE_DATA = new TypedParameter<>("local-storage-data") ;
 
     public<T> void setParameter(TypedParameter<T> param, T value) {
         super.put(param.name, value);
@@ -65,30 +69,38 @@ public class OperationUiContext extends HashMap<String, Object> {
         getParameter(RESPONSE_COMMANDS).add(command);
     }
 
-    public void sendElementCommand(long elementId, JsonObject data){
+    public void setLocalStorageParam(String param, Object value){
         var command = new JsonObject();
-        command.addProperty("cmd", "ec");
-        command.addProperty("id", String.valueOf(elementId));
+        command.addProperty("cmd", "uls");
+        var data = new JsonObject();
         command.add("data", data);
+        data.addProperty("pn", param);
+        if(value instanceof String){
+            data.addProperty("pv", (String) value);
+        } else if (value instanceof Number){
+            data.addProperty("pv", (Number) value);
+        } else if (value instanceof Boolean) {
+            data.addProperty("pv", (Boolean) value);
+        } else if (value instanceof JsonElement) {
+            data.add("pv", (JsonElement) value);
+        }
         getParameter(RESPONSE_COMMANDS).add(command);
     }
 
-    public String getCommand(JsonObject command) {
-        return command.get("cmd").getAsString();
+
+    public void reload(){
+        var command = new JsonObject();
+        command.addProperty("cmd", "reload");
+        getParameter(RESPONSE_COMMANDS).add(command);
     }
 
-    public String getChangedPropertyName(JsonObject command) {
-        return command.get("data").getAsJsonObject().get("pn").getAsString();
-    }
-
-    public String getChangedPropertyStringValue(JsonObject command) {
-        var data = command.get("data").getAsJsonObject();
-        if(!data.has("pv")){
+    public String getStringLocalStorageParam(String paramName){
+        var data = getParameter(LOCAL_STORAGE_DATA);
+        if(data == null){
             return null;
         }
-        return data.get("pv").getAsString();
+        return data.has(paramName)? data.get(paramName).getAsString(): null;
     }
-
 
     public void sendRemoveChildCommand(long id) {
         var command = new JsonObject();
@@ -97,13 +109,18 @@ public class OperationUiContext extends HashMap<String, Object> {
         getParameter(RESPONSE_COMMANDS).add(command);
     }
 
-    public void sendAddChildCommand(long id, UiElement child, long parentId) {
+    public void sendAddChildCommand(UiElement child, long parentId) {
         var command = new JsonObject();
         command.addProperty("cmd", "ac");
-        command.addProperty("id", parentId);
+        command.addProperty("id", String.valueOf(parentId));
         WebPeerUtils.wrapException(()->{
             command.add("data", child.serialize());
         });
         getParameter(RESPONSE_COMMANDS).add(command);
+    }
+
+    public String getPath() {
+        var request = getParameter(REQUEST);
+        return request.getPathInfo();
     }
 }

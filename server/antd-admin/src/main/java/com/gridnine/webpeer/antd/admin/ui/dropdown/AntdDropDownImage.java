@@ -124,6 +124,6 @@ public class AntdDropDownImage extends BaseUiElement {
 
     @Override
     public long getId() {
-        return 0;
+        return id;
     }
 }

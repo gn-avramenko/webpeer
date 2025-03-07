@@ -5,33 +5,41 @@ import {
     AntdUiElementFactory
 } from "@/ui/common.tsx";
 import React, { useEffect, useState} from "react";
-import {ConfigProvider, Layout, theme} from "antd";
+import {ConfigProvider, Layout, Menu, MenuProps, theme} from "antd";
 import {Content, Header} from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
 import { UiElement } from "node_modules/@webpeer/core/src/model/model";
 import {BaseUiElement} from "../../../core/src/model/model.ts";
+import {api} from "../../../core/src/index.ts";
 
+type Menu = {
+    items: MenuItem[]
+}
 type MenuItem = {
     icon?: string,
     type: 'GROUP' | 'LEAF',
     name: string,
-    id?: string
+    link?: string,
     children?: MenuItem[]
 }
 type AntdMainFrameInternal = {
+    id: string,
     setThemeSetter: (setter: (theme: any) => void) => void
-    setMenuSetter: (setter: (menu: MenuItem[]) => void) => void
+    setMenuSetter: (setter: (menu: Menu) => void) => void
+    setContentSetter: (setter: (header: AntdUiElement) => void) => void
     setHeaderSetter: (setter: (header: AntdUiElement) => void) => void
     onAfterInitialized: () => void
 }
 
 function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.ReactElement {
-    const [menuData, setMenuData] = useState<MenuItem[]>([])
+    const [menuData, setMenuData] = useState<Menu>({items:[]})
     const [header, setHeader] = useState<AntdUiElement>(emptyAntdUiElement)
+    const [content, setContent] = useState<AntdUiElement>(emptyAntdUiElement)
     const [customTheme, setCustomTheme] = useState<any>({})
     props.component.setMenuSetter(setMenuData)
     props.component.setHeaderSetter(setHeader)
     props.component.setThemeSetter(setCustomTheme)
+    props.component.setContentSetter(setContent)
     useEffect(() => {
         props.component.onAfterInitialized()
     }, []);
@@ -44,6 +52,28 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
     if(ct.algorithm){
         ct.algorithm = (ct.algorithm as string[]).map(a => (theme as any)[a])
     }
+    const menuItems: MenuProps['items'] = menuData.items.map(
+        (item, index) => {
+            const groupKey = `group-${index}`
+
+            return {
+                key: groupKey,
+                icon: item.icon && antdWebpeerExt.icons.get(item.icon)!(),
+                label: item.name,
+                children: (item.children || []).map((ch, idx2) =>{
+                  const elementKey = `element-${index}-${idx2}`
+                  return {
+                      key: elementKey,
+                      label: ch.name,
+                      link: ch.link,
+                      onClick: ()=>{
+                          api.sendPropertyChanged(props.component.id, "path", ch.link)
+                      }
+                  }
+                })
+            };
+        },
+    );
     return (<ConfigProvider theme={ct}>
         <Layout
             style={{borderRadius: token.borderRadiusLG, height: '100%'}}
@@ -54,9 +84,15 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
             <Content style={{height: '100%'}}>
                 <Layout style={{height: '100%'}}>
                     <Sider width={200}>
-                        Hello
+                        <Menu
+                            mode="inline"
+                            defaultSelectedKeys={['']}
+                            defaultOpenKeys={['group-0']}
+                            style={{ height: '100%', overflowY:'auto' }}
+                            items={menuItems}
+                        />
                     </Sider>
-                    <Content style={{width: '100%', height: '100%'}}>Center content {menuData.length}</Content>
+                    <Content style={{width: '100%', height: '100%'}}>{content && content.createReactElement()}</Content>
                 </Layout>
             </Content>
         </Layout>
@@ -64,12 +100,15 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
 }
 
 class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInternal {
-    private menuSetter?: (menu: MenuItem[]) => void
+    private menuSetter?: (menu: Menu) => void
     private headerSetter?: (header: AntdUiElement) => void
+    private contentSetter?: (header: AntdUiElement) => void
     private themeSetter?: (token: any) => void
-    private menu: MenuItem[] = []
+    private path: string  = ""
+    private menu: Menu = {items:[]}
     private theme: any = {}
     private headerId = "";
+    private contentId = ""
     children: any[] = []
 
     constructor(model: any) {
@@ -77,11 +116,11 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
         this.menu = model.menu
         this.id = model.id
         this.theme = model.theme
-        this.children = (model.children || []).map((ch: any, idx:number) => {
+        this.contentId = model.contentId
+        this.path  = model.path;
+        this.headerId = model.headerId
+        this.children = (model.children || []).map((ch: any) => {
             const elm = antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch)!
-            if(idx == 0){
-                this.headerId = ch.id;
-            }
             elm.parent = this
             return elm
         })
@@ -106,21 +145,42 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
         this.headerSetter = setter
     };
 
-    setMenuSetter(setter: (menu: MenuItem[]) => void) {
+    setContentSetter= (setter: (header: AntdUiElement) => void) => {
+        this.contentSetter = setter
+    };
+
+    setMenuSetter(setter: (menu: Menu) => void) {
         this.menuSetter = setter
     }
 
     onAfterInitialized() {
         this.menuSetter!(this.menu)
         const header = this.children.find((it) => it.id === this.headerId);
+        const content = this.children.find((it) => it.id === this.contentId);
         this.headerSetter!(header);
+        this.contentSetter!(content)
         this.themeSetter!(this.theme)
+        history.pushState(null, "", this.path)
     }
 
     updatePropertyValue(propertyName: string, propertyValue: any) {
         if("theme" == propertyName){
             this.theme = propertyValue
             this.themeSetter!(this.theme)
+        }
+        if("headerId" == propertyName){
+            this.headerId = propertyValue
+            const header = this.children.find((it) => it.id === this.headerId);
+            this.headerSetter!(header);
+        }
+        if("contentId" == propertyName){
+            this.contentId = propertyValue
+            const content = this.children.find((it) => it.id === this.contentId);
+            this.contentSetter!(content);
+        }
+        if("path" == propertyName){
+            this.path = propertyValue
+            history.pushState(null, "", this.path)
         }
     }
 

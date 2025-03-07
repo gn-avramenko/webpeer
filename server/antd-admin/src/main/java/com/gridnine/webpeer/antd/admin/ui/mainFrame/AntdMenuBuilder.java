@@ -30,9 +30,9 @@ public class AntdMenuBuilder {
         this.menu = menu;
     }
 
-    public void group(String id, String name, Consumer<AntdMenuGroupBuilder> configurator){
+    public void group(String name, String icon, Consumer<AntdMenuGroupBuilder> configurator){
         var group = new AntdMainFrameMenuItem();
-        group.setId(id);
+        group.setIcon(icon);
         group.setName(name);
         group.setType(AntdMainFrameMenuItemType.GROUP);
         var groupBuilder = new AntdMenuGroupBuilder(group);

@@ -1,9 +1,10 @@
 import {API, Middleware, SubscriptionHandler} from "./remoting/api.ts";
 import {generateUUID} from "./utils/utils.ts";
-import {UiModel} from "./model/model.ts";
+import {UiElement, UiModel} from "./model/model.ts";
 
 export interface UiHandler{
     drawUi(model:any):void
+    createElement(model:any):UiElement
 }
 export type WebPeerExtension = {
     parameters: any
@@ -24,7 +25,9 @@ export const api = new API({
 })
 
 async function init(){
-    await api.sendCommand({cmd: 'init'})
+    await api.sendCommand({cmd: 'init', data: {
+        ls: JSON.parse(window.localStorage.getItem("webpeer") || "{}")
+        }})
 }
 
 document.addEventListener("DOMContentLoaded", init);

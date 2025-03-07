@@ -25,6 +25,7 @@ import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.common.AntdUtils;
 import com.gridnine.webpeer.antd.admin.ui.div.AntdDiv;
 import com.gridnine.webpeer.antd.admin.ui.div.AntdDivBuilder;
+import com.gridnine.webpeer.core.ui.GlobalUiContext;
 
 import java.util.function.Consumer;
 
@@ -53,5 +54,9 @@ public class AntdMainFrameBuilder {
         frame.setHeader(header, null);
     }
 
+    public void viewProvider(String path, AntdViewProvider viewProvider ){
+        frame.setViewProvider(viewProvider);
+        frame.setPath(path, null);
+    }
 
 }

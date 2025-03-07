@@ -12,7 +12,9 @@ import java.util.List;
 public class AntdMainFrameMenuItem implements GsonSerializable {
     private AntdMainFrameMenuItemType type;
     private String name;
-    private String id;
+    private String link;
+    private String icon;
+
     private final List<AntdMainFrameMenuItem> children = new ArrayList<>();
 
     public AntdMainFrameMenuItemType getType() {
@@ -31,13 +33,6 @@ public class AntdMainFrameMenuItem implements GsonSerializable {
         this.name = name;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public List<AntdMainFrameMenuItem> getChildren() {
         return children;
@@ -48,8 +43,11 @@ public class AntdMainFrameMenuItem implements GsonSerializable {
         var result = new JsonObject();
         result.addProperty("type", type.name());
         result.addProperty("name", name);
-        if(id != null) {
-            result.addProperty("id", id);
+        if(link != null) {
+            result.addProperty("link", link);
+        }
+        if(icon != null) {
+            result.addProperty("icon", icon);
         }
         if(type == AntdMainFrameMenuItemType.GROUP && !children.isEmpty()) {
             var ch = new JsonArray();
@@ -57,5 +55,21 @@ public class AntdMainFrameMenuItem implements GsonSerializable {
             result.add("children", ch);
         }
         return result;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 }

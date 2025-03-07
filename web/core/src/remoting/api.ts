@@ -156,6 +156,30 @@ export class API {
                         const node = uiModel.findNode(cmd.id)!
                         node.executeCommand(cmd.data)
                     }
+                    if(cmd.cmd === 'rc'){
+                        const node = uiModel.findNode(cmd.id)!
+                        uiModel.removeNode(node)
+                    }
+                    if(cmd.cmd === 'ac'){
+                        const parent = uiModel.findNode(cmd.id)!
+                        const data = cmd.data
+                        const node = webpeerExt.uiHandler.createElement(data)
+                        uiModel.addNode(node, parent)
+                    }
+                    if(cmd.cmd === 'uls'){
+                        const paramName = cmd.data.pn
+                        const paramValue = cmd.data.pv
+                        const data = JSON.parse(window.localStorage.getItem("webpeer") || '{}');
+                        if(paramValue !== undefined){
+                            data[paramName] = paramValue
+                        } else {
+                            delete data[paramName]
+                        }
+                        window.localStorage.setItem("webpeer", JSON.stringify(data))
+                    }
+                    if(cmd.cmd === 'reload'){
+                        window.location.reload()
+                    }
                 })
                 if (item.resolve) {
                     item.resolve(res.response)

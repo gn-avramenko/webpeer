@@ -152,7 +152,10 @@ public abstract class BaseWebAppServlet extends HttpServlet {
                     }
                     OperationUiContext operationUiContext = new OperationUiContext();
                     operationUiContext.setParameter(OperationUiContext.RESPONSE_COMMANDS, new JsonArray());
-                    if(requestCommands.stream().anyMatch(it -> Objects.equals(WebPeerUtils.getString(it, "cmd"), "init"))){
+                    operationUiContext.setParameter(OperationUiContext.REQUEST, req);
+                    if(requestCommands.get(0).get("cmd").getAsString().equals("init")){
+                        var data = requestCommands.get(0).get("data").getAsJsonObject();
+                        operationUiContext.setParameter(OperationUiContext.LOCAL_STORAGE_DATA, data.get("ls").getAsJsonObject());
                         model.setRootElement(createRootElement(operationUiContext));
                         var command = new JsonObject();
                         command.addProperty("cmd", "init");

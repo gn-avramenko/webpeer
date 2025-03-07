@@ -3,6 +3,7 @@ import React, {useEffect, useState} from "react";
 import {Dropdown, MenuProps, theme} from "antd";
 import {generateUUID} from "../../../core/src/utils/utils.ts";
 import {BaseUiElement} from "../../../core/src/model/model.ts";
+import {api} from "../../../core/src/index.ts";
 
 type AntdMenuItem = {
     id: string,
@@ -46,8 +47,8 @@ function AntdDropdownImage(props: { component: AntdDropdownImageInternal }): Rea
     }))
     const selectedItem = menu.find(it => it.id === selectedMenuItemId)
     return (<Dropdown placement="bottomLeft" menu={{
-        items, onSelect: (item) => {
-            console.log(item.key)
+        items,  onClick: (item) => {
+            api.sendPropertyChanged(props.component.id, "si", item.key)
         }
     }
     }>
