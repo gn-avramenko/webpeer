@@ -26,6 +26,7 @@ type MenuItem = {
 }
 type AntdMainFrameInternal = {
     id: string,
+    path?: string,
     setThemeSetter: (setter: (theme: any) => void) => void
     setMenuSetter: (setter: (menu: Menu) => void) => void
     setContentSetter: (setter: (header: AntdUiElement) => void) => void
@@ -43,8 +44,17 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
     props.component.setHeaderSetter(setHeader)
     props.component.setThemeSetter(setCustomTheme)
     props.component.setContentSetter(setContent)
+    function handlePopEvent(){
+        if(location.pathname !== props.component.path){
+            api.sendPropertyChanged(props.component.id, "path", location.pathname)
+        }
+    }
     useEffect(() => {
         props.component.onAfterInitialized()
+        window.addEventListener('popstate', handlePopEvent)
+        return () => {
+            window.removeEventListener('popstate', handlePopEvent)
+        }
     }, []);
     const {token} = theme.useToken();
     let headerStyle = ((header as any)?.style || {}) as any
@@ -136,7 +146,7 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
     private headerSetter?: (header: AntdUiElement) => void
     private contentSetter?: (header: AntdUiElement) => void
     private themeSetter?: (token: any) => void
-    private path: string  = ""
+    path: string  = ""
     private menu: Menu = {items:[]}
     private theme: any = {}
     private headerId = "";
@@ -193,6 +203,7 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
         this.contentSetter!(content)
         this.themeSetter!(this.theme)
         history.pushState(null, "", this.path)
+
     }
 
     updatePropertyValue(propertyName: string, propertyValue: any) {
