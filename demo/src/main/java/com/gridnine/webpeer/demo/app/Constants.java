@@ -26,20 +26,43 @@ import com.google.gson.JsonObject;
 
 public class Constants {
     public static final JsonObject LIGHT_THEME = new JsonObject();
+    public static final JsonObject LIGHT_MOBILE_THEME = new JsonObject();
     public static final JsonObject DARK_THEME = new JsonObject();
+    public static final JsonObject DARK_MOBILE_THEME = new JsonObject();
     static {
-        var arr = new JsonArray();
-        arr.add("darkAlgorithm");
-        DARK_THEME.add("algorithm", arr);
         {
+            var darkAlgorithm = new JsonArray();
+            darkAlgorithm.add("darkAlgorithm");
+            DARK_THEME.add("algorithm", darkAlgorithm);
+        }
+        {
+            var darkAlgorithm = new JsonArray();
+            darkAlgorithm.add("darkAlgorithm");
+            darkAlgorithm.add("compactAlgorithm");
+            DARK_MOBILE_THEME.add("algorithm", darkAlgorithm);
+        }
+        {
+
             var components = new JsonObject();
-            LIGHT_THEME.add("components", components);
             var layout = new JsonObject();
             components.add("Layout", layout);
             layout.addProperty( "headerColor", "rgb(255,255,255)");
             layout.addProperty( "siderBg", "rgb(255,255,255)");
             layout.addProperty( "lightTriggerColor", "rgb(255,255,255)");
             layout.addProperty( "triggerBg", "rgb(255,255,255)");
+            {
+                var lightAlgorithm = new JsonArray();
+                lightAlgorithm.add("defaultAlgorithm");
+                LIGHT_THEME.add("components", components);
+                LIGHT_THEME.add("algorithm", lightAlgorithm);
+            }
+            {
+                var lightAlgorithm = new JsonArray();
+                lightAlgorithm.add("defaultAlgorithm");
+                lightAlgorithm.add("compactAlgorithm");
+                LIGHT_MOBILE_THEME.add("components", components);
+                LIGHT_MOBILE_THEME.add("algorithm", lightAlgorithm);
+            }
         }
     }
 }

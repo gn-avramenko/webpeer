@@ -2,15 +2,17 @@ import {
     antdWebpeerExt,
     emptyAntdUiElement,
     AntdUiElement,
-    AntdUiElementFactory
+    AntdUiElementFactory, BREAKPOINTS
 } from "@/ui/common.tsx";
 import React, { useEffect, useState} from "react";
-import {ConfigProvider, Layout, Menu, MenuProps, theme} from "antd";
+import {ConfigProvider, Drawer, Layout, Menu, MenuProps, theme} from "antd";
 import {Content, Header} from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
 import { UiElement } from "node_modules/@webpeer/core/src/model/model";
 import {BaseUiElement} from "../../../core/src/model/model.ts";
 import {api} from "../../../core/src/index.ts";
+import useBreakpoint from "use-breakpoint";
+import {MenuFoldOutlined, MenuUnfoldOutlined} from "@ant-design/icons";
 
 type Menu = {
     items: MenuItem[]
@@ -36,6 +38,7 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
     const [header, setHeader] = useState<AntdUiElement>(emptyAntdUiElement)
     const [content, setContent] = useState<AntdUiElement>(emptyAntdUiElement)
     const [customTheme, setCustomTheme] = useState<any>({})
+    const [drawerCollapsed, setDrawerCollapsed] = useState(true)
     props.component.setMenuSetter(setMenuData)
     props.component.setHeaderSetter(setHeader)
     props.component.setThemeSetter(setCustomTheme)
@@ -48,6 +51,7 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
     if (!headerStyle.width) {
         headerStyle.width = '100%'
     }
+    const defaultPadding = 5
     const ct = customTheme;
     if(ct.algorithm){
         ct.algorithm = (ct.algorithm as string[]).map(a => (theme as any)[a])
@@ -67,6 +71,7 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
                       label: ch.name,
                       link: ch.link,
                       onClick: ()=>{
+                          setDrawerCollapsed(true)
                           api.sendPropertyChanged(props.component.id, "path", ch.link)
                       }
                   }
@@ -74,15 +79,41 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
             };
         },
     );
+    const {breakpoint} = useBreakpoint(BREAKPOINTS)
     return (<ConfigProvider theme={ct}>
         <Layout
             style={{borderRadius: token.borderRadiusLG, height: '100%'}}
         >
             <Header style={headerStyle}>
+                {breakpoint === 'mobile' && drawerCollapsed?(<div style={{padding: defaultPadding}} onClick={() => {console.log("colapsed = false");setDrawerCollapsed(false)}
+                }><MenuUnfoldOutlined/>
+                </div>): null}
                 {((header?.children || []) as AntdUiElement[]).map(ch => ch.createReactElement())}
             </Header>
             <Content style={{height: '100%'}}>
+                {breakpoint === "mobile" && !drawerCollapsed? (
+                <Drawer
+                    closeIcon={<MenuFoldOutlined/>}
+                    placement="left"
+                    closable={true}
+                    open={!drawerCollapsed}
+                    onClose={()=> setDrawerCollapsed(true)}
+                    key="menu-drawer"
+                    styles={{
+                        body: {padding: 0},
+                        header: {padding: 0},
+                    }}
+                >
+                    <Menu
+                        mode="inline"
+                        defaultSelectedKeys={['']}
+                        defaultOpenKeys={['group-0']}
+                        style={{ height: '100%', overflowY:'auto' }}
+                        items={menuItems}
+                    />
+                </Drawer>): null}
                 <Layout style={{height: '100%'}}>
+                    {breakpoint === 'desktop'? (
                     <Sider width={200}>
                         <Menu
                             mode="inline"
@@ -91,7 +122,8 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
                             style={{ height: '100%', overflowY:'auto' }}
                             items={menuItems}
                         />
-                    </Sider>
+                    </Sider>): null
+                    }
                     <Content style={{width: '100%', height: '100%'}}>{content && content.createReactElement()}</Content>
                 </Layout>
             </Content>

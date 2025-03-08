@@ -3,6 +3,8 @@ import * as webpeerCore from "../../../core/src/index.ts";
 import {UiElement} from "../../../core/src/model/model.ts";
 import {generateUUID} from "../../../core/src/utils/utils.ts";
 
+export const BREAKPOINTS = { mobile: 0, desktop: 1024 }
+
 export type AntdWebpeerExtension = webpeerCore.WebPeerExtension &{
    elementHandlersFactories: Map<string, AntdUiElementFactory>
    icons: Map<string, () => ReactElement>;

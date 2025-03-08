@@ -156,6 +156,7 @@ public abstract class BaseWebAppServlet extends HttpServlet {
                     if(requestCommands.get(0).get("cmd").getAsString().equals("init")){
                         var data = requestCommands.get(0).get("data").getAsJsonObject();
                         operationUiContext.setParameter(OperationUiContext.LOCAL_STORAGE_DATA, data.get("ls").getAsJsonObject());
+                        operationUiContext.setParameter(OperationUiContext.PARAMS, data.get("params").getAsJsonObject());
                         model.setRootElement(createRootElement(operationUiContext));
                         var command = new JsonObject();
                         command.addProperty("cmd", "init");

@@ -60,6 +60,13 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
     protected UiElement createRootElement(OperationUiContext operationUiContext) throws Exception {
         return new AntdMainFrame(GlobalUiContext.getParameter(GlobalUiContext.UI_MODEL), frame ->{
             var lang = operationUiContext.getStringLocalStorageParam("lang");
+            String initPath = "/";
+            var windowWidth = 2000;
+            var params = operationUiContext.getParameter(OperationUiContext.PARAMS);
+            if(params != null) {
+                initPath = params.get("initPath").getAsString();
+                windowWidth = params.get("windowWidth").getAsInt();
+            }
             frame.menu(menu ->{
                 for(var n =1; n<10;n++){
                     var fn = n;
@@ -71,13 +78,22 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
                 }
             });
             if("dark".equals(operationUiContext.getStringLocalStorageParam("theme"))){
-                frame.theme(Constants.DARK_THEME);
+                if(windowWidth < 500){
+                    frame.theme(Constants.DARK_MOBILE_THEME);
+                } else {
+                    frame.theme(Constants.DARK_THEME);
+                }
+
             } else {
-                frame.theme(Constants.LIGHT_THEME);
+                if(windowWidth < 500){
+                    frame.theme(Constants.LIGHT_MOBILE_THEME);
+                } else {
+                    frame.theme(Constants.LIGHT_THEME);
+                }
             }
             frame.header("padding=0;height=60px;display=flex;flexDirection=row;alignItems=center", d ->{
                 d.img("demo/logo.svg", null, "60px", null);
-                d.div("fontSize=token:fontSizeHeading2;fontWeight=token:fontWeightStrong;padding=0px", "ru".equals(lang)? "Веб аватар": "Web peer");
+                d.div("fontSize=token:fontSizeHeading2;fontWeight=token:fontWeightStrong;padding=0px;marginBottom=5px", "ru".equals(lang)? "Веб аватар": "Web peer");
                 d.hGlue();
                 d.dropdownImage(null, dd ->{
                     dd.menuItem("en", "classpath/demo/en-flag.png", "english", "20px", null, (ctx)->{
@@ -96,10 +112,12 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
                     dd.menuItem("light", AntdIcons.SUN_OUTLINED.name(), "Light", (ctx)->{
                         AntdMainFrame.lookup().setTheme(Constants.LIGHT_THEME, ctx);
                         ctx.setLocalStorageParam("theme", "light");
+                        ctx.reload();
                     });
                     dd.menuItem("dark", AntdIcons.MOON_FILLED.name(), "Dark", (ctx)->{
                         AntdMainFrame.lookup().setTheme(Constants.DARK_THEME, ctx);
                         ctx.setLocalStorageParam("theme", "dark");
+                        ctx.reload();
                     });
                     if("dark".equals(operationUiContext.getStringLocalStorageParam("theme"))){
                         dd.selectItem("dark");
@@ -108,7 +126,7 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
                     }
                 });
             });
-            frame.viewProvider(operationUiContext.getPath(), path ->{
+            frame.viewProvider(initPath, path ->{
                 var div = new AntdDiv();
                 div.setContent(String.format("Content of %s", path));
                 return div;

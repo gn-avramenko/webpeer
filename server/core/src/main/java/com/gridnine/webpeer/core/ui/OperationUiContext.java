@@ -36,6 +36,7 @@ public class OperationUiContext extends HashMap<String, Object> {
     public final static TypedParameter<HttpServletRequest> REQUEST = new TypedParameter<>("request") ;
     public final static TypedParameter<JsonArray> RESPONSE_COMMANDS = new TypedParameter<>("response-commands") ;
     public final static TypedParameter<JsonObject> LOCAL_STORAGE_DATA = new TypedParameter<>("local-storage-data") ;
+    public final static TypedParameter<JsonObject> PARAMS = new TypedParameter<>("params") ;
 
     public<T> void setParameter(TypedParameter<T> param, T value) {
         super.put(param.name, value);
@@ -119,8 +120,4 @@ public class OperationUiContext extends HashMap<String, Object> {
         getParameter(RESPONSE_COMMANDS).add(command);
     }
 
-    public String getPath() {
-        var request = getParameter(REQUEST);
-        return request.getPathInfo();
-    }
 }
