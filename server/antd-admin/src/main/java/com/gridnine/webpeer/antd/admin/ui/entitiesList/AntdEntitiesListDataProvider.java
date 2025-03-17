@@ -19,30 +19,10 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.common;
+package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
-import com.gridnine.webpeer.core.utils.WebPeerUtils;
+import java.util.List;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class AntdUtils {
-    public static Map<String, Object> parseStyle(String style) {
-        Map<String, Object> styleMap = new HashMap<String, Object>();
-        if(WebPeerUtils.isNotBlank(style)) {
-            String[] styles = style.split(";");
-            for(String styleStr : styles) {
-                String[] styleArr = styleStr.split("=");
-                if(styleArr.length == 2) {
-                    try{
-                        var num = Double.parseDouble(styleArr[1]);
-                        styleMap.put(styleArr[0], num);
-                    } catch (Exception e){
-                        styleMap.put(styleArr[0], styleArr[1]);
-                    }
-                }
-            }
-        }
-        return styleMap;
-    }
+public interface AntdEntitiesListDataProvider {
+    AntdListData getData(List<AntdEntitiesListColumnDescription> columns, int limit, AntdSorting sort, String searchText);
 }

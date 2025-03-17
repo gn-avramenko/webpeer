@@ -19,10 +19,10 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui;
+package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
-public enum AntdIcons {
-    SUN_OUTLINED,
-    MOON_FILLED
-
+public enum AntdEntitiesListColumnType {
+    TEXT,
+    NUMBER,
+    CUSTOM;
 }

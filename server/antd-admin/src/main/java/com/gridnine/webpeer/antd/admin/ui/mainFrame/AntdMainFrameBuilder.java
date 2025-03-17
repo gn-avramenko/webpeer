@@ -22,10 +22,9 @@
 package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
 import com.google.gson.JsonObject;
-import com.gridnine.webpeer.antd.admin.ui.common.AntdUtils;
-import com.gridnine.webpeer.antd.admin.ui.div.AntdDiv;
-import com.gridnine.webpeer.antd.admin.ui.div.AntdDivBuilder;
-import com.gridnine.webpeer.core.ui.GlobalUiContext;
+import com.gridnine.webpeer.antd.admin.ui.components.common.AntdUtils;
+import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
+import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDivBuilder;
 
 import java.util.function.Consumer;
 

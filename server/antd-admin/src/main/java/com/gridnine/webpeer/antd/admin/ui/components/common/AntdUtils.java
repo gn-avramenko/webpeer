@@ -19,47 +19,30 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.dropdown;
+package com.gridnine.webpeer.antd.admin.ui.components.common;
 
-import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.utils.RunnableWithException;
-import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public class IconMenuItem {
-    private String name;
-    private String icon;
-    private String id;
-    private RunnableWithExceptionAndArgument<OperationUiContext> onClick;
+import java.util.HashMap;
+import java.util.Map;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
-
-    public RunnableWithExceptionAndArgument<OperationUiContext> getOnClick() {
-        return onClick;
-    }
-
-    public void setOnClick( RunnableWithExceptionAndArgument<OperationUiContext> onClick) {
-        this.onClick = onClick;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
+public class AntdUtils {
+    public static Map<String, Object> parseStyle(String style) {
+        Map<String, Object> styleMap = new HashMap<String, Object>();
+        if(WebPeerUtils.isNotBlank(style)) {
+            String[] styles = style.split(";");
+            for(String styleStr : styles) {
+                String[] styleArr = styleStr.split("=");
+                if(styleArr.length == 2) {
+                    try{
+                        var num = Double.parseDouble(styleArr[1]);
+                        styleMap.put(styleArr[0], num);
+                    } catch (Exception e){
+                        styleMap.put(styleArr[0], styleArr[1]);
+                    }
+                }
+            }
+        }
+        return styleMap;
     }
 }

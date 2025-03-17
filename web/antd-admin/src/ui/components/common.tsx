@@ -1,7 +1,7 @@
 import React, {ReactElement} from "react";
-import * as webpeerCore from "../../../core/src/index.ts";
-import {UiElement} from "../../../core/src/model/model.ts";
-import {generateUUID} from "../../../core/src/utils/utils.ts";
+import * as webpeerCore from "../../../../core/src/index.ts";
+import {UiElement} from "../../../../core/src/model/model.ts";
+import {generateUUID} from "../../../../core/src/utils/utils.ts";
 
 export const BREAKPOINTS = { mobile: 0, desktop: 1024 }
 
@@ -45,4 +45,16 @@ export const updateStyle = (style:any, token:any)=>{
    if(!style.padding){
       style.padding = token.padding
    }
+}
+
+export function onVisible(element:any, callback:any) {
+   new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+         if(entry.intersectionRatio > 0) {
+            callback(element);
+            observer.disconnect();
+         }
+      });
+   }).observe(element);
+   if(!callback) return new Promise(r => callback=r);
 }

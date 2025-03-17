@@ -19,7 +19,7 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.dropdown;
+package com.gridnine.webpeer.antd.admin.ui.components.dropdown;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -35,16 +35,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AntdDropDownIcon extends BaseUiElement {
-    private List<IconMenuItem> menu = new ArrayList<IconMenuItem>();
+public class AntdDropDownImage extends BaseUiElement {
+    private List<ImageMenuItem> menu = new ArrayList<>();
     private String selectedItemId;
     private final long id;
+    private Map<String,Object> style = new HashMap<>();
     private UiElement parent;
 
-    private Map<String,Object> style = new HashMap<>();
-
-    public AntdDropDownIcon() {
+    public AntdDropDownImage() {
         this.id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
+    }
+
+    public void setStyle(Map<String, Object> style) {
+        this.style = style;
     }
 
     public String getSelectedItemId() {
@@ -55,20 +58,12 @@ public class AntdDropDownIcon extends BaseUiElement {
         this.selectedItemId = selectedItemId;
     }
 
-    public List<IconMenuItem> getMenu() {
+    public List<ImageMenuItem> getMenu() {
         return menu;
     }
 
-    public void setMenu(List<IconMenuItem> menu) {
+    public void setMenu(List<ImageMenuItem> menu) {
         this.menu = menu;
-    }
-
-    public void setStyle(Map<String, Object> style) {
-        this.style = style;
-    }
-
-    public Map<String, Object> getStyle() {
-        return style;
     }
 
     @Override
@@ -90,14 +85,20 @@ public class AntdDropDownIcon extends BaseUiElement {
     public JsonElement serialize() throws Exception {
         var result = new JsonObject();
         result.addProperty("id", String.valueOf(id));
-        result.addProperty("type", "dropdown-icon");
+        result.addProperty("type", "dropdown-image");
         result.addProperty("selectedItemId", selectedItemId);
         result.add("style", WebPeerUtils.serialize(style));
         var its = new JsonArray();
         menu.forEach(it ->{
             var obj = new JsonObject();
             obj.addProperty("id", it.getId());
-            obj.addProperty("icon", it.getIcon());
+            obj.addProperty("image", String.format("/_resources/%s", it.getImage()));
+            if(it.getImageWidth() != null) {
+                obj.addProperty("imageWidth", it.getImageWidth());
+            }
+            if(it.getImageHeight() != null) {
+                obj.addProperty("imageHeight", it.getImageWidth());
+            }
             obj.addProperty("name", it.getName());
             its.add(obj);
         });

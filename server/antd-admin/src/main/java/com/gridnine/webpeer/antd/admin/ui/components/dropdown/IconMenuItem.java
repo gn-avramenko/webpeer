@@ -19,17 +19,14 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.dropdown;
+package com.gridnine.webpeer.antd.admin.ui.components.dropdown;
 
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.utils.RunnableWithException;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 
-public class ImageMenuItem {
+public class IconMenuItem {
     private String name;
-    private String image;
-    private String imageWidth;
-    private String imageHeight;
+    private String icon;
     private String id;
     private RunnableWithExceptionAndArgument<OperationUiContext> onClick;
 
@@ -41,19 +38,19 @@ public class ImageMenuItem {
         this.name = name;
     }
 
-    public String getImage() {
-        return image;
+    public String getIcon() {
+        return icon;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
     public RunnableWithExceptionAndArgument<OperationUiContext> getOnClick() {
         return onClick;
     }
 
-    public void setOnClick(RunnableWithExceptionAndArgument<OperationUiContext> onClick) {
+    public void setOnClick( RunnableWithExceptionAndArgument<OperationUiContext> onClick) {
         this.onClick = onClick;
     }
 
@@ -63,22 +60,5 @@ public class ImageMenuItem {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-
-    public String getImageWidth() {
-        return imageWidth;
-    }
-
-    public void setImageWidth(String imageWidth) {
-        this.imageWidth = imageWidth;
-    }
-
-    public String getImageHeight() {
-        return imageHeight;
-    }
-
-    public void setImageHeight(String imageHeight) {
-        this.imageHeight = imageHeight;
     }
 }

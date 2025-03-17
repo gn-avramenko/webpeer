@@ -19,15 +19,14 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.div;
+package com.gridnine.webpeer.antd.admin.ui.components.div;
 
-import com.gridnine.webpeer.antd.admin.ui.common.AntdUtils;
-import com.gridnine.webpeer.antd.admin.ui.dropdown.AntdDropDownIcon;
-import com.gridnine.webpeer.antd.admin.ui.dropdown.AntdDropDownIconBuilder;
-import com.gridnine.webpeer.antd.admin.ui.dropdown.AntdDropDownImage;
-import com.gridnine.webpeer.antd.admin.ui.dropdown.AntdDropDownImageBuilder;
-import com.gridnine.webpeer.antd.admin.ui.image.AntdImage;
-import com.gridnine.webpeer.core.ui.GlobalUiContext;
+import com.gridnine.webpeer.antd.admin.ui.components.common.AntdUtils;
+import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownIcon;
+import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownIconBuilder;
+import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownImage;
+import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownImageBuilder;
+import com.gridnine.webpeer.antd.admin.ui.components.image.AntdImage;
 import com.gridnine.webpeer.core.ui.UiModel;
 
 import java.util.function.Consumer;

@@ -19,9 +19,8 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.div;
+package com.gridnine.webpeer.antd.admin.ui.components.image;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.GlobalUiContext;
@@ -29,36 +28,55 @@ import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.UiElement;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-public class AntdDiv implements UiElement {
+public class AntdImage implements UiElement {
 
     private Map<String,Object> style = new HashMap<>();
 
-    private String content;
-
     private final long id;
+
+    private String width;
+
+    private String height;
+
+    private String src;
 
     private UiElement parent;
 
-    private List<UiElement> children = new ArrayList<UiElement>();
-
-    public AntdDiv() {
+    public AntdImage() {
         this.id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setSrc(String src) {
+        this.src = src;
+    }
+
+    public void setStyle(Map<String, Object> style) {
+        this.style = style;
     }
 
     public void setStyleProperty(String property, Object value){
         style.put(property, value);
     }
 
+    public String getWidth() {
+        return width;
+    }
+
+    public void setWidth(String width) {
+        this.width = width;
+    }
+
+    public String getHeight() {
+        return height;
+    }
+
+    public void setHeight(String height) {
+        this.height = height;
+    }
 
     @Override
     public void setParent(UiElement parent) {
@@ -70,38 +88,26 @@ public class AntdDiv implements UiElement {
         return parent;
     }
 
+    @Override
     public List<UiElement> getChildren() {
-        return children;
+        return List.of();
     }
 
-    public void setChildren(List<UiElement> children) {
-        this.children = children;
-    }
-
-    public void setStyle(Map<String, Object> style) {
-        this.style = style;
-    }
     @Override
     public JsonElement serialize() throws Exception {
         var result = new JsonObject();
+        result.addProperty("type", "img");
         result.addProperty("id", String.valueOf(id));
-        result.addProperty("type", "div");
         result.add("style", WebPeerUtils.serialize(style));
-        if(WebPeerUtils.isNotBlank(content)){
-            result.addProperty("content", content);
-        } else {
-            var chs = new JsonArray();
-            result.add("children", chs);;
-            children.forEach( ch ->{
-                WebPeerUtils.wrapException(() -> chs.add(ch.serialize()));
-            });
-        }
+        result.addProperty("width", this.width);
+        result.addProperty("height", this.height);
+        result.addProperty("src", String.format("/_resources/classpath/%s", src));
         return result;
     }
 
     @Override
     public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
-        //noops
+
     }
 
     @Override

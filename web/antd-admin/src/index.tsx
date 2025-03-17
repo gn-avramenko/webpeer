@@ -1,13 +1,14 @@
 import {createRoot} from "react-dom/client";
-import {antdWebpeerExt} from "./ui/common.tsx";
-import {AntdMainFrameElementFactory} from "@/ui/root.tsx";
-import {AntdDivElementFactory} from "./ui/div.tsx";
-import {AntdImgElementFactory} from "./ui/img.tsx";
+import {antdWebpeerExt} from "./ui/components/common.tsx";
+import {AntdMainFrameElementFactory} from "@/ui/main-frame/main-frame.tsx";
+import {AntdDivElementFactory} from "./ui/components/div.tsx";
+import {AntdImgElementFactory} from "./ui/components/img.tsx";
 import {SunOutlined, MoonFilled} from '@ant-design/icons';
-import {AntdDropdownIconElementFactory} from "@/ui/dropdown-icon.tsx";
-import {AntdDropdownImageElementFactory} from "@/ui/dropdown-image.tsx";
+import {AntdDropdownIconElementFactory} from "@/ui/components/dropdown-icon.tsx";
+import {AntdDropdownImageElementFactory} from "@/ui/components/dropdown-image.tsx";
 import {uiModel} from "../../core/src/index.ts";
 import {UiElement} from "../../core/src/model/model.ts";
+import {AntdEntitiesListElementFactory} from "@/ui/entities-list/entities-list.tsx";
 
 
 antdWebpeerExt.elementHandlersFactories.set("root", new AntdMainFrameElementFactory())
@@ -15,6 +16,7 @@ antdWebpeerExt.elementHandlersFactories.set("div", new AntdDivElementFactory())
 antdWebpeerExt.elementHandlersFactories.set("img", new AntdImgElementFactory())
 antdWebpeerExt.elementHandlersFactories.set("dropdown-icon", new AntdDropdownIconElementFactory())
 antdWebpeerExt.elementHandlersFactories.set("dropdown-image", new AntdDropdownImageElementFactory())
+antdWebpeerExt.elementHandlersFactories.set("entities-list", new AntdEntitiesListElementFactory())
 antdWebpeerExt.icons.set("SUN_OUTLINED", () => <SunOutlined/>)
 antdWebpeerExt.icons.set("MOON_FILLED", () => <MoonFilled/>)
 

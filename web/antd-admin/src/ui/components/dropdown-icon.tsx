@@ -1,19 +1,16 @@
-import {AntdUiElement, AntdUiElementFactory, updateStyle} from "@/ui/common.tsx";
+import {AntdUiElement, AntdUiElementFactory, antdWebpeerExt, updateStyle} from "@/ui/components/common.tsx";
 import React, {useEffect, useState} from "react";
 import {Dropdown, MenuProps, theme} from "antd";
-import {generateUUID} from "../../../core/src/utils/utils.ts";
-import {BaseUiElement} from "../../../core/src/model/model.ts";
-import {api} from "../../../core/src/index.ts";
+import {BaseUiElement} from "../../../../core/src/model/model.ts";
+import {api} from "../../../../core/src/index.ts"
 
 type AntdMenuItem = {
     id: string,
     name: string,
-    image: string
-    imageWidth?: string
-    imageHeight?: string;
+    icon: string
 }
 
-type AntdDropdownImageInternal = {
+type AntdDropdownIconInternal = {
     id: string
     setSelectedMenuItemIdSetter: (setter: (id: string) => void) => void
     setMenuSetter: (setter: (menu: AntdMenuItem[]) => void) => void
@@ -21,7 +18,7 @@ type AntdDropdownImageInternal = {
     onAfterInitialized: () => void
 }
 
-function AntdDropdownImage(props: { component: AntdDropdownImageInternal }): React.ReactElement {
+function AntdDropdownIcon(props: { component: AntdDropdownIconInternal }): React.ReactElement {
     const [menu, setMenu] = useState<AntdMenuItem[]>([])
     const [selectedMenuItemId, setSelectedMenuItemId] = useState("")
     const [style, setStyle] = useState({})
@@ -35,29 +32,25 @@ function AntdDropdownImage(props: { component: AntdDropdownImageInternal }): Rea
     const hs = (style && {...style} || {}) as any
     updateStyle(hs, token)
     if(!hs.display){
-        hs.display = "flex"
-        hs.flexDirection = "row"
-        hs.alignItems= "center"
+        hs.display = "inline-block"
     }
-    hs.verticalAlign = "center"
     const items: MenuProps['items'] = menu.map(mi => ({
-        label: (<div style={{display: "flex", flexDirection: "row", alignItems: "center"} }><img style={{display:"inline-block"}} alt={""} key={props.component.id || generateUUID()} width={mi.imageWidth} src={mi.image}
-                                                                                                 height={mi.imageHeight}/> <div style={{display:"inline-block", padding:5}}>{mi.name}</div></div>),
+        label: (<span>{antdWebpeerExt.icons.get(mi.icon)!()} {mi.name}</span>),
         key: mi.id
     }))
     const selectedItem = menu.find(it => it.id === selectedMenuItemId)
     return (<Dropdown placement="bottomLeft" menu={{
-        items,  onClick: (item) => {
+        items,
+        onClick: (item) => {
             api.sendPropertyChanged(props.component.id, "si", item.key)
         }
     }
     }>
-        {selectedItem? (<div style={hs}><img alt={""} key={props.component.id || generateUUID()} width={selectedItem.imageWidth}
-                                   src={selectedItem.image} height={selectedItem.imageHeight}/> </div>): (<span style={hs}>Not Selected</span>)}
+        {selectedItem? (<div style={hs}>{antdWebpeerExt.icons.get(selectedItem.icon)!()}</div>) : (<span>Not selected</span>)}
     </Dropdown>)
 }
 
-class AntdDropdownImageElement extends BaseUiElement implements AntdDropdownImageInternal {
+class AntdDropdownIconElement extends BaseUiElement implements AntdDropdownIconInternal {
 
     private selectedMenuItemIdSetter?: (id: string) => void;
     private menuSetter?: (menu: AntdMenuItem[]) => void
@@ -66,22 +59,15 @@ class AntdDropdownImageElement extends BaseUiElement implements AntdDropdownImag
     private  menu: AntdMenuItem[] = []
     private selectedItemId: string = ""
     private style: any | undefined
+    parent?: AntdUiElement
 
     id = "";
-    index: number;
-
 
     constructor(model: any) {
         super()
         this.id = model.id
-        this.index = model.index
         this.selectedItemId = model.selectedItemId || ""
         this.menu = model.menu
-        this.style = model.style
-    }
-
-    setStyleSetter = (setter: (style: any) => void) => {
-        this.styleSetter = setter
     }
 
     setSelectedMenuItemIdSetter = (setter: (id: string) => void) => {
@@ -91,14 +77,17 @@ class AntdDropdownImageElement extends BaseUiElement implements AntdDropdownImag
         this.menuSetter = setter
     }
 
+    setStyleSetter = (setter: (style: any) => void) => {
+        this.styleSetter = setter
+    }
+
     children = undefined
-    parent?: AntdUiElement
+
 
     serialize = () => {
         const result = {} as any
         result.id = this.id;
-        result.index = this.index;
-        result.type = "dropdown-image";
+        result.type = "dropdown-icon";
         result.selectedItemId = this.selectedItemId;
         result.menu = this.menu
         result.style = this.style
@@ -108,7 +97,6 @@ class AntdDropdownImageElement extends BaseUiElement implements AntdDropdownImag
     onAfterInitialized() {
         this.menuSetter!(this.menu)
         this.selectedMenuItemIdSetter!(this.selectedItemId)
-        this.menuSetter!(this.menu)
         this.styleSetter!(this.style)
     }
 
@@ -120,12 +108,13 @@ class AntdDropdownImageElement extends BaseUiElement implements AntdDropdownImag
     }
 
     createReactElement(): React.ReactElement {
-        return React.createElement(AntdDropdownImage, {component: this, key: this.id})
+        return React.createElement(AntdDropdownIcon, {component: this, key: this.id})
     }
+
 }
 
-export class AntdDropdownImageElementFactory implements AntdUiElementFactory {
-    createElement(node: any): AntdDropdownImageElement {
-        return new AntdDropdownImageElement(node)
+export class AntdDropdownIconElementFactory implements AntdUiElementFactory {
+    createElement(node: any): AntdDropdownIconElement {
+        return new AntdDropdownIconElement(node)
     }
 }

@@ -97,6 +97,20 @@ export class API {
     }
 
 
+    async sendAction(elementId:string, actionId: string, actionData: any|null|undefined){
+        await this.sendCommand({
+            cmd: 'ec',
+            id: elementId,
+            data: {
+                cmd: 'ac',
+                data: {
+                    id: actionId,
+                    data:  actionData
+                }
+            }
+        })
+    }
+
     async sendCommand(payload: any, initOverrides?: RequestInit | InitOverrideFunction): Promise<any> {
         const prom = new Promise((resolve, reject) => {
             this.queue.push({

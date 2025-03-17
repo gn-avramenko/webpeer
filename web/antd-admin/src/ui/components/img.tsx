@@ -1,8 +1,8 @@
-import {AntdUiElement, AntdUiElementFactory, updateStyle} from "@/ui/common.tsx";
+import {AntdUiElement, AntdUiElementFactory, updateStyle} from "@/ui/components/common.tsx";
 import React, {useEffect, useState} from "react";
-import {generateUUID} from "../../../core/src/utils/utils.ts";
+import {generateUUID} from "../../../../core/src/utils/utils.ts";
 import {theme} from "antd";
-import { UiElement } from "node_modules/@webpeer/core/src/model/model.ts";
+import { UiElement } from "../../../../core/src/model/model.ts";
 
 type AntdImgInternal = {
     id: string

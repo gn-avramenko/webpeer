@@ -3,14 +3,14 @@ import {
     emptyAntdUiElement,
     AntdUiElement,
     AntdUiElementFactory, BREAKPOINTS
-} from "@/ui/common.tsx";
-import React, { useEffect, useState} from "react";
+} from "@/ui/components/common.tsx";
+import React, {useEffect, useState} from "react";
 import {ConfigProvider, Drawer, Layout, Menu, MenuProps, theme} from "antd";
 import {Content, Header} from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
-import { UiElement } from "node_modules/@webpeer/core/src/model/model";
-import {BaseUiElement} from "../../../core/src/model/model.ts";
-import {api} from "../../../core/src/index.ts";
+import {UiElement} from "../../../../core/src/model/model.ts";
+import {BaseUiElement} from "../../../../core/src/model/model.ts";
+import {api} from "../../../../core/src/index.ts";
 import useBreakpoint from "use-breakpoint";
 import {MenuFoldOutlined, MenuUnfoldOutlined} from "@ant-design/icons";
 
@@ -35,7 +35,7 @@ type AntdMainFrameInternal = {
 }
 
 function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.ReactElement {
-    const [menuData, setMenuData] = useState<Menu>({items:[]})
+    const [menuData, setMenuData] = useState<Menu>({items: []})
     const [header, setHeader] = useState<AntdUiElement>(emptyAntdUiElement)
     const [content, setContent] = useState<AntdUiElement>(emptyAntdUiElement)
     const [customTheme, setCustomTheme] = useState<any>({})
@@ -44,11 +44,13 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
     props.component.setHeaderSetter(setHeader)
     props.component.setThemeSetter(setCustomTheme)
     props.component.setContentSetter(setContent)
-    function handlePopEvent(){
-        if(location.pathname !== props.component.path){
+
+    function handlePopEvent() {
+        if (location.pathname !== props.component.path) {
             api.sendPropertyChanged(props.component.id, "path", location.pathname)
         }
     }
+
     useEffect(() => {
         props.component.onAfterInitialized()
         window.addEventListener('popstate', handlePopEvent)
@@ -62,9 +64,15 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
         headerStyle.width = '100%'
     }
     const defaultPadding = 5
-    const ct = customTheme;
-    if(ct.algorithm){
-        ct.algorithm = (ct.algorithm as string[]).map(a => (theme as any)[a])
+    const {breakpoint} = useBreakpoint(BREAKPOINTS)
+
+    let algorithm = []
+    if (breakpoint == 'mobile') {
+        if (customTheme.mobileAlgorithm) {
+            algorithm = (customTheme.mobileAlgorithm as string[]).map(a => (theme as any)[a])
+        }
+    } else if (customTheme.desktopAlgorithm) {
+        algorithm = (customTheme.desktopAlgorithm as string[]).map(a => (theme as any)[a])
     }
     const menuItems: MenuProps['items'] = menuData.items.map(
         (item, index) => {
@@ -74,65 +82,67 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
                 key: groupKey,
                 icon: item.icon && antdWebpeerExt.icons.get(item.icon)!(),
                 label: item.name,
-                children: (item.children || []).map((ch, idx2) =>{
-                  const elementKey = `element-${index}-${idx2}`
-                  return {
-                      key: elementKey,
-                      label: ch.name,
-                      link: ch.link,
-                      onClick: ()=>{
-                          setDrawerCollapsed(true)
-                          api.sendPropertyChanged(props.component.id, "path", ch.link)
-                      }
-                  }
+                children: (item.children || []).map((ch, idx2) => {
+                    const elementKey = `element-${index}-${idx2}`
+                    return {
+                        key: elementKey,
+                        label: ch.name,
+                        link: ch.link,
+                        onClick: () => {
+                            setDrawerCollapsed(true)
+                            api.sendPropertyChanged(props.component.id, "path", ch.link)
+                        }
+                    }
                 })
             };
         },
     );
-    const {breakpoint} = useBreakpoint(BREAKPOINTS)
-    return (<ConfigProvider theme={ct}>
+    return (<ConfigProvider theme={{...customTheme, algorithm}}>
         <Layout
             style={{borderRadius: token.borderRadiusLG, height: '100%'}}
         >
             <Header style={headerStyle}>
-                {breakpoint === 'mobile' && drawerCollapsed?(<div style={{padding: defaultPadding}} onClick={() => {console.log("colapsed = false");setDrawerCollapsed(false)}
+                {breakpoint === 'mobile' && drawerCollapsed ? (<div style={{padding: defaultPadding}} onClick={() => {
+                    console.log("colapsed = false");
+                    setDrawerCollapsed(false)
+                }
                 }><MenuUnfoldOutlined/>
-                </div>): null}
+                </div>) : null}
                 {((header?.children || []) as AntdUiElement[]).map(ch => ch.createReactElement())}
             </Header>
             <Content style={{height: '100%'}}>
-                {breakpoint === "mobile" && !drawerCollapsed? (
-                <Drawer
-                    closeIcon={<MenuFoldOutlined/>}
-                    placement="left"
-                    closable={true}
-                    open={!drawerCollapsed}
-                    onClose={()=> setDrawerCollapsed(true)}
-                    key="menu-drawer"
-                    styles={{
-                        body: {padding: 0},
-                        header: {padding: 0},
-                    }}
-                >
-                    <Menu
-                        mode="inline"
-                        defaultSelectedKeys={['']}
-                        defaultOpenKeys={['group-0']}
-                        style={{ height: '100%', overflowY:'auto' }}
-                        items={menuItems}
-                    />
-                </Drawer>): null}
-                <Layout style={{height: '100%'}}>
-                    {breakpoint === 'desktop'? (
-                    <Sider width={200}>
+                {breakpoint === "mobile" && !drawerCollapsed ? (
+                    <Drawer
+                        closeIcon={<MenuFoldOutlined/>}
+                        placement="left"
+                        closable={true}
+                        open={!drawerCollapsed}
+                        onClose={() => setDrawerCollapsed(true)}
+                        key="menu-drawer"
+                        styles={{
+                            body: {padding: 0},
+                            header: {padding: 0},
+                        }}
+                    >
                         <Menu
                             mode="inline"
                             defaultSelectedKeys={['']}
                             defaultOpenKeys={['group-0']}
-                            style={{ height: '100%', overflowY:'auto' }}
+                            style={{height: '100%', overflowY: 'auto'}}
                             items={menuItems}
                         />
-                    </Sider>): null
+                    </Drawer>) : null}
+                <Layout style={{height: '100%'}}>
+                    {breakpoint === 'desktop' ? (
+                        <Sider width={200}>
+                            <Menu
+                                mode="inline"
+                                defaultSelectedKeys={['']}
+                                defaultOpenKeys={['group-0']}
+                                style={{height: '100%', overflowY: 'auto'}}
+                                items={menuItems}
+                            />
+                        </Sider>) : null
                     }
                     <Content style={{width: '100%', height: '100%'}}>{content && content.createReactElement()}</Content>
                 </Layout>
@@ -146,8 +156,8 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
     private headerSetter?: (header: AntdUiElement) => void
     private contentSetter?: (header: AntdUiElement) => void
     private themeSetter?: (token: any) => void
-    path: string  = ""
-    private menu: Menu = {items:[]}
+    path: string = ""
+    private menu: Menu = {items: []}
     private theme: any = {}
     private headerId = "";
     private contentId = ""
@@ -159,7 +169,7 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
         this.id = model.id
         this.theme = model.theme
         this.contentId = model.contentId
-        this.path  = model.path;
+        this.path = model.path;
         this.headerId = model.headerId
         this.children = (model.children || []).map((ch: any) => {
             const elm = antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch)!
@@ -176,18 +186,18 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
     parent?: UiElement | undefined;
 
     id: string;
-    serialize= () => {
+    serialize = () => {
         const result = {} as any;
         result.menu = this.menu;
         result.id = this.id;
-        result.children = this.children.map(ch =>ch.serialize())
+        result.children = this.children.map(ch => ch.serialize())
     };
 
-    setHeaderSetter= (setter: (header: AntdUiElement) => void) => {
+    setHeaderSetter = (setter: (header: AntdUiElement) => void) => {
         this.headerSetter = setter
     };
 
-    setContentSetter= (setter: (header: AntdUiElement) => void) => {
+    setContentSetter = (setter: (header: AntdUiElement) => void) => {
         this.contentSetter = setter
     };
 
@@ -207,21 +217,21 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
     }
 
     updatePropertyValue(propertyName: string, propertyValue: any) {
-        if("theme" == propertyName){
+        if ("theme" == propertyName) {
             this.theme = propertyValue
             this.themeSetter!(this.theme)
         }
-        if("headerId" == propertyName){
+        if ("headerId" == propertyName) {
             this.headerId = propertyValue
             const header = this.children.find((it) => it.id === this.headerId);
             this.headerSetter!(header);
         }
-        if("contentId" == propertyName){
+        if ("contentId" == propertyName) {
             this.contentId = propertyValue
             const content = this.children.find((it) => it.id === this.contentId);
             this.contentSetter!(content);
         }
-        if("path" == propertyName){
+        if ("path" == propertyName) {
             this.path = propertyValue
             history.pushState(null, "", this.path)
         }

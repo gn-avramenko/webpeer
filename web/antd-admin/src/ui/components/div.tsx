@@ -1,6 +1,6 @@
-import {antdWebpeerExt, AntdUiElement, AntdUiElementFactory, updateStyle} from "@/ui/common.tsx";
+import {antdWebpeerExt, AntdUiElement, AntdUiElementFactory, updateStyle} from "@/ui/components/common.tsx";
 import React, {useEffect, useState} from "react";
-import {isBlank} from "../../../core/src/utils/utils.ts";
+import {isBlank} from "../../../../core/src/utils/utils.ts";
 import {theme} from "antd";
 
 type AntdDivInternal = {

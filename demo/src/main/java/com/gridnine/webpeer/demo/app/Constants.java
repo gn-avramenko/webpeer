@@ -26,20 +26,16 @@ import com.google.gson.JsonObject;
 
 public class Constants {
     public static final JsonObject LIGHT_THEME = new JsonObject();
-    public static final JsonObject LIGHT_MOBILE_THEME = new JsonObject();
     public static final JsonObject DARK_THEME = new JsonObject();
-    public static final JsonObject DARK_MOBILE_THEME = new JsonObject();
     static {
         {
-            var darkAlgorithm = new JsonArray();
-            darkAlgorithm.add("darkAlgorithm");
-            DARK_THEME.add("algorithm", darkAlgorithm);
-        }
-        {
-            var darkAlgorithm = new JsonArray();
-            darkAlgorithm.add("darkAlgorithm");
-            darkAlgorithm.add("compactAlgorithm");
-            DARK_MOBILE_THEME.add("algorithm", darkAlgorithm);
+            var desktopAlgorithm = new JsonArray();
+            desktopAlgorithm.add("darkAlgorithm");
+            DARK_THEME.add("desktopAlgorithm", desktopAlgorithm);
+            var mobileAlgorithm = new JsonArray();
+            mobileAlgorithm.add("darkAlgorithm");
+            mobileAlgorithm.add("compactAlgorithm");
+            DARK_THEME.add("mobileAlgorithm", mobileAlgorithm);
         }
         {
 
@@ -50,18 +46,15 @@ public class Constants {
             layout.addProperty( "siderBg", "rgb(255,255,255)");
             layout.addProperty( "lightTriggerColor", "rgb(255,255,255)");
             layout.addProperty( "triggerBg", "rgb(255,255,255)");
+            LIGHT_THEME.add("components", components);
             {
-                var lightAlgorithm = new JsonArray();
-                lightAlgorithm.add("defaultAlgorithm");
-                LIGHT_THEME.add("components", components);
-                LIGHT_THEME.add("algorithm", lightAlgorithm);
-            }
-            {
-                var lightAlgorithm = new JsonArray();
-                lightAlgorithm.add("defaultAlgorithm");
-                lightAlgorithm.add("compactAlgorithm");
-                LIGHT_MOBILE_THEME.add("components", components);
-                LIGHT_MOBILE_THEME.add("algorithm", lightAlgorithm);
+                var desktopAlgorithm = new JsonArray();
+                desktopAlgorithm.add("defaultAlgorithm");
+                LIGHT_THEME.add("desktopAlgorithm", desktopAlgorithm);
+                var mobileAlgorithm = new JsonArray();
+                mobileAlgorithm.add("defaultAlgorithm");
+                mobileAlgorithm.add("compactAlgorithm");
+                LIGHT_THEME.add("mobileAlgorithm", mobileAlgorithm);
             }
         }
     }

@@ -24,7 +24,7 @@ package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.gridnine.webpeer.antd.admin.ui.div.AntdDiv;
+import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
 import com.gridnine.webpeer.core.ui.*;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 

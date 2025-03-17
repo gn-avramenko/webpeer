@@ -34,6 +34,16 @@ public abstract class BaseUiElement implements UiElement{
             var propertyValue = data.has("pv")? data.get("pv"): null;
             updatePropertyValue(propertyName, propertyValue, operationUiContext);
         }
+        if("ac".equals(cmd)){
+            var data = command.get("data").getAsJsonObject();
+            var actionId = data.get("id").getAsString();
+            var actionData = data.has("data")? data.get("data"): null;
+            executeAction(actionId, actionData, operationUiContext);
+        }
+    }
+
+    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext){
+        throw new UnsupportedOperationException();
     }
 
     protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext){

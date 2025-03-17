@@ -194,6 +194,7 @@ public abstract class BaseWebAppServlet extends HttpServlet {
             }
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
         } catch (Throwable e){
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             throw  new ServletException(e);
         }
     }

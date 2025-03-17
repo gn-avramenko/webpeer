@@ -21,8 +21,8 @@
 
 package com.gridnine.webpeer.demo.app;
 
-import com.gridnine.webpeer.antd.admin.ui.AntdIcons;
-import com.gridnine.webpeer.antd.admin.ui.div.AntdDiv;
+import com.gridnine.webpeer.antd.admin.ui.components.AntdIcons;
+import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrame;
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
 import com.gridnine.webpeer.core.servlet.CoreWebAppModule;
@@ -61,14 +61,12 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
         return new AntdMainFrame(GlobalUiContext.getParameter(GlobalUiContext.UI_MODEL), frame ->{
             var lang = operationUiContext.getStringLocalStorageParam("lang");
             String initPath = "/";
-            var windowWidth = 2000;
             var params = operationUiContext.getParameter(OperationUiContext.PARAMS);
             if(params != null) {
                 initPath = params.get("initPath").getAsString();
-                windowWidth = params.get("windowWidth").getAsInt();
             }
             frame.menu(menu ->{
-                for(var n =1; n<10;n++){
+                for(var n =1; n<3;n++){
                     var fn = n;
                     menu.group(String.format("%s %s","ru".equals(lang)? "Группа": "Group", n), AntdIcons.SUN_OUTLINED.name(), g->{
                        for(var m =1; m<10;m++){
@@ -78,18 +76,9 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
                 }
             });
             if("dark".equals(operationUiContext.getStringLocalStorageParam("theme"))){
-                if(windowWidth < 500){
-                    frame.theme(Constants.DARK_MOBILE_THEME);
-                } else {
-                    frame.theme(Constants.DARK_THEME);
-                }
-
+                frame.theme(Constants.DARK_THEME);
             } else {
-                if(windowWidth < 500){
-                    frame.theme(Constants.LIGHT_MOBILE_THEME);
-                } else {
-                    frame.theme(Constants.LIGHT_THEME);
-                }
+                frame.theme(Constants.LIGHT_THEME);
             }
             frame.header("padding=0;height=60px;display=flex;flexDirection=row;alignItems=center", d ->{
                 d.img("demo/logo.svg", null, "60px", null);
@@ -112,12 +101,10 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
                     dd.menuItem("light", AntdIcons.SUN_OUTLINED.name(), "Light", (ctx)->{
                         AntdMainFrame.lookup().setTheme(Constants.LIGHT_THEME, ctx);
                         ctx.setLocalStorageParam("theme", "light");
-                        ctx.reload();
                     });
                     dd.menuItem("dark", AntdIcons.MOON_FILLED.name(), "Dark", (ctx)->{
                         AntdMainFrame.lookup().setTheme(Constants.DARK_THEME, ctx);
                         ctx.setLocalStorageParam("theme", "dark");
-                        ctx.reload();
                     });
                     if("dark".equals(operationUiContext.getStringLocalStorageParam("theme"))){
                         dd.selectItem("dark");
@@ -127,9 +114,7 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
                 });
             });
             frame.viewProvider(initPath, path ->{
-                var div = new AntdDiv();
-                div.setContent(String.format("Content of %s", path));
-                return div;
+                return new DemoEntitiesList(lang);
             });
         });
     }
