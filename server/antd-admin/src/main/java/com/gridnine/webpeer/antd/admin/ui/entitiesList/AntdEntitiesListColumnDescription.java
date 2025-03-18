@@ -25,8 +25,11 @@ public class AntdEntitiesListColumnDescription {
     private String id;
     private String name;
     private AntdEntitiesListColumnType type;
+
+    private AntdEntitiesListColumnAlignment alignment;
     private boolean sortable;
     private Integer width;
+    private String icon;
 
     public String getId() {
         return id;
@@ -66,5 +69,21 @@ public class AntdEntitiesListColumnDescription {
 
     public void setWidth(Integer width) {
         this.width = width;
+    }
+
+    public AntdEntitiesListColumnAlignment getAlignment() {
+        return alignment;
+    }
+
+    public void setAlignment(AntdEntitiesListColumnAlignment alignment) {
+        this.alignment = alignment;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 }

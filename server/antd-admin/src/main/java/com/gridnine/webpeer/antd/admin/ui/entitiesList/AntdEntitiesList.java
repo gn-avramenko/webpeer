@@ -81,6 +81,8 @@ public class AntdEntitiesList extends BaseUiElement implements UiElement {
                 columnJson.addProperty("id", column.getId());
                 columnJson.addProperty("name", column.getName());
                 columnJson.addProperty("type", column.getType().name());
+                columnJson.addProperty("alignment", column.getAlignment().name());
+                columnJson.addProperty("icon", column.getIcon());
                 columnJson.addProperty("sortable", column.isSortable());
                 if (column.getWidth() != null) {
                     columnJson.addProperty("width", column.getWidth());

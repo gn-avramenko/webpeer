@@ -1,11 +1,12 @@
-import {AntdUiElement, AntdUiElementFactory, onVisible} from "@/ui/components/common.tsx";
+import {AntdUiElement, AntdUiElementFactory, antdWebpeerExt, onVisible} from "@/ui/components/common.tsx";
 import React, {useEffect, useState} from "react";
 import {Input, Table, theme} from "antd";
 import {BaseUiElement} from "../../../../core/src/model/model.ts";
 import {api} from "../../../../core/src/index.ts";
 import debounce from "debounce";
 
-type ColumnType = 'TEXT' | 'NUMBER' | 'CUSTOM'
+type ColumnType = 'TEXT' | 'LINK'| 'CUSTOM'
+type ColumnAlignment = 'LEFT' | 'RIGHT'
 
 type Sorting = {
     propertyName: string,
@@ -14,9 +15,11 @@ type Sorting = {
 type ColumnDescription = {
     id: string,
     type: ColumnType,
+    alignment: ColumnAlignment,
     name: string,
     sortable: boolean,
-    width?: number
+    width?: number,
+    icon?: string,
 }
 
 type AntdEntitiesListInternal = {
@@ -40,6 +43,7 @@ function AntdEntitiesList(props: { component: AntdEntitiesListInternal }): React
     const [title, setTitle] = useState("")
     const parentRef = React.createRef() as any
     const [tableHeight, setTableHeight] = useState<number | undefined>(parentRef?.current?.clientHeight);
+    const [tableWidth, setTableWidth] = useState<number | undefined>(1000);
     const [augmented, setAugmented] = useState(false);
     const [sort, setSort] = useState<Sorting>({
         desc: false,
@@ -59,6 +63,7 @@ function AntdEntitiesList(props: { component: AntdEntitiesListInternal }): React
     useEffect(() => {
         if (!parentRef?.current) return;
         setTableHeight(parentRef.current.clientHeight-70)
+        setTableWidth(parentRef.current.clientWidth)
     }, [parentRef]);
     useEffect(() => {
        props.component.onAfterInitialized()
@@ -94,15 +99,24 @@ function AntdEntitiesList(props: { component: AntdEntitiesListInternal }): React
                             hideSelectAll: false,
                         }
                     }
+                    style={{width: tableWidth}}
                     scroll={{
                         y: data.length > 10? (tableHeight ? tableHeight : 200): undefined,
+                        x: 'max-content'
                     }}
                     columns={columns.map(c =>({
                         title: c.name,
+                        align: c.alignment == "LEFT"? "left": "right",
                         dataIndex: c.id,
                         sorter: c.sortable,
                         sortOrder:sort.propertyName == c.id? (sort.desc? 'descend': 'ascend'): undefined,
                         width: c.width,
+                        render: (value) =>{
+                            if(c.type == 'LINK'){
+                                return antdWebpeerExt.icons.get(c.icon!)!();
+                            }
+                            return value
+                        }
                     }))}
                     onScroll = {() =>{
                         const elms = document.getElementsByClassName("the-last-row");
@@ -112,6 +126,7 @@ function AntdEntitiesList(props: { component: AntdEntitiesListInternal }): React
                                 setAugmented(true)
                                 onVisible(lastRow, ()=>{
                                     if(hasMore) {
+                                        setAugmented(false)
                                         api.sendAction(props.component.id, "increaseLimit", undefined)
                                     }
                                 })

@@ -21,8 +21,7 @@
 
 package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
-public enum AntdEntitiesListColumnType {
-    TEXT,
-    LINK,
-    CUSTOM;
+public enum AntdEntitiesListColumnAlignment {
+    LEFT,
+    RIGHT;
 }

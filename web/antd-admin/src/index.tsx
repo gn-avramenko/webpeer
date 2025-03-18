@@ -3,7 +3,7 @@ import {antdWebpeerExt} from "./ui/components/common.tsx";
 import {AntdMainFrameElementFactory} from "@/ui/main-frame/main-frame.tsx";
 import {AntdDivElementFactory} from "./ui/components/div.tsx";
 import {AntdImgElementFactory} from "./ui/components/img.tsx";
-import {SunOutlined, MoonFilled} from '@ant-design/icons';
+import {SunOutlined, MoonFilled, RightOutlined} from '@ant-design/icons';
 import {AntdDropdownIconElementFactory} from "@/ui/components/dropdown-icon.tsx";
 import {AntdDropdownImageElementFactory} from "@/ui/components/dropdown-image.tsx";
 import {uiModel} from "../../core/src/index.ts";
@@ -19,6 +19,7 @@ antdWebpeerExt.elementHandlersFactories.set("dropdown-image", new AntdDropdownIm
 antdWebpeerExt.elementHandlersFactories.set("entities-list", new AntdEntitiesListElementFactory())
 antdWebpeerExt.icons.set("SUN_OUTLINED", () => <SunOutlined/>)
 antdWebpeerExt.icons.set("MOON_FILLED", () => <MoonFilled/>)
+antdWebpeerExt.icons.set("RightOutlined", () => <RightOutlined/>)
 
 antdWebpeerExt.uiHandler = {
     drawUi(model: any) {

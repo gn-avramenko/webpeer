@@ -19,10 +19,19 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.entitiesList;
+package com.gridnine.webpeer.demo.app;
 
-public enum AntdEntitiesListColumnType {
-    TEXT,
-    LINK,
-    CUSTOM;
+public enum DemoEnum {
+    ITEM1{
+        @Override
+        public String toString() {
+            return "Item 1";
+        }
+    },
+    ITEM2{
+        @Override
+        public String toString() {
+            return "Item 2";
+        }
+    }
 }

@@ -26,43 +26,71 @@ import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.entitiesList.*;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DemoEntitiesList extends AntdEntitiesList {
+    private final String lang;
+
+
     public DemoEntitiesList(String language) {
         super(b ->{
-            b.column("stringProperty", "ru".equals(language)? "Строка": "String property", AntdEntitiesListColumnType.TEXT, true, null);
-            b.column("numberProperty", "ru".equals(language)? "Число": "Number property", AntdEntitiesListColumnType.NUMBER, true, null);
+            b.column("stringProperty", "ru".equals(language)? "Строка": "String property", AntdEntitiesListColumnType.TEXT, AntdEntitiesListColumnAlignment.LEFT, true, null);
+            b.column("numberProperty", "ru".equals(language)? "Число": "Number property", AntdEntitiesListColumnType.TEXT,  AntdEntitiesListColumnAlignment.RIGHT,true, null);
+            b.column("dateProperty", "ru".equals(language)? "Дата": "Date property", AntdEntitiesListColumnType.TEXT,  AntdEntitiesListColumnAlignment.LEFT,true, null);
+            b.column("enumProperty", "ru".equals(language)? "Перечисление": "Enum property", AntdEntitiesListColumnType.TEXT,  AntdEntitiesListColumnAlignment.LEFT,true, null);
+            b.column("entityRefProperty", "ru".equals(language)? "Сущность": "Entity property", AntdEntitiesListColumnType.TEXT,  AntdEntitiesListColumnAlignment.LEFT,true, null);
+            b.linkColumn("linkProperty", "RightOutlined", 10);
             b.initSort("stringProperty", false);
             b.limitStep(50);
             b.title("ru".equals(language)? "Тестовый список": "Test entities list");
-            b.dataProvider(((columns, limit, sort, searchText) -> {
-                List<JsonObject> data = new ArrayList<JsonObject>();
-                for(int n =0; n < 1000; n++){
-                    var idx = sort.getDirection() == AntdSortDirection.ASC? n: 1000-n;
-                    var stringProperty = String.format("%s - %s", "ru".equals(language)? "Строка": "String", idx);
-                    if(WebPeerUtils.isNotBlank(searchText) && !stringProperty.toLowerCase().contains(searchText)){
-                        continue;
+            b.dataProvider( new AntdEntitiesListDataProvider(){
+
+                private List<JsonObject> testData = new ArrayList<>();
+
+                private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                {
+                    for(int n =0; n < 1000; n++){
+                        var stringProperty = String.format("%s - %s", "ru".equals(language)? "Строка": "String", n);
+                        var item = new JsonObject();
+                        item.addProperty("id", String.valueOf(n));
+                        item.addProperty("stringProperty", stringProperty);
+                        item.addProperty("numberProperty", String.valueOf(n));
+                        item.addProperty("dateProperty", LocalDate.ofInstant(Instant.ofEpochMilli(Math.round(Math.random() *Instant.now().toEpochMilli())), ZoneId.systemDefault()).format(dtf));
+                        item.addProperty("enumProperty", Math.random()> 0.5? DemoEnum.ITEM2.toString(): DemoEnum.ITEM1.toString());
+                        item.addProperty("entityRefProperty", Math.random()> 0.5? "Entity 2" : "Entity 1");
+                        testData.add(item);
                     }
-                    var item = new JsonObject();
-                    item.addProperty("id", String.valueOf(idx));
-                    item.addProperty("stringProperty", stringProperty);
-                    item.addProperty("numberProperty", idx);
-                    data.add(item);
                 }
-                var hasMore = false;
-                if(data.size() > limit){
-                    data = data.subList(0, limit);
-                    hasMore = true;
+                @Override
+                public AntdListData getData(List<AntdEntitiesListColumnDescription> columns, int limit, AntdSorting sort, String searchText) {
+                    var data = testData.stream().filter(it ->{
+                        if(WebPeerUtils.isBlank(searchText)){
+                            return true;
+                        }
+                        return it.get("stringProperty").getAsString().toLowerCase().contains(searchText.toLowerCase());
+                    }).sorted((a,b) -> {
+                        var str1 = a.get(sort.getColumn()).getAsString();
+                        var str2 = b.get(sort.getColumn()).getAsString();
+                        return sort.getDirection() == AntdSortDirection.DESC? str2.compareTo(str1) : str1.compareTo(str2);
+                    }).toList();
+                    var result = new AntdListData();
+                    var arr = new JsonArray();
+                    if(data.size() > limit) {
+                        data = data.subList(0, limit);
+                        result.setHasMore(true);
+                    }
+                    data.forEach(arr::add);
+                    result.setData(arr);
+                    return result;
                 }
-                var result = new AntdListData();
-                var arr = new JsonArray();
-                data.forEach(arr::add);
-                result.setData(arr);
-                result.setHasMore(hasMore);
-                return result;
-            }));
+            });
         });
+        lang = language;
+
     }
 }

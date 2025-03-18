@@ -31,13 +31,24 @@ public class AntdEntitiesListBuilder {
         this.element = element;
     }
 
-    public void column(String id, String name, AntdEntitiesListColumnType type, boolean sortable, Integer width) {
+    public void column(String id, String name, AntdEntitiesListColumnType type, AntdEntitiesListColumnAlignment alignment, boolean sortable, Integer width) {
         var column = new AntdEntitiesListColumnDescription();
         column.setId(id);
         column.setName(name);
         column.setType(type);
         column.setSortable(sortable);
         column.setWidth(width);
+        column.setAlignment(alignment);
+        this.element.getColumns().add(column);
+    }
+
+    public void linkColumn(String id,  String icon, Integer width) {
+        var column = new AntdEntitiesListColumnDescription();
+        column.setId(id);
+        column.setType(AntdEntitiesListColumnType.LINK);
+        column.setWidth(width);
+        column.setIcon(icon);
+        column.setAlignment(AntdEntitiesListColumnAlignment.RIGHT);
         this.element.getColumns().add(column);
     }
 
