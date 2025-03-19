@@ -42,6 +42,14 @@ public class AntdEntitiesListBuilder {
         this.element.getColumns().add(column);
     }
 
+    public void filter(String id, String name, AntdEntitiesListFilterType type) {
+        var filter = new AntdEntitiesListFilterDescription();
+        filter.setId(id);
+        filter.setTitle(name);
+        filter.setType(type);
+        this.element.getFilters().add(filter);
+    }
+
     public void linkColumn(String id,  String icon, Integer width) {
         var column = new AntdEntitiesListColumnDescription();
         column.setId(id);

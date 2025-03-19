@@ -20,6 +20,7 @@ antdWebpeerExt.elementHandlersFactories.set("entities-list", new AntdEntitiesLis
 antdWebpeerExt.icons.set("SUN_OUTLINED", () => <SunOutlined/>)
 antdWebpeerExt.icons.set("MOON_FILLED", () => <MoonFilled/>)
 antdWebpeerExt.icons.set("RightOutlined", () => <RightOutlined/>)
+antdWebpeerExt.lang = JSON.parse(window.localStorage.getItem("webpeer") || '{}').lang??"en"
 
 antdWebpeerExt.uiHandler = {
     drawUi(model: any) {

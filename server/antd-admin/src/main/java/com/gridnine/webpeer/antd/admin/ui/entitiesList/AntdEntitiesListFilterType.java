@@ -21,11 +21,6 @@
 
 package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
-import com.google.gson.JsonElement;
-
-import java.util.List;
-import java.util.Map;
-
-public interface AntdEntitiesListDataProvider {
-    AntdListData getData(List<AntdEntitiesListColumnDescription> columns, int limit, AntdSorting sort, String searchText, Map<String, JsonElement> filters);
+public enum AntdEntitiesListFilterType {
+    STRING,
 }

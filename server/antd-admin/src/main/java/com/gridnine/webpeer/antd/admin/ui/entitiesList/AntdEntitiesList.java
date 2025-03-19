@@ -27,7 +27,9 @@ import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class AntdEntitiesList extends BaseUiElement implements UiElement {
@@ -36,11 +38,13 @@ public class AntdEntitiesList extends BaseUiElement implements UiElement {
 
     private JsonArray data = new JsonArray();
 
-    private List<AntdEntitiesListColumnDescription> columns = new ArrayList<>();
+    private final List<AntdEntitiesListColumnDescription> columns = new ArrayList<>();
+
+    private final List<AntdEntitiesListFilterDescription> filters = new ArrayList<>();
+
+    private final Map<String, JsonElement> filtersValues = new HashMap<>();
 
     private String title;
-
-    private boolean hasMore;
 
     private int limitStep = 50;
 
@@ -67,7 +71,6 @@ public class AntdEntitiesList extends BaseUiElement implements UiElement {
         result.addProperty("type", "entities-list");
         result.addProperty("id", String.valueOf(id));
         result.addProperty("title", title);
-        result.addProperty("hasMore", hasMore);
         {
             JsonObject sort = new JsonObject();
             sort.addProperty("propertyName", this.sort == null ? "" : this.sort.getColumn());
@@ -90,6 +93,17 @@ public class AntdEntitiesList extends BaseUiElement implements UiElement {
                 columns.add(columnJson);
             });
             result.add("columns", columns);
+        }
+        {
+            JsonArray filters = new JsonArray();
+            this.filters.forEach(filter -> {
+                JsonObject filterJson = new JsonObject();
+                filterJson.addProperty("id", filter.getId());
+                filterJson.addProperty("title", filter.getTitle());
+                filterJson.addProperty("type", filter.getType().name());
+                filters.add(filterJson);
+            });
+            result.add("filters", filters);
         }
         result.add("data", data);
         return result;
@@ -140,11 +154,21 @@ public class AntdEntitiesList extends BaseUiElement implements UiElement {
             loadData(operationUiContext);
             return;
         }
+        if (actionId.equals("updateFiltersValues")) {
+            filtersValues.clear();
+            actionData.getAsJsonArray().forEach(item -> {
+                var filter = item.getAsJsonObject();
+                var id = filter.get("id").getAsString();
+                this.filtersValues.put(id, filter.get("value"));
+            });
+            loadData(operationUiContext);
+            return;
+        }
         super.executeAction(actionId, actionData, operationUiContext);
     }
 
     private void loadData(OperationUiContext operationUiContext) {
-        var data = dataProvider.getData(columns, limit, sort, searchText);
+        var data = dataProvider.getData(columns, limit, sort, searchText, filtersValues);
         this.data = data.getData();
         var response = new JsonObject();
         response.add("data", data.getData());
@@ -174,5 +198,9 @@ public class AntdEntitiesList extends BaseUiElement implements UiElement {
 
     public void setDataProvider(AntdEntitiesListDataProvider dataProvider) {
         this.dataProvider = dataProvider;
+    }
+
+    public List<AntdEntitiesListFilterDescription> getFilters() {
+        return filters;
     }
 }

@@ -1,9 +1,12 @@
 import {AntdUiElement, AntdUiElementFactory, antdWebpeerExt, onVisible} from "@/ui/components/common.tsx";
 import React, {useEffect, useState} from "react";
-import {Input, Table, theme} from "antd";
+import {Button, Drawer, Input, Table, theme} from "antd";
 import {BaseUiElement} from "../../../../core/src/model/model.ts";
 import {api} from "../../../../core/src/index.ts";
 import debounce from "debounce";
+import {EntitiesListFilter, FilterDescription, StandardFilter} from "@/ui/entities-list/filters.tsx";
+import {TextDataField} from "@/ui/components/text-data-component.tsx";
+import {FilterOutlined, MenuUnfoldOutlined} from "@ant-design/icons";
 
 type ColumnType = 'TEXT' | 'LINK'| 'CUSTOM'
 type ColumnAlignment = 'LEFT' | 'RIGHT'
@@ -24,20 +27,33 @@ type ColumnDescription = {
 
 type AntdEntitiesListInternal = {
     id: string,
+    applyFiltersCallback: ()=> void,
+    clearFiltersCallback: ()=> void,
     setColumnsSetter: (setter: (columns: ColumnDescription[]) => void) => void
     setDataSetter: (setter: (data:any[]) => void) => void
     setHasMoreSetter: (setter: (hasMore: boolean) => void) => void
     setTitleSetter: (setter: (title: string) => void) => void
     setSortSetter: (setter: (sorting: Sorting) => void) => void
     setLoadingSetter: (setter: (loading: boolean) => void) => void
+    setFiltersSetter: (setter: (filters: {[key:string]:EntitiesListFilter}) => void) => void
     updateSearchText: (text: string|null) => void,
     onAfterInitialized: () => void
+}
+
+const filtersFactory = (filter:FilterDescription)=>{
+    if(filter.type === 'STRING'){
+        return new StandardFilter(filter.title, new TextDataField({
+            id: filter.id
+        }))
+    }
+    throw new Error(`unsupported filter type ${filter.type}`)
 }
 
 function AntdEntitiesList(props: { component: AntdEntitiesListInternal }): React.ReactElement {
     const [columns, setColumns] = useState<ColumnDescription[]>([])
     const [data, setData] = useState<any[]>([]);
     const [searchText, setSearchText] = useState("")
+    const [filters, setFilters] = useState<{[key:string]: EntitiesListFilter}>({})
     const [loading, setLoading] = useState(false)
     const [hasMore, setHasMore] = useState(false);
     const [title, setTitle] = useState("")
@@ -45,6 +61,7 @@ function AntdEntitiesList(props: { component: AntdEntitiesListInternal }): React
     const [tableHeight, setTableHeight] = useState<number | undefined>(parentRef?.current?.clientHeight);
     const [tableWidth, setTableWidth] = useState<number | undefined>(1000);
     const [augmented, setAugmented] = useState(false);
+    const [filtersCollapsed, setFiltersCollapsed] = useState(true)
     const [sort, setSort] = useState<Sorting>({
         desc: false,
         propertyName:''
@@ -59,6 +76,7 @@ function AntdEntitiesList(props: { component: AntdEntitiesListInternal }): React
     props.component.setTitleSetter(setTitle)
     props.component.setSortSetter(setSort)
     props.component.setLoadingSetter(setLoading)
+    props.component.setFiltersSetter(setFilters)
     const {token} = theme.useToken();
     useEffect(() => {
         if (!parentRef?.current) return;
@@ -79,15 +97,47 @@ function AntdEntitiesList(props: { component: AntdEntitiesListInternal }): React
                 marginRight: token.padding
             }}>{title}</div>
              <div key = "glue" style={{flexGrow: 1}}/>
-             <div style={{padding: token.padding}}>
+             <div key="search-field" style={{padding: token.padding}}>
                  <Input value={searchText} allowClear placeholder="Поиск" onChange ={(e) =>{
                      setSearchText(e.target.value)
                      props.component.updateSearchText(e.target.value)
                  }
                  }/>
              </div>
+              <div key = "filters-icon" style={{paddingRight: token.padding}}>
+                  <FilterOutlined onClick={()=> setFiltersCollapsed(false)}/>
+              </div>
             </div>
             <div ref={parentRef as any} key='content' style={{flexGrow: 1}}>
+                <Drawer
+                    closeIcon={<MenuUnfoldOutlined/>}
+                    title={antdWebpeerExt.lang == "ru"? "Фильтры": "Filters"}
+                    placement="right"
+                    closable={true}
+                    open={!filtersCollapsed}
+                    onClose={() => setFiltersCollapsed(true)}
+                    key="filters-drawer"
+                    styles={{
+                        body: {padding: 0},
+                        header: {padding: 0},
+                    }}
+                    footer = {<div key="footer" style={{display: 'flex', flexDirection: 'row'}}>
+                        <div key="glue" style={{flexGrow: 1}}/>
+                        <div key="apply-button" style={{flexGrow: 0}}><Button onClick={() => {
+                            setFiltersCollapsed(true)
+                            props.component.applyFiltersCallback()
+                        }}>{antdWebpeerExt.lang == "en" ? "Apply" : "Применить"}</Button></div>
+                        <div key="clear-button" style={{flexGrow: 0}}><Button onClick={() => {
+                            props.component.clearFiltersCallback()
+                        }}>{antdWebpeerExt.lang == "en" ? "Clear" : "Очистить"}</Button></div>
+                    </div>}
+                >
+                    <div style={{overflowY: 'auto'}}>
+                        {Object.keys(filters).map(k => {
+                            return filters[k].createReactElement()
+                        })}
+                    </div>
+                </Drawer>
                 <Table
                     loading={loading}
                     dataSource={data}
@@ -167,6 +217,9 @@ class AntdEntitiesListElement extends BaseUiElement implements AntdEntitiesListI
     setTitleSetter = (setter: (title: string) => void) => {
         this.titleSetter = setter;
     }
+    setFiltersSetter = (setter: (filters: {[key:string]: EntitiesListFilter}) => void) => {
+        this.filtersSetter = setter;
+    }
     setSortSetter = (setter: (sorting: Sorting) => void) => {
         this.sortSetter = setter
     }
@@ -187,6 +240,8 @@ class AntdEntitiesListElement extends BaseUiElement implements AntdEntitiesListI
     private columnsSetter: (columns: ColumnDescription[]) => void = ()=>{}
 
     private dataSetter: (data:any[]) => void  = ()=>{}
+
+    private filtersSetter: (data:{[key:string]: EntitiesListFilter}) => void  = ()=>{}
 
     private hasMoreSetter: (hasMore: boolean) => void = ()=>{}
 
@@ -216,7 +271,22 @@ class AntdEntitiesListElement extends BaseUiElement implements AntdEntitiesListI
         this.title = model.title
         this.hasMore = model.hasMore
         this.sort = model.sort
+        model.filters.forEach((f:any) =>{
+            this.filters[f.id] = filtersFactory(f)
+        })
     }
+
+    applyFiltersCallback = () => {
+        api.sendAction(this.id, "updateFiltersValues", Object.keys(this.filters).map(f => ({
+            id: f,
+            value: this.filters[f].getData()
+        })))
+    };
+    clearFiltersCallback = () => {
+        Object.keys(this.filters).forEach(k => this.filters[k].setData(null))
+    };
+
+    filters:any = {};
 
     updateSearchText = debounce((text: string | null) => {
         api.sendAction(this.id, "updateSearchText", text)
@@ -229,6 +299,7 @@ class AntdEntitiesListElement extends BaseUiElement implements AntdEntitiesListI
             this.dataSetter(this.data)
             this.loadingSetter(false)
             this.hasMoreSetter(this.hasMore)
+            this.filtersSetter(this.filters)
             this.sortSetter({
                 propertyName: propertyValue.sort.propertyName,
                 desc: propertyValue.sort.desc,

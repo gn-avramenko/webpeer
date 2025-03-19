@@ -199,6 +199,7 @@ export class API {
                     item.resolve(res.response)
                 }
             } catch (e) {
+                console.log(e)
                 if (item.reject) {
                     item.reject(e)
                 }

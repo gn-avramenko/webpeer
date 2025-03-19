@@ -22,6 +22,7 @@
 package com.gridnine.webpeer.demo.app;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.entitiesList.*;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
@@ -32,6 +33,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class DemoEntitiesList extends AntdEntitiesList {
     private final String lang;
@@ -44,6 +46,7 @@ public class DemoEntitiesList extends AntdEntitiesList {
             b.column("dateProperty", "ru".equals(language)? "Дата": "Date property", AntdEntitiesListColumnType.TEXT,  AntdEntitiesListColumnAlignment.LEFT,true, null);
             b.column("enumProperty", "ru".equals(language)? "Перечисление": "Enum property", AntdEntitiesListColumnType.TEXT,  AntdEntitiesListColumnAlignment.LEFT,true, null);
             b.column("entityRefProperty", "ru".equals(language)? "Сущность": "Entity property", AntdEntitiesListColumnType.TEXT,  AntdEntitiesListColumnAlignment.LEFT,true, null);
+            b.filter("stringProperty", "ru".equals(language)? "Поиск по строке": "String search", AntdEntitiesListFilterType.STRING);
             b.linkColumn("linkProperty", "RightOutlined", 10);
             b.initSort("stringProperty", false);
             b.limitStep(50);
@@ -67,8 +70,20 @@ public class DemoEntitiesList extends AntdEntitiesList {
                     }
                 }
                 @Override
-                public AntdListData getData(List<AntdEntitiesListColumnDescription> columns, int limit, AntdSorting sort, String searchText) {
+                public AntdListData getData(List<AntdEntitiesListColumnDescription> columns, int limit, AntdSorting sort, String searchText, Map<String, JsonElement> filters) {
                     var data = testData.stream().filter(it ->{
+                        if(!filters.entrySet().stream().allMatch(f ->{
+                            if(f.getValue().isJsonNull()){
+                                return true;
+                            }
+                            if(f.getKey().equals("stringProperty")){
+                                var str = f.getValue().getAsString();
+                                return it.get("stringProperty").getAsString().toLowerCase().contains(str.toLowerCase());
+                            }
+                            return true;
+                        })){
+                            return false;
+                        }
                         if(WebPeerUtils.isBlank(searchText)){
                             return true;
                         }

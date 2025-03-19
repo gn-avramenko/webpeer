@@ -21,11 +21,32 @@
 
 package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
-import com.google.gson.JsonElement;
+public class AntdEntitiesListFilterDescription {
+    private String id;
+    private String title;
+    private AntdEntitiesListFilterType type;
 
-import java.util.List;
-import java.util.Map;
+    public String getId() {
+        return id;
+    }
 
-public interface AntdEntitiesListDataProvider {
-    AntdListData getData(List<AntdEntitiesListColumnDescription> columns, int limit, AntdSorting sort, String searchText, Map<String, JsonElement> filters);
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public AntdEntitiesListFilterType getType() {
+        return type;
+    }
+
+    public void setType(AntdEntitiesListFilterType type) {
+        this.type = type;
+    }
 }
