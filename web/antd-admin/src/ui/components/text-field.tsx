@@ -1,7 +1,6 @@
 import * as React from "react";
 import {useEffect, useState} from "react";
 import Input from "antd/lib/input/Input";
-import {AntdUiDataComponent, BaseDataFieldProperties} from "@/ui/components/common.tsx";
 import {BaseUiElement, UiElement} from "../../../../core/src/model/model.ts";
 
 interface TextFieldComponentInternal {
@@ -11,7 +10,6 @@ interface TextFieldComponentInternal {
     onAfterInitialized: () => void
 }
 
-export type TextDataFieldProperties = BaseDataFieldProperties
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function TextFieldComponent(props: { component: TextFieldComponentInternal }): React.ReactNode {
@@ -29,7 +27,7 @@ function TextFieldComponent(props: { component: TextFieldComponentInternal }): R
     }/>)
 }
 
-export class TextDataField extends BaseUiElement implements AntdUiDataComponent<String>,TextFieldComponentInternal {
+export class TextDataField extends BaseUiElement implements TextFieldComponentInternal {
     createReactElement(): React.ReactElement {
         return React.createElement(TextFieldComponent, {component:this})
     }
@@ -42,9 +40,9 @@ export class TextDataField extends BaseUiElement implements AntdUiDataComponent<
             value: this.value
         }
     };
-    constructor(properties:TextDataFieldProperties) {
+    constructor(model:any) {
         super();
-        this.id = properties.id
+        this.id = model.id
     }
 
     private readonlySetter: ((value:boolean) => void) | null = null
@@ -65,25 +63,6 @@ export class TextDataField extends BaseUiElement implements AntdUiDataComponent<
 
     valueSetCallback(value: string | null): void {
         this.valueChanged(value)
-    }
-
-    getData(): string | null {
-        return this.value;
-    }
-
-    setData(vm: string|null): void {
-        this.value = vm ?? null;
-        this.valueSetter?.(vm)
-    }
-
-    setReadonly(value:boolean) {
-        if(this.readonlySetter){
-            this.readonlySetter(value)
-        }
-    }
-
-    createElement(): React.ReactNode {
-        return React.createElement(TextFieldComponent, {component: this as any});
     }
 
     setValueSetter(setter: (value: string|null) => void): void {

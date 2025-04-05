@@ -22,15 +22,6 @@ export interface AntdUiElementFactory {
    createElement(model: any):AntdUiElement
 }
 
-export interface AntdUiDataComponent<T> extends AntdUiElement{
-   setData(value:T|null):void;
-   getData():T|null;
-   setReadonly(value:boolean):void;
-}
-
-export type BaseDataFieldProperties = {
-   id: string
-}
 export const emptyAntdUiElement:AntdUiElement = {
    executeCommand(): void {
    },
