@@ -38,4 +38,13 @@ public interface UiElement {
     }
     void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception;
     long getId();
+    default String getTag(){
+        return null;
+    }
+
+    default UiElement findChildByTag(String tag){
+        return  getChildren().stream().filter(it -> {
+            return tag.equals(it.getTag());
+        }).findFirst().orElse(null);
+    }
 }

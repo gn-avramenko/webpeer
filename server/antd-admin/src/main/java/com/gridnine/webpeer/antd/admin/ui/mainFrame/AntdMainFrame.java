@@ -36,10 +36,6 @@ public class AntdMainFrame extends BaseUiElement implements UiRootElement {
 
     private AntdMainFrameMenu menu = new AntdMainFrameMenu();
 
-    private long headerId;
-
-    private long contentId;
-
     private final long id;
 
     private final UiModel model;
@@ -84,20 +80,9 @@ public class AntdMainFrame extends BaseUiElement implements UiRootElement {
 
     private void updateCenterContent(OperationUiContext context) {
         WebPeerUtils.wrapException(() -> {
-            var existing = children.stream().filter(it -> it.getId() != this.headerId).findFirst().orElse(null);
-            if (existing != null) {
-                UiModel.removeElement(existing);
-                if (context != null) {
-                    context.sendRemoveChildCommand(existing.getId());
-                }
-            }
             var elm = this.viewProvider.createElement(this.path);
-            this.contentId = elm.getId();
-            UiModel.addElement(elm, this);
-            if (context != null) {
-                context.sendAddChildCommand(elm, this.id);
-                context.sendElementPropertyChange(this.id, "contentId", String.valueOf(this.contentId));
-            }
+            elm.setTag("content");
+            UiModel.upsertElement(elm,  this);
         });
     }
 
@@ -109,39 +94,8 @@ public class AntdMainFrame extends BaseUiElement implements UiRootElement {
     }
 
     public void setHeader(AntdDiv header, OperationUiContext context) {
-        var currentHeader = this.children.stream().filter(it -> it.getId() == headerId).findFirst().orElse(null);
-        if (currentHeader != header) {
-            if (currentHeader != null) {
-                UiModel.removeElement(currentHeader);
-                if (context != null) {
-                    context.sendRemoveChildCommand(currentHeader.getId());
-                }
-            }
-            this.headerId = header.getId();
-            UiModel.addElement(header, this);
-            if (context != null) {
-                context.sendAddChildCommand(header, id);
-                context.sendElementPropertyChange(id, "headerId", String.valueOf(headerId));
-            }
-        }
-    }
-
-    public void setContent(UiElement content, OperationUiContext context) {
-        var currentContent = this.children.stream().filter(it -> it.getId() == contentId).findFirst().orElse(null);
-        if (currentContent != content) {
-            if (currentContent != null) {
-                UiModel.removeElement(currentContent);
-                if (context != null) {
-                    context.sendRemoveChildCommand(currentContent.getId());
-                }
-            }
-            this.contentId = content.getId();
-            UiModel.addElement(content, this);
-            if (context != null) {
-                context.sendAddChildCommand(content, id);
-                context.sendElementPropertyChange(id, "contentId", String.valueOf(contentId));
-            }
-        }
+        header.setTag("header");
+        UiModel.upsertElement(header, this);
     }
 
     @Override
@@ -150,8 +104,6 @@ public class AntdMainFrame extends BaseUiElement implements UiRootElement {
         result.addProperty("type", "root");
         result.addProperty("id", String.valueOf(id));
         result.addProperty("path", path);
-        result.addProperty("headerId", String.valueOf(headerId));
-        result.addProperty("contentId", String.valueOf(contentId));
         if (this.theme != null) {
             result.add("theme", this.theme);
         }

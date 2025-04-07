@@ -1,7 +1,6 @@
-import {AntdUiElement, AntdUiElementFactory, antdWebpeerExt, updateStyle} from "@/ui/components/common.tsx";
+import {AntdUiElementFactory, antdWebpeerExt, BaseAntdUiElement, updateStyle} from "@/ui/components/common.tsx";
 import React, {useEffect, useState} from "react";
 import {Dropdown, MenuProps, theme} from "antd";
-import {BaseUiElement} from "../../../../core/src/model/model.ts";
 import {api} from "../../../../core/src/index.ts"
 
 type AntdMenuItem = {
@@ -50,7 +49,7 @@ function AntdDropdownIcon(props: { component: AntdDropdownIconInternal }): React
     </Dropdown>)
 }
 
-class AntdDropdownIconElement extends BaseUiElement implements AntdDropdownIconInternal {
+class AntdDropdownIconElement extends BaseAntdUiElement implements AntdDropdownIconInternal {
 
     private selectedMenuItemIdSetter?: (id: string) => void;
     private menuSetter?: (menu: AntdMenuItem[]) => void
@@ -59,13 +58,9 @@ class AntdDropdownIconElement extends BaseUiElement implements AntdDropdownIconI
     private  menu: AntdMenuItem[] = []
     private selectedItemId: string = ""
     private style: any | undefined
-    parent?: AntdUiElement
-
-    id = "";
 
     constructor(model: any) {
-        super()
-        this.id = model.id
+        super(model)
         this.selectedItemId = model.selectedItemId || ""
         this.menu = model.menu
     }
@@ -80,9 +75,6 @@ class AntdDropdownIconElement extends BaseUiElement implements AntdDropdownIconI
     setStyleSetter = (setter: (style: any) => void) => {
         this.styleSetter = setter
     }
-
-    children = undefined
-
 
     serialize = () => {
         const result = {} as any

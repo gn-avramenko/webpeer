@@ -6,11 +6,14 @@ export interface UiElement {
     children?: UiElement[]
     serialize: ()=> any
     executeCommand: (data:any) => void
+    tag?:string
 }
 
 export abstract class BaseUiElement implements UiElement{
     abstract id: string;
     abstract serialize: () => any;
+
+    children: UiElement[]|undefined = undefined
 
     async sendPropertyChange(propertyName: string, propertyValue: any|null){
         await api.sendCommand({

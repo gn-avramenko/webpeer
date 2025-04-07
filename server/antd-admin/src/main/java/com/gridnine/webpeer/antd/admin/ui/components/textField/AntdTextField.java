@@ -19,7 +19,7 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.image;
+package com.gridnine.webpeer.antd.admin.ui.components.textField;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -33,50 +33,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AntdImage extends BaseUiElement {
-
-    private Map<String,Object> style = new HashMap<>();
+public class AntdTextField extends BaseUiElement {
+    private String value;
 
     private final long id;
-
-    private String width;
-
-    private String height;
-
-    private String src;
-
+    private Map<String,Object> style = new HashMap<>();
     private UiElement parent;
 
-    public AntdImage() {
+    public AntdTextField() {
         this.id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
-    }
-
-    public void setSrc(String src) {
-        this.src = src;
     }
 
     public void setStyle(Map<String, Object> style) {
         this.style = style;
     }
 
-    public void setStyleProperty(String property, Object value){
-        style.put(property, value);
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    public String getWidth() {
-        return width;
-    }
-
-    public void setWidth(String width) {
-        this.width = width;
-    }
-
-    public String getHeight() {
-        return height;
-    }
-
-    public void setHeight(String height) {
-        this.height = height;
+    public String getValue() {
+        return value;
     }
 
     @Override
@@ -97,20 +74,21 @@ public class AntdImage extends BaseUiElement {
     @Override
     public JsonElement serialize() throws Exception {
         var result = (JsonObject) super.serialize();
-        result.addProperty("type", "img");
+        result.addProperty("type", "text-field");
+        result.addProperty("value", value);
         result.add("style", WebPeerUtils.serialize(style));
-        result.addProperty("width", this.width);
-        result.addProperty("height", this.height);
-        if(getTag() != null) {
-            result.addProperty("tag", getTag());
-        }
-        result.addProperty("src", String.format("/_resources/classpath/%s", src));
         return result;
     }
 
     @Override
-    public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
+    protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext) {
+        if("v".equals(propertyName)){
+            this.value = propertyValue.getAsString();
+        }
+    }
 
+    public void setValue(String value, OperationUiContext context){
+        context.sendElementPropertyChange(id, "v", value);
     }
 
     @Override

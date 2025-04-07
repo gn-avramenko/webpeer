@@ -1,8 +1,7 @@
-import {AntdUiElement, AntdUiElementFactory, updateStyle} from "@/ui/components/common.tsx";
+import {AntdUiElementFactory, BaseAntdUiElement, updateStyle} from "@/ui/components/common.tsx";
 import React, {useEffect, useState} from "react";
 import {Dropdown, MenuProps, theme} from "antd";
 import {generateUUID} from "../../../../core/src/utils/utils.ts";
-import {BaseUiElement} from "../../../../core/src/model/model.ts";
 import {api} from "../../../../core/src/index.ts";
 
 type AntdMenuItem = {
@@ -57,7 +56,7 @@ function AntdDropdownImage(props: { component: AntdDropdownImageInternal }): Rea
     </Dropdown>)
 }
 
-class AntdDropdownImageElement extends BaseUiElement implements AntdDropdownImageInternal {
+class AntdDropdownImageElement extends BaseAntdUiElement implements AntdDropdownImageInternal {
 
     private selectedMenuItemIdSetter?: (id: string) => void;
     private menuSetter?: (menu: AntdMenuItem[]) => void
@@ -67,13 +66,11 @@ class AntdDropdownImageElement extends BaseUiElement implements AntdDropdownImag
     private selectedItemId: string = ""
     private style: any | undefined
 
-    id = "";
     index: number;
 
 
     constructor(model: any) {
-        super()
-        this.id = model.id
+        super(model)
         this.index = model.index
         this.selectedItemId = model.selectedItemId || ""
         this.menu = model.menu
@@ -90,9 +87,6 @@ class AntdDropdownImageElement extends BaseUiElement implements AntdDropdownImag
     setMenuSetter =  (setter: (menu: AntdMenuItem[]) => void) => {
         this.menuSetter = setter
     }
-
-    children = undefined
-    parent?: AntdUiElement
 
     serialize = () => {
         const result = {} as any

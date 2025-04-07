@@ -83,8 +83,7 @@ public class AntdDropDownImage extends BaseUiElement {
 
     @Override
     public JsonElement serialize() throws Exception {
-        var result = new JsonObject();
-        result.addProperty("id", String.valueOf(id));
+        var result = (JsonObject) super.serialize();
         result.addProperty("type", "dropdown-image");
         result.addProperty("selectedItemId", selectedItemId);
         result.add("style", WebPeerUtils.serialize(style));

@@ -9,11 +9,13 @@ import {AntdDropdownImageElementFactory} from "@/ui/components/dropdown-image.ts
 import {uiModel} from "../../core/src/index.ts";
 import {UiElement} from "../../core/src/model/model.ts";
 import {AntdEntitiesListElementFactory} from "@/ui/entities-list/entities-list.tsx";
+import { AntdTextFieldElementFactory} from "@/ui/components/text-field.tsx";
 
 
 antdWebpeerExt.elementHandlersFactories.set("root", new AntdMainFrameElementFactory())
 antdWebpeerExt.elementHandlersFactories.set("div", new AntdDivElementFactory())
 antdWebpeerExt.elementHandlersFactories.set("img", new AntdImgElementFactory())
+antdWebpeerExt.elementHandlersFactories.set("text-field", new AntdTextFieldElementFactory())
 antdWebpeerExt.elementHandlersFactories.set("dropdown-icon", new AntdDropdownIconElementFactory())
 antdWebpeerExt.elementHandlersFactories.set("dropdown-image", new AntdDropdownImageElementFactory())
 antdWebpeerExt.elementHandlersFactories.set("entities-list", new AntdEntitiesListElementFactory())
@@ -33,4 +35,5 @@ antdWebpeerExt.uiHandler = {
         return antdWebpeerExt.elementHandlersFactories.get(model.type)!.createElement(model);
     }
 }
+
 

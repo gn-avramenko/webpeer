@@ -1,6 +1,6 @@
 import React, {ReactElement} from "react";
 import * as webpeerCore from "../../../../core/src/index.ts";
-import {UiElement} from "../../../../core/src/model/model.ts";
+import {BaseUiElement} from "../../../../core/src/model/model.ts";
 import {generateUUID} from "../../../../core/src/utils/utils.ts";
 
 export const BREAKPOINTS = { mobile: 0, desktop: 1024 }
@@ -14,22 +14,58 @@ export const antdWebpeerExt = webpeerCore.webpeerExt as AntdWebpeerExtension
 antdWebpeerExt.elementHandlersFactories = new Map()
 antdWebpeerExt.icons = new Map()
 
-export interface AntdUiElement extends UiElement{
-   createReactElement(): React.ReactElement
+export abstract class BaseAntdUiElement extends BaseUiElement{
+
+   tag?:string
+
+   parent?: BaseAntdUiElement
+
+   abstract createReactElement(): React.ReactElement
+
+   id: string;
+
+   children: BaseAntdUiElement[] = []
+
+   constructor(model:any) {
+      super();
+      this.id = model.id;
+      this.tag = model.tag;
+      (model.children || []).forEach((ch:any) =>{
+         const elm = antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch)
+         elm.parent = this
+         this.children.push(elm);
+      })
+   }
+
+   findByTag(tag: string) {
+      return this.children?.find(it => it.tag === tag) as BaseAntdUiElement | undefined
+   }
 }
 
 export interface AntdUiElementFactory {
-   createElement(model: any):AntdUiElement
+   createElement(model: any):BaseAntdUiElement
 }
 
-export const emptyAntdUiElement:AntdUiElement = {
-   executeCommand(): void {
+export const emptyAntdUiElement:BaseAntdUiElement = {
+   findByTag(): BaseAntdUiElement | undefined {
+      return undefined;
    },
    id: "0",
-   serialize(): any {
-   },
+   children: [],
    createReactElement(): React.ReactElement {
       return <div key={generateUUID()}></div>;
+   },
+   serialize: function () {
+      //noops
+   },
+
+   sendPropertyChange:  async function () {
+   },
+   executeCommand: function (): void {
+      //noops
+   },
+   updatePropertyValue: function (): void {
+      //noops
    }
 }
 

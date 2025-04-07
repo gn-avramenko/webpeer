@@ -19,10 +19,16 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.mainFrame;
+package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
-import com.gridnine.webpeer.core.ui.BaseUiElement;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.gridnine.webpeer.antd.admin.ui.components.textField.AntdTextField;
 
-public interface AntdViewProvider {
-    BaseUiElement createElement(String path) throws Exception;
+public class TextEntitiesListFilter extends AntdTextField implements EntitiesListFilter {
+
+    @Override
+    public JsonElement get() {
+        return new JsonPrimitive(getValue());
+    }
 }

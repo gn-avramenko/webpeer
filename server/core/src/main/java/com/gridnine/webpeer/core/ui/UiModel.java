@@ -42,6 +42,23 @@ public class UiModel{
         removeElement(model, element);
     }
 
+    public static void upsertElement(UiElement element, UiElement parent) {
+        if(parent.getChildren().stream().anyMatch(it ->it.getId() == element.getId())){
+            return;
+        }
+        var existing = element.getTag() != null? parent.getChildren().stream().filter(it -> element.getTag().equals(it.getTag())).findFirst().orElse(null): null;
+        if(existing != null){
+            removeElement(existing);
+        }
+        element.setParent(parent);
+        parent.getChildren().add(element);
+        UiModel model = findModel(element);
+        if(model == null){
+            return;
+        }
+        addElement(model, element);
+    }
+
     public static void addElement(UiElement element, UiElement parent) {
         if(parent == null){
             return;
@@ -100,4 +117,5 @@ public class UiModel{
     public UiElement findElement(long id) {
         return elements.get(id);
     }
+
 }

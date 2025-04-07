@@ -24,6 +24,7 @@ package com.gridnine.webpeer.antd.admin.ui.components.div;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.gridnine.webpeer.core.ui.BaseUiElement;
 import com.gridnine.webpeer.core.ui.GlobalUiContext;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.UiElement;
@@ -35,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class AntdDiv implements UiElement {
+public class AntdDiv extends BaseUiElement {
 
     private Map<String,Object> style = new HashMap<>();
 
@@ -83,8 +84,10 @@ public class AntdDiv implements UiElement {
     }
     @Override
     public JsonElement serialize() throws Exception {
-        var result = new JsonObject();
-        result.addProperty("id", String.valueOf(id));
+        var result = (JsonObject) super.serialize();
+        if(result.has("children")){
+            result.remove("children");
+        }
         result.addProperty("type", "div");
         result.add("style", WebPeerUtils.serialize(style));
         if(WebPeerUtils.isNotBlank(content)){
@@ -109,3 +112,4 @@ public class AntdDiv implements UiElement {
         return id;
     }
 }
+

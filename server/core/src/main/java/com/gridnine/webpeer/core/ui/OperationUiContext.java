@@ -24,13 +24,11 @@ package com.gridnine.webpeer.core.ui;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.gridnine.webpeer.core.utils.TypedParameter;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class OperationUiContext extends HashMap<String, Object> {
     public final static TypedParameter<HttpServletRequest> REQUEST = new TypedParameter<>("request") ;
@@ -103,16 +101,10 @@ public class OperationUiContext extends HashMap<String, Object> {
         return data.has(paramName)? data.get(paramName).getAsString(): null;
     }
 
-    public void sendRemoveChildCommand(long id) {
-        var command = new JsonObject();
-        command.addProperty("cmd", "rc");
-        command.addProperty("id", String.valueOf(id));
-        getParameter(RESPONSE_COMMANDS).add(command);
-    }
 
-    public void sendAddChildCommand(UiElement child, long parentId) {
+    public void upsertChildCommand(UiElement child, long parentId) {
         var command = new JsonObject();
-        command.addProperty("cmd", "ac");
+        command.addProperty("cmd", "uc");
         command.addProperty("id", String.valueOf(parentId));
         WebPeerUtils.wrapException(()->{
             command.add("data", child.serialize());

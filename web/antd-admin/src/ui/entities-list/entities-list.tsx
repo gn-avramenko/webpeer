@@ -1,7 +1,6 @@
-import {AntdUiElement, AntdUiElementFactory, antdWebpeerExt, onVisible} from "@/ui/components/common.tsx";
+import {AntdUiElementFactory, antdWebpeerExt, BaseAntdUiElement, onVisible} from "@/ui/components/common.tsx";
 import React, {useEffect, useState} from "react";
 import {Drawer, Table, theme} from "antd";
-import {BaseUiElement} from "../../../../core/src/model/model.ts";
 import {api} from "../../../../core/src/index.ts";
 import debounce from "debounce";
 import {FilterOutlined, MenuUnfoldOutlined} from "@ant-design/icons";
@@ -31,9 +30,9 @@ type AntdEntitiesListInternal = {
     setTitleSetter: (setter: (title: string) => void) => void
     setSortSetter: (setter: (sorting: Sorting) => void) => void
     setLoadingSetter: (setter: (loading: boolean) => void) => void
-    filters: AntdUiElement
-    searchField: AntdUiElement
-    filtersFooter: AntdUiElement
+    filters: BaseAntdUiElement
+    searchField: BaseAntdUiElement
+    filtersFooter: BaseAntdUiElement
     updateSearchText: (text: string|null) => void,
     onAfterInitialized: () => void
 }
@@ -75,24 +74,26 @@ function AntdEntitiesList(props: { component: AntdEntitiesListInternal }): React
         api.sendAction(props.component.id, "init", undefined)
     }, [])
         return <div style={{display: "flex", width: '100%', height: '100%', flexDirection: 'column'}}>
-            <div key = "header" style={{display: "flex", flexDirection: "row", alignItems:'center'}}>
-            <div key="title" style={{
-                flexGrow: 0,
-                padding: token.padding,
-                fontSize: token.fontSizeHeading2,
-                fontWeight: token.fontWeightStrong,
-                marginRight: token.padding
-            }}>{title}</div>
-             <div key = "glue" style={{flexGrow: 1}}/>
-                {props.component.searchField.createReactElement()}
-              <div key = "filters-icon" style={{paddingRight: token.padding}}>
-                  <FilterOutlined onClick={()=> setFiltersCollapsed(false)}/>
-              </div>
+            <div key="header" style={{display: "flex", flexDirection: "row", alignItems: 'center'}}>
+                <div key="title" style={{
+                    flexGrow: 0,
+                    padding: token.padding,
+                    fontSize: token.fontSizeHeading2,
+                    fontWeight: token.fontWeightStrong,
+                    marginRight: token.padding
+                }}>{title}</div>
+                <div key="glue" style={{flexGrow: 1}}/>
+                <div key="search-field" style={{padding: token.padding}}>
+                    {props.component.searchField.createReactElement()}
+                </div>
+                <div key="filters-icon" style={{paddingRight: token.padding}}>
+                    <FilterOutlined onClick={() => setFiltersCollapsed(false)}/>
+                </div>
             </div>
             <div ref={parentRef as any} key='content' style={{flexGrow: 1}}>
                 <Drawer
                     closeIcon={<MenuUnfoldOutlined/>}
-                    title={antdWebpeerExt.lang == "ru"? "Фильтры": "Filters"}
+                    title={antdWebpeerExt.lang == "ru" ? "Фильтры" : "Filters"}
                     placement="right"
                     closable={true}
                     open={!filtersCollapsed}
@@ -168,8 +169,7 @@ function AntdEntitiesList(props: { component: AntdEntitiesListInternal }): React
         </div>
 }
 
-class AntdEntitiesListElement extends BaseUiElement implements AntdEntitiesListInternal {
-    id: string;
+class AntdEntitiesListElement extends BaseAntdUiElement implements AntdEntitiesListInternal {
     serialize = () => {
         //noops
     }
@@ -228,28 +228,21 @@ class AntdEntitiesListElement extends BaseUiElement implements AntdEntitiesListI
         desc: false
     }
     constructor(model: any) {
-        super();
-        this.id = model.id
+        super(model);
         this.columns = model.columns
         this.data = model.data
         this.title = model.title
         this.hasMore = model.hasMore
         this.sort = model.sort
-        this.filtersFooter = model.filtersFooter;
-        this.searchField = model.searchField;
-        this.filters = model.filters;
-        this.children = [
-            this.filters,
-            this.searchField,
-            this.filtersFooter
-        ]
-
+        this.filters = this.findByTag("filtersContent")!
+        this.filtersFooter = this.findByTag("filtersFooter")!
+        this.searchField =this.findByTag("search")!
     }
 
-    filters: AntdUiElement;
+    filters: BaseAntdUiElement;
 
-    searchField: AntdUiElement;
-    filtersFooter: AntdUiElement;
+    searchField: BaseAntdUiElement;
+    filtersFooter: BaseAntdUiElement;
 
     updateSearchText = debounce((text: string | null) => {
         api.sendAction(this.id, "updateSearchText", text)
@@ -273,12 +266,10 @@ class AntdEntitiesListElement extends BaseUiElement implements AntdEntitiesListI
         return React.createElement(AntdEntitiesList, {component: this})
     }
 
-    children:AntdUiElement[]
-
 }
 
 export class AntdEntitiesListElementFactory implements AntdUiElementFactory {
-    createElement(node: any): AntdUiElement {
+    createElement(node: any): BaseAntdUiElement {
         return new AntdEntitiesListElement(node)
     }
 }

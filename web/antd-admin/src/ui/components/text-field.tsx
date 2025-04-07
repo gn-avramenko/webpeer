@@ -1,7 +1,7 @@
 import * as React from "react";
 import {useEffect, useState} from "react";
 import Input from "antd/lib/input/Input";
-import {BaseUiElement, UiElement} from "../../../../core/src/model/model.ts";
+import {AntdUiElementFactory, BaseAntdUiElement} from "@/ui/components/common.tsx";
 
 interface TextFieldComponentInternal {
     setValueSetter: (setter: (value: string | null) => void) => void;
@@ -27,21 +27,18 @@ function TextFieldComponent(props: { component: TextFieldComponentInternal }): R
     }/>)
 }
 
-export class TextDataField extends BaseUiElement implements TextFieldComponentInternal {
-    createReactElement(): React.ReactElement {
-        return React.createElement(TextFieldComponent, {component:this})
-    }
-    id: string;
-    parent?: UiElement | undefined;
-    children?: UiElement[] | undefined;
-    serialize = () => {
+export class AntdTextField extends BaseAntdUiElement implements TextFieldComponentInternal {
+    serialize = ()=>{
         return {
             id: this.id,
             value: this.value
         }
-    };
+    }
+    createReactElement(): React.ReactElement {
+        return React.createElement(TextFieldComponent, {component:this})
+    }
     constructor(model:any) {
-        super();
+        super(model);
         this.id = model.id
     }
 
@@ -86,4 +83,9 @@ export class TextDataField extends BaseUiElement implements TextFieldComponentIn
         super.updatePropertyValue(propertyName, propertyValue)
     }
 
+}
+export class AntdTextFieldElementFactory implements AntdUiElementFactory {
+    createElement(node: any): BaseAntdUiElement {
+        return new AntdTextField(node)
+    }
 }

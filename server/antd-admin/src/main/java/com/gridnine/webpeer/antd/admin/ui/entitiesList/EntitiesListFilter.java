@@ -19,10 +19,12 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.mainFrame;
+package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
-import com.gridnine.webpeer.core.ui.BaseUiElement;
+import com.google.gson.JsonElement;
+import com.gridnine.webpeer.core.ui.UiElement;
 
-public interface AntdViewProvider {
-    BaseUiElement createElement(String path) throws Exception;
+import java.util.function.Supplier;
+
+public interface EntitiesListFilter extends UiElement, Supplier<JsonElement> {
 }

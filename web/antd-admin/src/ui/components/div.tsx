@@ -1,4 +1,4 @@
-import {antdWebpeerExt, AntdUiElement, AntdUiElementFactory, updateStyle} from "@/ui/components/common.tsx";
+import { AntdUiElementFactory, updateStyle, BaseAntdUiElement} from "@/ui/components/common.tsx";
 import React, {useEffect, useState} from "react";
 import {isBlank} from "../../../../core/src/utils/utils.ts";
 import {theme} from "antd";
@@ -6,14 +6,14 @@ import {theme} from "antd";
 type AntdDivInternal = {
     id: string
     setContentSetter: (setter: (content: string | undefined | null) => void) => void
-    setChildrenSetter: (setter: (children: AntdUiElement[]) => void) => void
+    setChildrenSetter: (setter: (children: BaseAntdUiElement[]) => void) => void
     onAfterInitialized: () => void
     setStyleSetter: (setter: (style: any) => void) => void
 }
 
 function AntdDiv(props: { component: AntdDivInternal }): React.ReactElement {
     const [content, setContent] = useState<string | undefined | null>()
-    const [children, setChildren] = useState<AntdUiElement[]>([])
+    const [children, setChildren] = useState<BaseAntdUiElement[]>([])
     const [style, setStyle] = useState({} as any)
     const { token } = theme.useToken()
     const padding = token.padding;
@@ -36,24 +36,17 @@ function AntdDiv(props: { component: AntdDivInternal }): React.ReactElement {
     return <div key={props.component.id} style={hs} dangerouslySetInnerHTML={{__html: content!!}}/>
 }
 
-class AntdDivElement implements AntdUiElement, AntdDivInternal {
-    id = ""
+class AntdDivElement extends BaseAntdUiElement implements AntdDivInternal {
     private contentSetter?: (content: string | undefined | null) => void
-    private childrenSetter?: (children: AntdUiElement[]) => void
+    private childrenSetter?: (children: BaseAntdUiElement[]) => void
     private styleSetter?: (style: any) => void
     private style: any = {}
     private content: string|undefined
-    children: AntdUiElement[] = []
-    parent?: AntdUiElement
     constructor(model: any) {
+        super(model)
         this.id = model.id;
         this.style = model.style || {};
         this.content = model.content;
-        (model.children || []).forEach((ch:any) =>{
-            const elm = antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch)
-            elm.parent = this
-            this.children.push(elm)
-        })
     }
 
     executeCommand = () => {
@@ -75,7 +68,7 @@ class AntdDivElement implements AntdUiElement, AntdDivInternal {
         this.contentSetter = setter
     }
 
-    setChildrenSetter = (setter: (children: AntdUiElement[]) => void) => {
+    setChildrenSetter = (setter: (children: BaseAntdUiElement[]) => void) => {
         this.childrenSetter = setter
     }
     setStyleSetter = (setter: (style: any) => void) => {
@@ -85,8 +78,7 @@ class AntdDivElement implements AntdUiElement, AntdDivInternal {
     onAfterInitialized() {
         this.styleSetter!(this.style)
         this.contentSetter!(this.content)
-        const children: AntdUiElement[] = []
-        this.childrenSetter!(children)
+        this.childrenSetter!(this.children)
     }
 
     createReactElement(): React.ReactElement {
@@ -96,7 +88,7 @@ class AntdDivElement implements AntdUiElement, AntdDivInternal {
 }
 
 export class AntdDivElementFactory implements AntdUiElementFactory {
-    createElement(node: any): AntdUiElement {
+    createElement(node: any): BaseAntdUiElement {
         return new AntdDivElement(node)
     }
 }

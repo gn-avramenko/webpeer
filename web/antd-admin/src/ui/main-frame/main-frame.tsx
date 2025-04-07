@@ -1,15 +1,11 @@
 import {
-    antdWebpeerExt,
-    emptyAntdUiElement,
-    AntdUiElement,
-    AntdUiElementFactory, BREAKPOINTS
+    AntdUiElementFactory,
+    antdWebpeerExt, BaseAntdUiElement, BREAKPOINTS, emptyAntdUiElement,
 } from "@/ui/components/common.tsx";
 import React, {useEffect, useState} from "react";
 import {ConfigProvider, Drawer, Layout, Menu, MenuProps, theme} from "antd";
 import {Content, Header} from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
-import {UiElement} from "../../../../core/src/model/model.ts";
-import {BaseUiElement} from "../../../../core/src/model/model.ts";
 import {api} from "../../../../core/src/index.ts";
 import useBreakpoint from "use-breakpoint";
 import {MenuFoldOutlined, MenuUnfoldOutlined} from "@ant-design/icons";
@@ -29,15 +25,15 @@ type AntdMainFrameInternal = {
     path?: string,
     setThemeSetter: (setter: (theme: any) => void) => void
     setMenuSetter: (setter: (menu: Menu) => void) => void
-    setContentSetter: (setter: (header: AntdUiElement) => void) => void
-    setHeaderSetter: (setter: (header: AntdUiElement) => void) => void
+    setContentSetter: (setter: (header: BaseAntdUiElement) => void) => void
+    setHeaderSetter: (setter: (header: BaseAntdUiElement) => void) => void
     onAfterInitialized: () => void
 }
 
 function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.ReactElement {
     const [menuData, setMenuData] = useState<Menu>({items: []})
-    const [header, setHeader] = useState<AntdUiElement>(emptyAntdUiElement)
-    const [content, setContent] = useState<AntdUiElement>(emptyAntdUiElement)
+    const [header, setHeader] = useState<BaseAntdUiElement>(emptyAntdUiElement)
+    const [content, setContent] = useState<BaseAntdUiElement>(emptyAntdUiElement)
     const [customTheme, setCustomTheme] = useState<any>({})
     const [drawerCollapsed, setDrawerCollapsed] = useState(true)
     props.component.setMenuSetter(setMenuData)
@@ -108,7 +104,7 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
                 }
                 }><MenuUnfoldOutlined/>
                 </div>) : null}
-                {((header?.children || []) as AntdUiElement[]).map(ch => ch.createReactElement())}
+                {((header?.children || []) as BaseAntdUiElement[]).map(ch => ch.createReactElement())}
             </Header>
             <Content style={{height: '100%'}}>
                 {breakpoint === "mobile" && !drawerCollapsed ? (
@@ -151,26 +147,21 @@ function AntdMainFrame(props: { component: AntdMainFrameInternal }): React.React
     </ConfigProvider>)
 }
 
-class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInternal {
+class AntdMainFrameElement extends BaseAntdUiElement implements AntdMainFrameInternal {
     private menuSetter?: (menu: Menu) => void
-    private headerSetter?: (header: AntdUiElement) => void
-    private contentSetter?: (header: AntdUiElement) => void
+    private headerSetter?: (header: BaseAntdUiElement) => void
+    private contentSetter?: (header: BaseAntdUiElement) => void
     private themeSetter?: (token: any) => void
     path: string = ""
     private menu: Menu = {items: []}
     private theme: any = {}
-    private headerId = "";
-    private contentId = ""
     children: any[] = []
 
     constructor(model: any) {
-        super();
+        super(model);
         this.menu = model.menu
-        this.id = model.id
         this.theme = model.theme
-        this.contentId = model.contentId
         this.path = model.path;
-        this.headerId = model.headerId
         this.children = (model.children || []).map((ch: any) => {
             const elm = antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch)!
             elm.parent = this
@@ -183,9 +174,6 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
         this.themeSetter = setter
     }
 
-    parent?: UiElement | undefined;
-
-    id: string;
     serialize = () => {
         const result = {} as any;
         result.menu = this.menu;
@@ -193,11 +181,11 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
         result.children = this.children.map(ch => ch.serialize())
     };
 
-    setHeaderSetter = (setter: (header: AntdUiElement) => void) => {
+    setHeaderSetter = (setter: (header: BaseAntdUiElement) => void) => {
         this.headerSetter = setter
     };
 
-    setContentSetter = (setter: (header: AntdUiElement) => void) => {
+    setContentSetter = (setter: (header: BaseAntdUiElement) => void) => {
         this.contentSetter = setter
     };
 
@@ -207,8 +195,8 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
 
     onAfterInitialized() {
         this.menuSetter!(this.menu)
-        const header = this.children.find((it) => it.id === this.headerId);
-        const content = this.children.find((it) => it.id === this.contentId);
+        const header = this.findByTag("header")!;
+        const content = this.findByTag("content")!;
         this.headerSetter!(header);
         this.contentSetter!(content)
         this.themeSetter!(this.theme)
@@ -220,16 +208,6 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
         if ("theme" == propertyName) {
             this.theme = propertyValue
             this.themeSetter!(this.theme)
-        }
-        if ("headerId" == propertyName) {
-            this.headerId = propertyValue
-            const header = this.children.find((it) => it.id === this.headerId);
-            this.headerSetter!(header);
-        }
-        if ("contentId" == propertyName) {
-            this.contentId = propertyValue
-            const content = this.children.find((it) => it.id === this.contentId);
-            this.contentSetter!(content);
         }
         if ("path" == propertyName) {
             this.path = propertyValue
@@ -244,7 +222,7 @@ class AntdMainFrameElement extends BaseUiElement implements AntdMainFrameInterna
 }
 
 export class AntdMainFrameElementFactory implements AntdUiElementFactory {
-    createElement(node: any): AntdUiElement {
+    createElement(node: any): BaseAntdUiElement {
         return new AntdMainFrameElement(node)
     }
 }

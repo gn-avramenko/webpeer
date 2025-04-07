@@ -21,32 +21,62 @@
 
 package com.gridnine.webpeer.core.ui;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public abstract class BaseUiElement implements UiElement{
+public abstract class BaseUiElement implements UiElement {
+    private String tag;
+
     @Override
     public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
         var cmd = command.get("cmd").getAsString();
-        if("pc".equals(cmd)){
+        if ("pc".equals(cmd)) {
             var data = command.get("data").getAsJsonObject();
             var propertyName = data.get("pn").getAsString();
-            var propertyValue = data.has("pv")? data.get("pv"): null;
+            var propertyValue = data.has("pv") ? data.get("pv") : null;
             updatePropertyValue(propertyName, propertyValue, operationUiContext);
         }
-        if("ac".equals(cmd)){
+        if ("ac".equals(cmd)) {
             var data = command.get("data").getAsJsonObject();
             var actionId = data.get("id").getAsString();
-            var actionData = data.has("data")? data.get("data"): null;
+            var actionData = data.has("data") ? data.get("data") : null;
             executeAction(actionId, actionData, operationUiContext);
         }
     }
 
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext){
+    @Override
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
         throw new UnsupportedOperationException();
     }
 
-    protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext){
+    protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public JsonElement serialize() throws Exception {
+        var result = new JsonObject();
+        result.addProperty("id", String.valueOf(getId()));
+        if (getTag() != null) {
+            result.addProperty("tag", getTag());
+        }
+        if (!getChildren().isEmpty()) {
+            var chs = new JsonArray();
+            result.add("children", chs);
+            getChildren().forEach(ch -> {
+                WebPeerUtils.wrapException(() -> chs.add(ch.serialize()));
+            });
+        }
+        return result;
     }
 }

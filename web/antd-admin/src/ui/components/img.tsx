@@ -1,8 +1,7 @@
-import {AntdUiElement, AntdUiElementFactory, updateStyle} from "@/ui/components/common.tsx";
+import { AntdUiElementFactory, BaseAntdUiElement, updateStyle} from "@/ui/components/common.tsx";
 import React, {useEffect, useState} from "react";
 import {generateUUID} from "../../../../core/src/utils/utils.ts";
 import {theme} from "antd";
-import { UiElement } from "../../../../core/src/model/model.ts";
 
 type AntdImgInternal = {
     id: string
@@ -32,14 +31,13 @@ function AntdImg(props: { component: AntdImgInternal }): React.ReactElement {
                 height={height}/>
 }
 
-class ImgAntdElement implements AntdUiElement, AntdImgInternal {
+class ImgAntdElement extends BaseAntdUiElement implements AntdImgInternal {
 
     private srcSetter?: (src: string) => void
     private widthSetter?: (width: string | undefined) => void
     private heightSetter?: (height: string | undefined) => void
     private styleSetter?: (setter: (style: any) => void) => void
 
-    id = ""
     private src: string = ""
     private width: string | undefined
     private height: string | undefined
@@ -59,19 +57,16 @@ class ImgAntdElement implements AntdUiElement, AntdImgInternal {
     }
 
     constructor(model: any) {
-        this.id = model.id
+        super(model)
         this.src = model.src
         this.width = model.width
         this.height = model.height
         this.style = model.style
     }
 
-    children?: UiElement[] | undefined;
     executeCommand= () => {
         //noops
     }
-
-    parent?: AntdUiElement
 
     serialize = () => {
         const result = {} as any
@@ -97,7 +92,7 @@ class ImgAntdElement implements AntdUiElement, AntdImgInternal {
 }
 
 export class AntdImgElementFactory implements AntdUiElementFactory {
-    createElement(node: any): AntdUiElement {
+    createElement(node: any): BaseAntdUiElement {
         return new ImgAntdElement(node)
     }
 }
