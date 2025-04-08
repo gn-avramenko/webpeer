@@ -25,7 +25,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.BaseUiElement;
-import com.gridnine.webpeer.core.ui.GlobalUiContext;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.UiElement;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
@@ -42,41 +41,12 @@ public class AntdDiv extends BaseUiElement {
 
     private String content;
 
-    private final long id;
-
-    private UiElement parent;
-
-    private List<UiElement> children = new ArrayList<UiElement>();
-
-    public AntdDiv() {
-        this.id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
-    }
-
     public void setContent(String content) {
         this.content = content;
     }
 
     public void setStyleProperty(String property, Object value){
         style.put(property, value);
-    }
-
-
-    @Override
-    public void setParent(UiElement parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public UiElement getParent() {
-        return parent;
-    }
-
-    public List<UiElement> getChildren() {
-        return children;
-    }
-
-    public void setChildren(List<UiElement> children) {
-        this.children = children;
     }
 
     public void setStyle(Map<String, Object> style) {
@@ -95,7 +65,7 @@ public class AntdDiv extends BaseUiElement {
         } else {
             var chs = new JsonArray();
             result.add("children", chs);;
-            children.forEach( ch ->{
+            getChildren().forEach( ch ->{
                 WebPeerUtils.wrapException(() -> chs.add(ch.serialize()));
             });
         }
@@ -105,11 +75,6 @@ public class AntdDiv extends BaseUiElement {
     @Override
     public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
         //noops
-    }
-
-    @Override
-    public long getId() {
-        return id;
     }
 }
 

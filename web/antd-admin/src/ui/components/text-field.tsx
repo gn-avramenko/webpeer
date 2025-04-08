@@ -2,25 +2,30 @@ import * as React from "react";
 import {useEffect, useState} from "react";
 import Input from "antd/lib/input/Input";
 import {AntdUiElementFactory, BaseAntdUiElement} from "@/ui/components/common.tsx";
+import debounce from "debounce";
 
 interface TextFieldComponentInternal {
     setValueSetter: (setter: (value: string | null) => void) => void;
     setReadonlySetter: (setter: (value: boolean) => void) => void;
     valueSetCallback: (value: string | null) => void
     onAfterInitialized: () => void
+    id: string
 }
 
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function TextFieldComponent(props: { component: TextFieldComponentInternal }): React.ReactNode {
-    const [value, setValue] = useState<string | null>(null)
-    const [readonly, setReadonly] = useState<boolean>(false)
-    props.component.setValueSetter(setValue as any)
+    const [value, setValue] = useState<string | null>(null);
+    const [readonly, setReadonly] = useState<boolean>(false);
+    // if(!(setValue as any).forId){
+    //     (setValue as any).forId = props.component.id;
+    // }
+    props.component.setValueSetter(setValue)
     props.component.setReadonlySetter(setReadonly)
     useEffect(() => {
         props.component.onAfterInitialized()
     }, [props.component])
-    return (<Input autoFocus disabled={readonly} value={value ?? ""} allowClear onChange={(e) => {
+    return (<Input key={props.component.id} autoFocus disabled={readonly} value={value ?? ""} allowClear onChange={(e) => {
         setValue(e.target.value)
         props.component.valueSetCallback(e.target.value)
     }
@@ -35,12 +40,22 @@ export class AntdTextField extends BaseAntdUiElement implements TextFieldCompone
         }
     }
     createReactElement(): React.ReactElement {
-        return React.createElement(TextFieldComponent, {component:this})
+        return React.createElement(TextFieldComponent, {component:this, key: this.id})
     }
+
+    private debounceTime:number = 0;
+
     constructor(model:any) {
         super(model);
-        this.id = model.id
+        this.deferred = model.deferred??false;
+        this.debounceTime = model.debounceTime??0;
+        const valueChanged = (value: string|null) =>{
+            super.sendPropertyChange("value",value, this.deferred)
+        }
+        this.reportValueChanged = this.debounceTime > 0? debounce(valueChanged, this.debounceTime): valueChanged
     }
+
+    private reportValueChanged: (value: string|null) => void;
 
     private readonlySetter: ((value:boolean) => void) | null = null
 
@@ -50,16 +65,16 @@ export class AntdTextField extends BaseAntdUiElement implements TextFieldCompone
 
     private valueSetter: ((value: string|null) => void) | null = null
 
-    private valueChanged: (value: string | null) => void = (value: string | null) => {
-        this.value = value
-    };
+    private deferred:boolean = false;
+
 
     setReadonlySetter(setter: (value: boolean) => void): void {
         this.readonlySetter = setter
     }
 
     valueSetCallback(value: string | null): void {
-        this.valueChanged(value)
+        this.value = value
+        this.reportValueChanged(value)
     }
 
     setValueSetter(setter: (value: string|null) => void): void {
@@ -77,7 +92,7 @@ export class AntdTextField extends BaseAntdUiElement implements TextFieldCompone
     updatePropertyValue(propertyName: string, propertyValue: any) {
         if(propertyName == "value"){
             this.value = propertyValue
-            this.setValueSetter!(propertyValue)
+            this.valueSetter!(propertyValue)
             return;
         }
         super.updatePropertyValue(propertyName, propertyValue)

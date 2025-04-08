@@ -38,13 +38,7 @@ import java.util.Map;
 public class AntdDropDownImage extends BaseUiElement {
     private List<ImageMenuItem> menu = new ArrayList<>();
     private String selectedItemId;
-    private final long id;
     private Map<String,Object> style = new HashMap<>();
-    private UiElement parent;
-
-    public AntdDropDownImage() {
-        this.id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
-    }
 
     public void setStyle(Map<String, Object> style) {
         this.style = style;
@@ -64,16 +58,6 @@ public class AntdDropDownImage extends BaseUiElement {
 
     public void setMenu(List<ImageMenuItem> menu) {
         this.menu = menu;
-    }
-
-    @Override
-    public void setParent(UiElement parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public UiElement getParent() {
-        return parent;
     }
 
     @Override
@@ -114,15 +98,10 @@ public class AntdDropDownImage extends BaseUiElement {
                     WebPeerUtils.wrapException(()->{
                         it.getOnClick().run(operationUiContext);
                         selectedItemId = itemId;
-                        operationUiContext.sendElementPropertyChange(id, "si", itemId);
+                        operationUiContext.sendElementPropertyChange(getId(), "si", itemId);
                     });
                 });
             }
         }
-    }
-
-    @Override
-    public long getId() {
-        return id;
     }
 }

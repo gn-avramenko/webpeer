@@ -60,6 +60,7 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
     protected UiElement createRootElement(OperationUiContext operationUiContext) throws Exception {
         return new AntdMainFrame(GlobalUiContext.getParameter(GlobalUiContext.UI_MODEL), frame ->{
             var lang = operationUiContext.getStringLocalStorageParam("lang");
+            var dataSource = new DemoDataSource(lang);
             String initPath = "/";
             var params = operationUiContext.getParameter(OperationUiContext.PARAMS);
             if(params != null) {
@@ -114,7 +115,7 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
                 });
             });
             frame.viewProvider(initPath, path ->{
-                return new DemoEntitiesList(lang);
+                return new DemoEntitiesList(lang, dataSource);
             });
         });
     }

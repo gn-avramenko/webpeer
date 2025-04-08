@@ -22,9 +22,11 @@
 package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
 import com.google.gson.JsonElement;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.UiElement;
 
 import java.util.function.Supplier;
 
 public interface EntitiesListFilter extends UiElement, Supplier<JsonElement> {
+    void clear(OperationUiContext context);
 }

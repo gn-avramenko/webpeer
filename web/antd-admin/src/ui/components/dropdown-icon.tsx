@@ -29,7 +29,7 @@ function AntdDropdownIcon(props: { component: AntdDropdownIconInternal }): React
     }, []);
     const { token } = theme.useToken()
     const hs = (style && {...style} || {}) as any
-    updateStyle(hs, token)
+    updateStyle(hs, token, true)
     if(!hs.display){
         hs.display = "inline-block"
     }

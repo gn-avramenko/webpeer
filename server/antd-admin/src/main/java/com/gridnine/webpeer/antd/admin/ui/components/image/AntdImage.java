@@ -37,19 +37,11 @@ public class AntdImage extends BaseUiElement {
 
     private Map<String,Object> style = new HashMap<>();
 
-    private final long id;
-
     private String width;
 
     private String height;
 
     private String src;
-
-    private UiElement parent;
-
-    public AntdImage() {
-        this.id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
-    }
 
     public void setSrc(String src) {
         this.src = src;
@@ -80,21 +72,6 @@ public class AntdImage extends BaseUiElement {
     }
 
     @Override
-    public void setParent(UiElement parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public UiElement getParent() {
-        return parent;
-    }
-
-    @Override
-    public List<UiElement> getChildren() {
-        return List.of();
-    }
-
-    @Override
     public JsonElement serialize() throws Exception {
         var result = (JsonObject) super.serialize();
         result.addProperty("type", "img");
@@ -111,10 +88,5 @@ public class AntdImage extends BaseUiElement {
     @Override
     public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
 
-    }
-
-    @Override
-    public long getId() {
-        return id;
     }
 }

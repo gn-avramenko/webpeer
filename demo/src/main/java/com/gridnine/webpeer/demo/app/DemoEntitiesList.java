@@ -21,26 +21,16 @@
 
 package com.gridnine.webpeer.demo.app;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.gridnine.webpeer.antd.admin.ui.entitiesList.*;
-import com.gridnine.webpeer.core.utils.WebPeerUtils;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import com.gridnine.webpeer.antd.admin.ui.entitiesList.AntdEntitiesList;
+import com.gridnine.webpeer.antd.admin.ui.entitiesList.AntdEntitiesListColumnAlignment;
+import com.gridnine.webpeer.antd.admin.ui.entitiesList.AntdEntitiesListColumnType;
+import com.gridnine.webpeer.antd.admin.ui.entitiesList.AntdEntitiesListFilterType;
 
 public class DemoEntitiesList extends AntdEntitiesList {
-    private final String lang;
 
-
-    public DemoEntitiesList(String language) {
+    public DemoEntitiesList(String language, DemoDataSource dataSource) {
         super(b ->{
+            b.language(language);
             b.column("stringProperty", "ru".equals(language)? "Строка": "String property", AntdEntitiesListColumnType.TEXT, AntdEntitiesListColumnAlignment.LEFT, true, null);
             b.column("numberProperty", "ru".equals(language)? "Число": "Number property", AntdEntitiesListColumnType.TEXT,  AntdEntitiesListColumnAlignment.RIGHT,true, null);
             b.column("dateProperty", "ru".equals(language)? "Дата": "Date property", AntdEntitiesListColumnType.TEXT,  AntdEntitiesListColumnAlignment.LEFT,true, null);
@@ -51,61 +41,7 @@ public class DemoEntitiesList extends AntdEntitiesList {
             b.initSort("stringProperty", false);
             b.limitStep(50);
             b.title("ru".equals(language)? "Тестовый список": "Test entities list");
-            b.dataProvider( new AntdEntitiesListDataProvider(){
-
-                private List<JsonObject> testData = new ArrayList<>();
-
-                private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                {
-                    for(int n =0; n < 1000; n++){
-                        var stringProperty = String.format("%s - %s", "ru".equals(language)? "Строка": "String", n);
-                        var item = new JsonObject();
-                        item.addProperty("id", String.valueOf(n));
-                        item.addProperty("stringProperty", stringProperty);
-                        item.addProperty("numberProperty", String.valueOf(n));
-                        item.addProperty("dateProperty", LocalDate.ofInstant(Instant.ofEpochMilli(Math.round(Math.random() *Instant.now().toEpochMilli())), ZoneId.systemDefault()).format(dtf));
-                        item.addProperty("enumProperty", Math.random()> 0.5? DemoEnum.ITEM2.toString(): DemoEnum.ITEM1.toString());
-                        item.addProperty("entityRefProperty", Math.random()> 0.5? "Entity 2" : "Entity 1");
-                        testData.add(item);
-                    }
-                }
-                @Override
-                public AntdListData getData(List<AntdEntitiesListColumnDescription> columns, int limit, AntdSorting sort, String searchText, Map<String, JsonElement> filters) {
-                    var data = testData.stream().filter(it ->{
-                        if(!filters.entrySet().stream().allMatch(f ->{
-                            if(f.getValue().isJsonNull()){
-                                return true;
-                            }
-                            if(f.getKey().equals("stringProperty")){
-                                var str = f.getValue().getAsString();
-                                return it.get("stringProperty").getAsString().toLowerCase().contains(str.toLowerCase());
-                            }
-                            return true;
-                        })){
-                            return false;
-                        }
-                        if(WebPeerUtils.isBlank(searchText)){
-                            return true;
-                        }
-                        return it.get("stringProperty").getAsString().toLowerCase().contains(searchText.toLowerCase());
-                    }).sorted((a,b) -> {
-                        var str1 = a.get(sort.getColumn()).getAsString();
-                        var str2 = b.get(sort.getColumn()).getAsString();
-                        return sort.getDirection() == AntdSortDirection.DESC? str2.compareTo(str1) : str1.compareTo(str2);
-                    }).toList();
-                    var result = new AntdListData();
-                    var arr = new JsonArray();
-                    if(data.size() > limit) {
-                        data = data.subList(0, limit);
-                        result.setHasMore(true);
-                    }
-                    data.forEach(arr::add);
-                    result.setData(arr);
-                    return result;
-                }
-            });
+            b.dataProvider(dataSource);
         });
-        lang = language;
-
     }
 }

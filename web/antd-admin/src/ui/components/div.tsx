@@ -21,7 +21,7 @@ function AntdDiv(props: { component: AntdDivInternal }): React.ReactElement {
     if(!hs.padding){
         hs.padding = padding
     }
-    updateStyle(hs, token)
+    updateStyle(hs, token, true)
     props.component.setContentSetter(setContent)
     props.component.setChildrenSetter(setChildren)
     props.component.setStyleSetter(setStyle)

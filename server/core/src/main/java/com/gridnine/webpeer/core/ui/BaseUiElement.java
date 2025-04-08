@@ -26,8 +26,39 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class BaseUiElement implements UiElement {
+
     private String tag;
+
+    private String key;
+
+    private final long id;
+
+    private BaseUiElement parent;
+
+    private List<UiElement> children = new ArrayList<UiElement>();
+
+    public BaseUiElement() {
+        this.id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
+    }
+
+    @Override
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public void setParent(UiElement parent) {
+        this.parent = (BaseUiElement)parent;
+    }
+
+    @Override
+    public UiElement getParent() {
+        return parent;
+    }
 
     @Override
     public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
@@ -78,5 +109,14 @@ public abstract class BaseUiElement implements UiElement {
             });
         }
         return result;
+    }
+
+    @Override
+    public List<UiElement> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<UiElement> children) {
+        this.children = children;
     }
 }

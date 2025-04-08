@@ -32,7 +32,7 @@ function AntdDropdownImage(props: { component: AntdDropdownImageInternal }): Rea
     }, []);
     const { token } = theme.useToken()
     const hs = (style && {...style} || {}) as any
-    updateStyle(hs, token)
+    updateStyle(hs, token, true)
     if(!hs.display){
         hs.display = "flex"
         hs.flexDirection = "row"

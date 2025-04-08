@@ -15,15 +15,12 @@ export abstract class BaseUiElement implements UiElement{
 
     children: UiElement[]|undefined = undefined
 
-    async sendPropertyChange(propertyName: string, propertyValue: any|null){
-        await api.sendCommand({
-            cmd: 'ec',
-            id: this.id,
-            data: {
-                pn: propertyName,
-                pv: propertyValue
-            }
-        })
+    async sendPropertyChange(propertyName: string, propertyValue: any|null, deferred?:boolean){
+        await api.sendPropertyChanged(this.id, propertyName, propertyValue, deferred)
+    }
+
+    async executeAction(actionId: string, actionData?: any){
+        await api.sendAction(this.id, actionId, actionData)
     }
 
     executeCommand(data:any){

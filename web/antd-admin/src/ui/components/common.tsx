@@ -47,6 +47,9 @@ export interface AntdUiElementFactory {
 }
 
 export const emptyAntdUiElement:BaseAntdUiElement = {
+   async executeAction(): Promise<void> {
+      return Promise.resolve(undefined);
+   },
    findByTag(): BaseAntdUiElement | undefined {
       return undefined;
    },
@@ -69,7 +72,7 @@ export const emptyAntdUiElement:BaseAntdUiElement = {
    }
 }
 
-export const updateStyle = (style:any, token:any)=>{
+export const updateStyle = (style:any, token:any, addDefaultPadding: boolean)=>{
    Object.keys(style).forEach(prop => {
       var value =style[prop]
       if(typeof value ==='string'){
@@ -79,7 +82,7 @@ export const updateStyle = (style:any, token:any)=>{
          style[prop] = value;
       }
    })
-   if(!style.padding){
+   if(!style.padding && addDefaultPadding){
       style.padding = token.padding
    }
 }

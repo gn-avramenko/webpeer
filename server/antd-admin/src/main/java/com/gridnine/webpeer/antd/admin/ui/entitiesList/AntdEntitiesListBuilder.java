@@ -79,4 +79,7 @@ public class AntdEntitiesListBuilder {
         this.element.setDataProvider(provider);
     }
 
+    public void language(String language) {
+        this.element.setLanguage(language);
+    }
 }

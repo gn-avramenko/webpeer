@@ -19,86 +19,55 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.textField;
+package com.gridnine.webpeer.antd.admin.ui.components.button;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.BaseUiElement;
-import com.gridnine.webpeer.core.ui.GlobalUiContext;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.ui.UiElement;
-import com.gridnine.webpeer.core.utils.RunnableWithException;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndTwoArguments;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class AntdTextField extends BaseUiElement {
-    private String value;
+public class AntdButton extends BaseUiElement {
+
+    private String title;
 
     private Map<String,Object> style = new HashMap<>();
 
-    private int debounceTime;
+    private RunnableWithExceptionAndArgument<OperationUiContext> onClicked;
 
-    private boolean deferred;
-
-    private RunnableWithExceptionAndTwoArguments<String, OperationUiContext> onValueChanged;
-
-    public void setOnValueChanged( RunnableWithExceptionAndTwoArguments<String, OperationUiContext> onValueChanged) {
-        this.onValueChanged = onValueChanged;
+    public void setOnClicked(RunnableWithExceptionAndArgument<OperationUiContext> onClicked) {
+        this.onClicked = onClicked;
     }
 
     public void setStyle(Map<String, Object> style) {
         this.style = style;
     }
 
-    public boolean isDeferred() {
-        return deferred;
-    }
-
-    public void setDeferred(boolean deferred) {
-        this.deferred = deferred;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public int getDebounceTime() {
-        return debounceTime;
-    }
-
-    public void setDebounceTime(int debounceTime) {
-        this.debounceTime = debounceTime;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     @Override
     public JsonElement serialize() throws Exception {
         var result = (JsonObject) super.serialize();
-        result.addProperty("type", "text-field");
-        result.addProperty("value", value);
-        result.addProperty("debounceTime", debounceTime);
-        result.addProperty("deferred", deferred);
+        result.addProperty("type", "button");
+        result.addProperty("title", title);
         result.add("style", WebPeerUtils.serialize(style));
         return result;
     }
 
+
     @Override
-    protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext) {
-        if("value".equals(propertyName)){
-            this.value = propertyValue.getAsString();
-            if(onValueChanged != null){
-                WebPeerUtils.wrapException(() -> onValueChanged.run(this.value, operationUiContext));
-            }
+    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
+        if(actionId.equals("click")){
+            WebPeerUtils.wrapException(() ->onClicked.run(operationUiContext));
+            return;
         }
+        super.executeAction(actionId, actionData, operationUiContext);
     }
-
-    public void setValue(String value, OperationUiContext context){
-        this.value = value;
-        context.sendElementPropertyChange(getId(), "value", value);
-    }
-
 }

@@ -36,11 +36,7 @@ public class AntdMainFrame extends BaseUiElement implements UiRootElement {
 
     private AntdMainFrameMenu menu = new AntdMainFrameMenu();
 
-    private final long id;
-
     private final UiModel model;
-
-    private final List<UiElement> children = new ArrayList<>();
 
     private JsonObject theme;
 
@@ -55,7 +51,6 @@ public class AntdMainFrame extends BaseUiElement implements UiRootElement {
     }
 
     public AntdMainFrame(UiModel model, Consumer<AntdMainFrameBuilder> configurator) {
-        id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
         this.model = model;
         var builder = new AntdMainFrameBuilder(this);
         configurator.accept(builder);
@@ -74,7 +69,7 @@ public class AntdMainFrame extends BaseUiElement implements UiRootElement {
             updateCenterContent(context);
         }
         if (context != null) {
-            context.sendElementPropertyChange(id, "path", path);
+            context.sendElementPropertyChange(getId(), "path", path);
         }
     }
 
@@ -89,7 +84,7 @@ public class AntdMainFrame extends BaseUiElement implements UiRootElement {
     public void setMenu(AntdMainFrameMenu menu, OperationUiContext context) {
         this.menu = menu;
         if (context != null) {
-            WebPeerUtils.wrapException(() -> context.sendElementPropertyChange(id, "menu", menu.serialize()));
+            WebPeerUtils.wrapException(() -> context.sendElementPropertyChange(getId(), "menu", menu.serialize()));
         }
     }
 
@@ -100,9 +95,8 @@ public class AntdMainFrame extends BaseUiElement implements UiRootElement {
 
     @Override
     public JsonElement serialize() throws Exception {
-        var result = new JsonObject();
+        var result = (JsonObject)super.serialize();
         result.addProperty("type", "root");
-        result.addProperty("id", String.valueOf(id));
         result.addProperty("path", path);
         if (this.theme != null) {
             result.add("theme", this.theme);
@@ -110,47 +104,19 @@ public class AntdMainFrame extends BaseUiElement implements UiRootElement {
         if (menu != null) {
             result.add("menu", menu.serialize());
         }
-        JsonArray chs = new JsonArray();
-        result.add("children", chs);
-        children.forEach(child -> {
-            WebPeerUtils.wrapException(() -> {
-                chs.add(child.serialize());
-            });
-        });
         return result;
     }
 
     public void setTheme(JsonObject theme, OperationUiContext context) {
         this.theme = theme;
         if (context != null) {
-            context.sendElementPropertyChange(id, "theme", theme);
+            context.sendElementPropertyChange(getId(), "theme", theme);
         }
-    }
-
-
-    @Override
-    public long getId() {
-        return id;
     }
 
     @Override
     public UiModel getModel() {
         return this.model;
-    }
-
-    @Override
-    public void setParent(UiElement parent) {
-        //noops
-    }
-
-    @Override
-    public UiElement getParent() {
-        return null;
-    }
-
-    @Override
-    public List<UiElement> getChildren() {
-        return children;
     }
 
     public String getLang() {

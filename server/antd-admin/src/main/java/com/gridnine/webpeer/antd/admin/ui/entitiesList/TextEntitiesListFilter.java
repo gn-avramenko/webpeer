@@ -22,13 +22,38 @@
 package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonPrimitive;
 import com.gridnine.webpeer.antd.admin.ui.components.textField.AntdTextField;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
 
-public class TextEntitiesListFilter extends AntdTextField implements EntitiesListFilter {
+import java.util.Map;
+
+public class TextEntitiesListFilter extends BaseFilter<AntdTextField>{
+
+    public TextEntitiesListFilter(String displayName) {
+        super(createElement(), displayName);
+    }
+
+    private static AntdTextField createElement() {
+        var result = new AntdTextField();
+        result.setDeferred(true);
+        return result;
+    }
 
     @Override
-    public JsonElement get() {
-        return new JsonPrimitive(getValue());
+    public JsonElement getValue(AntdTextField element) {
+        return element.getValue() == null? JsonNull.INSTANCE: new JsonPrimitive(element.getValue());
+    }
+
+    @Override
+    public void clear(AntdTextField element, OperationUiContext context) {
+        element.setValue(null, context);
+    }
+
+
+    @Override
+    public void setStyle(AntdTextField element, Map<String, Object> style) {
+        element.setStyle(style);
     }
 }

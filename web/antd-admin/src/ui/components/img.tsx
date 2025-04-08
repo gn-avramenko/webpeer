@@ -19,7 +19,7 @@ function AntdImg(props: { component: AntdImgInternal }): React.ReactElement {
     const [height, setHeight] = useState<string | undefined>(undefined)
     const {token} = theme.useToken()
     const hs = (style && {...style} || {}) as any
-    updateStyle(hs, token)
+    updateStyle(hs, token, true)
     props.component.setSrcSetter(setSrc)
     props.component.setWidthSetter(setWidth)
     props.component.setHeightSetter(setHeight)

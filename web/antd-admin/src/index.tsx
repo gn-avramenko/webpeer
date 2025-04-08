@@ -10,6 +10,7 @@ import {uiModel} from "../../core/src/index.ts";
 import {UiElement} from "../../core/src/model/model.ts";
 import {AntdEntitiesListElementFactory} from "@/ui/entities-list/entities-list.tsx";
 import { AntdTextFieldElementFactory} from "@/ui/components/text-field.tsx";
+import {AntdButtonElementFactory} from "@/ui/components/button.tsx";
 
 
 antdWebpeerExt.elementHandlersFactories.set("root", new AntdMainFrameElementFactory())
@@ -19,6 +20,7 @@ antdWebpeerExt.elementHandlersFactories.set("text-field", new AntdTextFieldEleme
 antdWebpeerExt.elementHandlersFactories.set("dropdown-icon", new AntdDropdownIconElementFactory())
 antdWebpeerExt.elementHandlersFactories.set("dropdown-image", new AntdDropdownImageElementFactory())
 antdWebpeerExt.elementHandlersFactories.set("entities-list", new AntdEntitiesListElementFactory())
+antdWebpeerExt.elementHandlersFactories.set("button", new AntdButtonElementFactory())
 antdWebpeerExt.icons.set("SUN_OUTLINED", () => <SunOutlined/>)
 antdWebpeerExt.icons.set("MOON_FILLED", () => <MoonFilled/>)
 antdWebpeerExt.icons.set("RightOutlined", () => <RightOutlined/>)

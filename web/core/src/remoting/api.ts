@@ -73,6 +73,8 @@ export class API {
 
     private queue: QueueItem[] = [];
 
+    private deferredCommands:any[] = []
+
     private sortMiddleware() {
         this.middleware?.sort((a, b) => a.priority - b.priority)
     }
@@ -82,8 +84,8 @@ export class API {
         this.sortMiddleware()
     }
 
-    async sendPropertyChanged(elementId:string, propertyName: string, propertyValue: any|null|undefined){
-        await this.sendCommand({
+    async sendPropertyChanged(elementId:string, propertyName: string, propertyValue: any|null|undefined, deferred?: boolean){
+        const cmd = {
             cmd: 'ec',
             id: elementId,
             data: {
@@ -93,7 +95,17 @@ export class API {
                     pv: propertyValue
                 }
             }
-        })
+        };
+        if(deferred){
+            const data = this.deferredCommands.find(it => it.cmd === 'ec' && it.id === elementId)
+            if(data?.data?.cmd == 'pc' && data.data.data.pn === propertyName){
+                data.data.data.pv = propertyValue
+            } else {
+                this.deferredCommands.push(cmd)
+            }
+            return
+        }
+        await this.sendCommand(cmd)
     }
 
 
@@ -111,13 +123,16 @@ export class API {
         })
     }
 
-    async sendCommand(payload: any, initOverrides?: RequestInit | InitOverrideFunction): Promise<any> {
+    async sendCommand(cmd: any, initOverrides?: RequestInit | InitOverrideFunction): Promise<any> {
+        const payload =[...this.deferredCommands]
+        this.deferredCommands.splice(0)
+        payload.push(cmd)
         const prom = new Promise((resolve, reject) => {
             this.queue.push({
                 resolve,
                 reject,
                 initOverrides,
-                payload:[payload]
+                payload,
             })
         })
         this.processQueue()

@@ -24,6 +24,7 @@ package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.gridnine.webpeer.antd.admin.ui.components.button.AntdButton;
 import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
 import com.gridnine.webpeer.antd.admin.ui.components.textField.AntdTextField;
 import com.gridnine.webpeer.core.ui.*;
@@ -36,8 +37,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class AntdEntitiesList extends BaseUiElement implements UiElement {
-
-    private final long id;
 
     private JsonArray data = new JsonArray();
 
@@ -53,60 +52,101 @@ public class AntdEntitiesList extends BaseUiElement implements UiElement {
 
     private AntdSorting sort;
 
-    private UiElement parent;
-
     private AntdEntitiesListDataProvider dataProvider;
 
     private final AntdTextField searchField;
 
     private Map<String, EntitiesListFilter> filtersValues = new HashMap<>();
 
-    private final List<UiElement> children = new ArrayList<>();
+    private String language;
 
     public AntdEntitiesList(Consumer<AntdEntitiesListBuilder> configurator) {
-        id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
         var builder = new AntdEntitiesListBuilder(this);
         configurator.accept(builder);
         searchField = new AntdTextField();
         searchField.setTag("search");
         searchField.setParent(this);
+        searchField.setDebounceTime(300);
+        searchField.setOnValueChanged((value,context) ->{
+            loadData(context);
+        });
         getChildren().add(searchField);
+
         var filtersContent = new AntdDiv();
-        filtersContent.setTag("filtersContent");
-        filtersContent.setContent("Hello world");
         filtersContent.setParent(this);
         getChildren().add(filtersContent);
+        filtersContent.setTag("filtersContent");
+        this.filters.forEach(filter -> {
+            EntitiesListFilter f = null;
+            switch (filter.getType()){
+                case STRING:{
+                    f = new TextEntitiesListFilter(filter.getTitle());
+                    break;
+                }
+            }
+            f.setParent(filtersContent);
+            filtersContent.getChildren().add(f);
+            filtersValues.put(filter.getId(), f);
+        });
+        {
+            var filtersFooter = new AntdDiv();
+            var footerStyle = new HashMap<String,Object>();
+            filtersFooter.setTag("filtersFooter");
+            filtersFooter.setParent(this);
+            getChildren().add(filtersFooter);
+            footerStyle.put("display", "flex");
+            footerStyle.put("flexDirection", "row");
+            footerStyle.put("padding", "5px");
+            filtersFooter.setStyle(footerStyle);
+            {
+                var div = new AntdDiv();
+                div.setContent("");
+                var divStyle = new HashMap<String,Object>();
+                divStyle.put("flexGrow", 1);
+                div.setStyle(divStyle);
+                filtersFooter.getChildren().add(div);
+                div.setParent(filtersFooter);
+            }
+            {
+                var button = new AntdButton();
+                button.setTitle("en".equals(language)? "Apply": "Применить");
+                var buttonStyle = new HashMap<String,Object>();
+                buttonStyle.put("display", "inline-block");
+                buttonStyle.put("flexGrow", 0);
+                buttonStyle.put("margin", "5px");
+                button.setStyle(buttonStyle);
+                filtersFooter.getChildren().add(button);
+                button.setParent(filtersFooter);
+                button.setOnClicked(ctx -> {
+                    loadData(ctx);
+                });
+            }
 
-        var filtersFooter = new AntdDiv();
-        filtersFooter.setTag("filtersFooter");
-        filtersFooter.setContent("Hello footer");
-        filtersFooter.setParent(this);
-        getChildren().add(filtersFooter);
+            {
+                var button = new AntdButton();
+                button.setTitle("en".equals(language)? "Clear": "Очистить");
+                var buttonStyle = new HashMap<String,Object>();
+                buttonStyle.put("display", "inline-block");
+                buttonStyle.put("flexGrow", 0);
+                button.setStyle(buttonStyle);
+                buttonStyle.put("margin", "5px");
+                filtersFooter.getChildren().add(button);
+                button.setParent(filtersFooter);
+                button.setOnClicked(ctx -> {
+                    filtersValues.values().forEach(fv ->{
+                        fv.clear(ctx);
+                    });
+                    loadData(ctx);
+                });
+            }
+
+        }
+
+
     }
 
     @Override
     public JsonElement serialize() throws Exception {
-        {
-
-
-//            this.filters.forEach(filter -> {
-//                JsonObject filterJson = new JsonObject();
-//                filterJson.addProperty("id", filter.getId());
-//                filterJson.addProperty("title", filter.getTitle());
-//                filterJson.addProperty("type", filter.getType().name());
-//                filters.add(filterJson);
-//                EntitiesListFilter f = null;
-//                switch (filter.getType()){
-//                    case STRING:{
-//                        f = new TextEntitiesListFilter();
-//                        break;
-//                    }
-//                }
-//                f.setParent(this);
-//                getChildren().add(f);
-//                filtersValues.put(filter.getId(), f);
-//            });
-        }
         var result = (JsonObject) super.serialize();
         result.addProperty("type", "entities-list");
         result.addProperty("title", title);
@@ -133,31 +173,10 @@ public class AntdEntitiesList extends BaseUiElement implements UiElement {
             });
             result.add("columns", columns);
         }
-
         result.add("data", data);
         return result;
     }
 
-
-    @Override
-    public long getId() {
-        return id;
-    }
-
-    @Override
-    public void setParent(UiElement parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public UiElement getParent() {
-        return parent;
-    }
-
-    @Override
-    public List<UiElement> getChildren() {
-        return children;
-    }
 
     @Override
     protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
@@ -195,7 +214,7 @@ public class AntdEntitiesList extends BaseUiElement implements UiElement {
         jsort.addProperty("propertyName", sort.getColumn());
         jsort.addProperty("desc", sort.getDirection() == AntdSortDirection.DESC);
         response.add("sort", jsort);
-        operationUiContext.sendElementPropertyChange(id, "data", response);
+        operationUiContext.sendElementPropertyChange(getId(), "data", response);
     }
 
     public void setLimitStep(int limitStep) {
@@ -220,5 +239,9 @@ public class AntdEntitiesList extends BaseUiElement implements UiElement {
 
     public List<AntdEntitiesListFilterDescription> getFilters() {
         return filters;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
     }
 }
