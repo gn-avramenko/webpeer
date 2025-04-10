@@ -23,13 +23,9 @@ package com.gridnine.webpeer.core.servlet;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
-import com.gridnine.webpeer.core.ui.GlobalUiContext;
-import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.ui.UiElement;
-import com.gridnine.webpeer.core.ui.UiModel;
+import com.gridnine.webpeer.core.ui.*;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -50,7 +46,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class BaseWebAppServlet extends HttpServlet {
+public abstract class BaseWebAppServlet<T extends BaseUiElement & RootUiElement> extends HttpServlet {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -127,7 +123,7 @@ public abstract class BaseWebAppServlet extends HttpServlet {
         }
     }
 
-    protected abstract UiElement createRootElement(OperationUiContext operationUiContext) throws Exception;
+    protected abstract T createRootElement(UiModel model, OperationUiContext operationUiContext) throws Exception;
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -157,10 +153,11 @@ public abstract class BaseWebAppServlet extends HttpServlet {
                         var data = requestCommands.get(0).get("data").getAsJsonObject();
                         operationUiContext.setParameter(OperationUiContext.LOCAL_STORAGE_DATA, data.get("ls").getAsJsonObject());
                         operationUiContext.setParameter(OperationUiContext.PARAMS, data.get("params").getAsJsonObject());
-                        model.setRootElement(createRootElement(operationUiContext));
+                        var uiData = data.has("uiData") ? data.get("uiData").getAsJsonObject() : null;
+                        var rootElement = createRootElement(model, operationUiContext);
                         var command = new JsonObject();
                         command.addProperty("cmd", "init");
-                        command.add("data", model.getRootElement().serialize());
+                        command.add("data", rootElement.buildElement(uiData, operationUiContext));
                         operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
                     } else {
                         long xVersion = Long.parseLong(req.getHeader("x-version"));

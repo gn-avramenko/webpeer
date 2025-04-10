@@ -18,5 +18,6 @@ dependencies {
     implementation("com.google.code.gson:gson:2.12.1")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation(project(":server:core"))
+    implementation(project(":server:antd"))
     implementation(project(":server:antd-admin"))
 }

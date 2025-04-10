@@ -29,38 +29,40 @@ import com.gridnine.webpeer.core.utils.WebPeerUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class BaseUiElement implements UiElement {
+public abstract class BaseUiElement {
 
     private String tag;
-
-    private String key;
 
     private final long id;
 
     private BaseUiElement parent;
 
-    private List<UiElement> children = new ArrayList<UiElement>();
+    private List<BaseUiElement> children = new ArrayList<>();
+
+    public long getId() {
+        return id;
+    }
+
+    public void destroy() throws Exception{
+        //noops
+    }
+
+    public BaseUiElement findChildByTag(String tag){
+        return  getChildren().stream().filter(it -> tag.equals(it.getTag())).findFirst().orElse(null);
+    }
 
     public BaseUiElement() {
         this.id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
     }
 
-    @Override
-    public long getId() {
-        return id;
+    public void setParent(BaseUiElement parent) {
+        this.parent = parent;
     }
 
-    @Override
-    public void setParent(UiElement parent) {
-        this.parent = (BaseUiElement)parent;
-    }
-
-    @Override
-    public UiElement getParent() {
+    public BaseUiElement getParent() {
         return parent;
     }
 
-    @Override
     public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
         var cmd = command.get("cmd").getAsString();
         if ("pc".equals(cmd)) {
@@ -77,7 +79,6 @@ public abstract class BaseUiElement implements UiElement {
         }
     }
 
-    @Override
     public String getTag() {
         return tag;
     }
@@ -94,29 +95,35 @@ public abstract class BaseUiElement implements UiElement {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public JsonElement serialize() throws Exception {
+    public JsonObject buildElement(JsonObject uiData, OperationUiContext context) {
         var result = new JsonObject();
         result.addProperty("id", String.valueOf(getId()));
         if (getTag() != null) {
             result.addProperty("tag", getTag());
         }
-        if (!getChildren().isEmpty()) {
-            var chs = new JsonArray();
-            result.add("children", chs);
+        if (!this.children.isEmpty()) {
+            var children = new JsonArray();
+            result.add("children", children);
+            var uiChildren = uiData == null || !uiData.has("children")? new JsonArray() : uiData.get("children").getAsJsonArray();
             getChildren().forEach(ch -> {
-                WebPeerUtils.wrapException(() -> chs.add(ch.serialize()));
+                var existingUiChild = ch.tag == null? null : uiChildren.asList().stream().filter(it -> {
+                    if(it instanceof JsonObject){
+                        JsonObject child = (JsonObject)it;
+                        return child.has("tag") && child.get("tag").getAsString().equals(ch.tag);
+                    }
+                    return false;
+                }).findFirst().orElse(null);
+                WebPeerUtils.wrapException(() -> children.add(ch.buildElement((JsonObject) existingUiChild, context)));
             });
         }
         return result;
     }
 
-    @Override
-    public List<UiElement> getChildren() {
+    public List<BaseUiElement> getChildren() {
         return children;
     }
 
-    public void setChildren(List<UiElement> children) {
+    public void setChildren(List<BaseUiElement> children) {
         this.children = children;
     }
 }

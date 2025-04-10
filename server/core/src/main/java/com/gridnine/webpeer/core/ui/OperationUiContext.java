@@ -102,12 +102,12 @@ public class OperationUiContext extends HashMap<String, Object> {
     }
 
 
-    public void upsertChildCommand(UiElement child, long parentId) {
+    public void upsertChildCommand(BaseUiElement child, long parentId, OperationUiContext context) {
         var command = new JsonObject();
         command.addProperty("cmd", "uc");
         command.addProperty("id", String.valueOf(parentId));
         WebPeerUtils.wrapException(()->{
-            command.add("data", child.serialize());
+            command.add("data", child.buildElement(null, context));
         });
         getParameter(RESPONSE_COMMANDS).add(command);
     }

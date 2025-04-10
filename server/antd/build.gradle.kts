@@ -15,5 +15,4 @@ java {
 dependencies {
     implementation("com.google.code.gson:gson:2.12.1")
     implementation(project(":server:core"))
-    implementation(project(":server:antd"))
 }

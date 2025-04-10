@@ -19,23 +19,10 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.demo.app;
+package com.gridnine.webpeer.core.ui;
 
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
-public class DemoAppConfiguration {
+public interface RootUiElement{
 
-    @Bean
-    public ServletRegistrationBean<DemoRootWebAppServlet> demoRootWebAppServletServletRegistrationBean(){
-        return new ServletRegistrationBean<>(new DemoRootWebAppServlet(), "/*");
-    }
-
-    @Bean
-    public WsContextListener wsContextListener(){
-        return new WsContextListener();
-    }
-
+    UiModel getModel();
 }

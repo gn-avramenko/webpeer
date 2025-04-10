@@ -24,7 +24,6 @@ package com.gridnine.webpeer.core.utils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.gridnine.webpeer.core.ui.GsonSerializable;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -169,8 +168,7 @@ public class WebPeerUtils {
                 });
                 props.add(k, obj);
             } else {
-                var s = (GsonSerializable) v;
-                props.add(k, s.serialize());
+                props.add(k, (JsonObject)v);
             }
         });
 

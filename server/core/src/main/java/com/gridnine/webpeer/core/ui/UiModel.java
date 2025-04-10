@@ -27,11 +27,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UiModel{
-    private UiElement rootElement;
+    private BaseUiElement rootElement;
 
-    private final Map<Long, UiElement> elements = new ConcurrentHashMap<>();
+    private final Map<Long, BaseUiElement> elements = new ConcurrentHashMap<>();
 
-    public static void removeElement(UiElement element) {
+    public static void removeElement(BaseUiElement element) {
         if(element.getParent() != null){
             element.getParent().getChildren().remove(element);
         }
@@ -42,7 +42,7 @@ public class UiModel{
         removeElement(model, element);
     }
 
-    public static void upsertElement(UiElement element, UiElement parent) {
+    public static void upsertElement(BaseUiElement element, BaseUiElement parent) {
         if(parent.getChildren().stream().anyMatch(it ->it.getId() == element.getId())){
             return;
         }
@@ -59,7 +59,7 @@ public class UiModel{
         addElement(model, element);
     }
 
-    public static void addElement(UiElement element, UiElement parent) {
+    public static void addElement(BaseUiElement element, BaseUiElement parent) {
         if(parent == null){
             return;
         }
@@ -72,7 +72,7 @@ public class UiModel{
         addElement(model, element);
     }
 
-    private static void addElement(UiModel model, UiElement element) {
+    private static void addElement(UiModel model, BaseUiElement element) {
         WebPeerUtils.wrapException(() ->{
             model.elements.put(element.getId(), element);
             element.getChildren().forEach((ch) ->{
@@ -82,7 +82,7 @@ public class UiModel{
     }
 
 
-    private static void removeElement(UiModel model, UiElement element) {
+    private static void removeElement(UiModel model, BaseUiElement element) {
         WebPeerUtils.wrapException(() ->{
             element.destroy();
             model.elements.remove(element.getId());
@@ -92,9 +92,9 @@ public class UiModel{
         });
     }
 
-    private static UiModel findModel(UiElement element) {
-        if(element instanceof UiRootElement){
-            return ((UiRootElement) element).getModel();
+    private static UiModel findModel(BaseUiElement element) {
+        if(element instanceof RootUiElement){
+            return ((RootUiElement) element).getModel();
         }
         if(element.getParent() == null){
             return null;
@@ -102,11 +102,11 @@ public class UiModel{
         return findModel(element.getParent());
     }
 
-    public UiElement getRootElement() {
+    public BaseUiElement getRootElement() {
         return rootElement;
     }
 
-    public void setRootElement(UiElement rootElement) {
+    public void setRootElement(BaseUiElement rootElement) {
         if(this.rootElement != null){
             removeElement(this, this.rootElement);
         }
@@ -114,7 +114,7 @@ public class UiModel{
         addElement(this, rootElement);
     }
 
-    public UiElement findElement(long id) {
+    public BaseUiElement findElement(long id) {
         return elements.get(id);
     }
 

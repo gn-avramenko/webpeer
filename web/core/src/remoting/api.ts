@@ -41,13 +41,8 @@ export class Configuration {
     webSocketUrl?: string;
     middleware?: Middleware[]; // middleware to apply before/after fetch requests
     headers?: HTTPHeaders //header params we want to use on every request
-    subscriptionHandler?: SubscriptionHandler
 }
 
-
-export interface SubscriptionHandler {
-    onMessage(payload: any): Promise<void>
-}
 
 export type Json = any;
 export type HTTPBody = Json | FormData | URLSearchParams;
@@ -232,9 +227,6 @@ export class API {
     }
 
     async addActiveSubscription(id: string) {
-        if (!this.configuration.subscriptionHandler) {
-            throw new Error("subscription handler is not defined")
-        }
         if (!this.configuration.webSocketUrl) {
             throw new Error("web socket url is not defined")
         }
@@ -266,7 +258,8 @@ export class API {
                 this.socket.onmessage = (event) => {
                     const content = event.data as string
                     const data = JSON.parse(content)
-                    this.configuration.subscriptionHandler!!.onMessage(data)
+                    //TODO implement
+                    console.log("message", data)
                 }
                 this.socket.onerror = (error) => {
                     if (this.connecting) {

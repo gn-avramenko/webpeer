@@ -1,19 +1,22 @@
 import {api} from "../index.ts";
 
-export interface UiElement {
-    id: string
-    parent?:UiElement
-    children?: UiElement[]
-    serialize: ()=> any
-    executeCommand: (data:any) => void
+export abstract class BaseUiElement{
+    id: string = ""
+
     tag?:string
-}
+    
+    parent?:BaseUiElement;
+    
+    serialize(){
+        return {}
+    };
 
-export abstract class BaseUiElement implements UiElement{
-    abstract id: string;
-    abstract serialize: () => any;
+    children: BaseUiElement[]|undefined = undefined
 
-    children: UiElement[]|undefined = undefined
+    constructor(model:any) {
+        this.id = model.id;
+        this.tag = model.tag;
+    }
 
     async sendPropertyChange(propertyName: string, propertyValue: any|null, deferred?:boolean){
         await api.sendPropertyChanged(this.id, propertyName, propertyValue, deferred)
@@ -36,14 +39,15 @@ export abstract class BaseUiElement implements UiElement{
 }
 
 export class UiModel{
-    private readonly elements: Map<string, UiElement> = new Map();
+    private readonly elements: Map<string, BaseUiElement> = new Map();
 
-    private rootElement?: UiElement
+    private rootElement?: BaseUiElement
 
     getRootElement(){
         return this.rootElement
     }
-    setRootElement(elm:UiElement) {
+
+    setRootElement(elm:BaseUiElement) {
         if(elm !== this.rootElement) {
             if (this.rootElement) {
                 this.removeNode(this.rootElement)
@@ -56,7 +60,7 @@ export class UiModel{
         return this.elements.get(id)
     }
 
-    removeNode(node: UiElement){
+    removeNode(node: BaseUiElement){
         if(node.parent){
             const idx = node.parent.children!.indexOf(node)
             node.parent.children!.splice(idx, 1)
@@ -65,7 +69,7 @@ export class UiModel{
         node.children?.forEach(ch => this.removeNode(ch))
     }
 
-    addNode(node: UiElement, parent?:UiElement){
+    addNode(node: BaseUiElement, parent?:BaseUiElement){
         if(parent){
             parent.children = parent.children??[]
             if(parent.children.indexOf(node) === -1) {
