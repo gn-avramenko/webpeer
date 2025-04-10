@@ -23,4 +23,5 @@ package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
 public enum AntdEntitiesListFilterType {
     STRING,
+    NUMBER_INTERVAL,
 }

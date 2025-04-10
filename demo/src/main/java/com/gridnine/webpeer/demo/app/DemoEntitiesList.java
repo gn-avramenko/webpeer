@@ -37,6 +37,7 @@ public class DemoEntitiesList extends AntdEntitiesList {
             b.column("enumProperty", "ru".equals(language)? "Перечисление": "Enum property", AntdEntitiesListColumnType.TEXT,  AntdEntitiesListColumnAlignment.LEFT,true, null);
             b.column("entityRefProperty", "ru".equals(language)? "Сущность": "Entity property", AntdEntitiesListColumnType.TEXT,  AntdEntitiesListColumnAlignment.LEFT,true, null);
             b.filter("stringProperty", "ru".equals(language)? "Поиск по строке": "String search", AntdEntitiesListFilterType.STRING);
+            b.filter("numberProperty", "ru".equals(language)? "Поиск по числу": "Number search", AntdEntitiesListFilterType.NUMBER_INTERVAL);
             b.linkColumn("linkProperty", "RightOutlined", 10);
             b.initSort("stringProperty", false);
             b.limitStep(50);

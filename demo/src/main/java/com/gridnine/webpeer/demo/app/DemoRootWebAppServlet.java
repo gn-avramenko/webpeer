@@ -36,10 +36,12 @@ import java.util.List;
 import java.util.Map;
 
 public class DemoRootWebAppServlet extends BaseWebAppServlet {
+    private static var dataSource = new DemoDataSource(lang);
     @Override
     protected List<WebAppModule> getModules() throws Exception {
         return List.of(new CoreWebAppModule());
     }
+
 
     @Override
     protected URL getFaviconUrl() {
@@ -60,7 +62,6 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet {
     protected UiElement createRootElement(OperationUiContext operationUiContext) throws Exception {
         return new AntdMainFrame(GlobalUiContext.getParameter(GlobalUiContext.UI_MODEL), frame ->{
             var lang = operationUiContext.getStringLocalStorageParam("lang");
-            var dataSource = new DemoDataSource(lang);
             String initPath = "/";
             var params = operationUiContext.getParameter(OperationUiContext.PARAMS);
             if(params != null) {

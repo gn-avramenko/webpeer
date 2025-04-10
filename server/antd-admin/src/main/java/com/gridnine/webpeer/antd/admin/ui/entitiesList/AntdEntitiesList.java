@@ -83,6 +83,10 @@ public class AntdEntitiesList extends BaseUiElement implements UiElement {
                     f = new TextEntitiesListFilter(filter.getTitle());
                     break;
                 }
+                case NUMBER_INTERVAL:{
+                    f = new NumberEntitiesListFilter(filter.getTitle(), this.language);
+                    break;
+                }
             }
             f.setParent(filtersContent);
             filtersContent.getChildren().add(f);

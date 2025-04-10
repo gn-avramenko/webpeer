@@ -35,16 +35,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DemoDataSource implements AntdEntitiesListDataProvider {
+public class DemoDataSource  {
 
-    private List<JsonObject> testData = new ArrayList<>();
+    private List<Integer> testDataIds = new ArrayList<>();
+
     private DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    private final String language;
 
-
-    public DemoDataSource(String language) {
-        this.language = language;
+    public DemoDataSource() {
         for(int n =0; n < 1000; n++){
             var stringProperty = String.format("%s - %s", "ru".equals(language)? "Строка": "String", n);
             var item = new JsonObject();
@@ -58,8 +56,19 @@ public class DemoDataSource implements AntdEntitiesListDataProvider {
         }
     }
 
-    @Override
-    public AntdListData getData(List< AntdEntitiesListColumnDescription > columns, int limit, AntdSorting sort, String searchText, Map<String, JsonElement > filters) {
+    public AntdListData getData(List< AntdEntitiesListColumnDescription > columns, int limit, AntdSorting sort, String searchText, String language, Map<String, JsonElement > filters) {
+        for(var n: testDataIds){
+            var stringProperty = String.format("%s - %s", "ru".equals(language)? "Строка": "String", n);
+            var item = new JsonObject();
+            item.addProperty("id", String.valueOf(n));
+            item.addProperty("stringProperty", stringProperty);
+            item.addProperty("numberProperty", String.valueOf(n));
+            item.addProperty("dateProperty", LocalDate.ofInstant(Instant.ofEpochMilli(Math.round(Math.random() *Instant.now().toEpochMilli())), ZoneId.systemDefault()).format(dtf));
+            item.addProperty("enumProperty", Math.random()> 0.5? DemoEnum.ITEM2.toString(): DemoEnum.ITEM1.toString());
+            item.addProperty("entityRefProperty", Math.random()> 0.5? "Entity 2" : "Entity 1");
+            result.add(item);
+        }
+
         var data = testData.stream().filter(it ->{
             if(!filters.entrySet().stream().allMatch(f ->{
                 if(f.getValue().isJsonNull()){

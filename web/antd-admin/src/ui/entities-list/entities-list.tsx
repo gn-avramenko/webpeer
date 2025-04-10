@@ -161,7 +161,7 @@ function AntdEntitiesList(props: { component: AntdEntitiesListInternal }): React
                         return ""
                     }}
                     onChange={(_pagination, _filter, sorter:any) => {
-                        api.sendAction(props.component.id, "changeSort", {propertyName: sorter.field, desc: sorter.order == 'descend'})
+                        api.sendAction(props.component.id, "changeSort", {propertyName: sorter.field??sort.propertyName, desc: sorter.order == 'descend'})
                     }
                     }
                 />
