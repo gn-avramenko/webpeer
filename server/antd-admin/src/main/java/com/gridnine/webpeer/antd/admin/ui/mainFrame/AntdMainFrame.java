@@ -21,8 +21,10 @@
 
 package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
+import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.breakpoint.AntdBreakpoint;
 import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.RootUiElement;
 import com.gridnine.webpeer.core.ui.UiModel;
 
@@ -32,12 +34,17 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
 
     private final UiModel model;
 
-    public AntdMainFrame(UiModel model) {
+    public AntdMainFrame(UiModel model, JsonObject data, OperationUiContext ctx) {
+        super(data, ctx);
         this.model = model;
         var breakpoints  = new HashMap<String,Object>();
         breakpoints.put("mobile", 0);
         breakpoints.put("desktop", 1024);
         setBreakpoints(breakpoints);
+        var div = new AntdDiv(ctx);
+        getChildren().add(div);
+        div.setParent(this);
+        div.setContent("Hello " + ctx.getParameter(BREAKPOINT));
     }
 
     @Override

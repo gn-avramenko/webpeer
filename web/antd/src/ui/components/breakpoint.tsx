@@ -20,7 +20,7 @@ function AntdBreakpoint(props: { component: AntdBreakpointInternal }): React.Rea
     }, []);
     const {breakpoint} = useBreakpoint(props.component.breakpoints);
     props.component.updateBreakpoint(breakpoint as any)
-    return <div>{breakpoint}{content?.createReactElement()}</div>
+    return content?.createReactElement()??<></>
 }
 
 class AntdBreakpointElement extends BaseAntdUiElement implements AntdBreakpointInternal {

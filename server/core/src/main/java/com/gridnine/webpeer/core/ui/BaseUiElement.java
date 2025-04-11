@@ -51,8 +51,8 @@ public abstract class BaseUiElement {
         return  getChildren().stream().filter(it -> tag.equals(it.getTag())).findFirst().orElse(null);
     }
 
-    public BaseUiElement() {
-        this.id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
+    public BaseUiElement(OperationUiContext ctx) {
+        this.id = ctx.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
     }
 
     public void setParent(BaseUiElement parent) {
@@ -95,7 +95,7 @@ public abstract class BaseUiElement {
         throw new UnsupportedOperationException();
     }
 
-    public JsonObject buildElement(JsonObject uiData, OperationUiContext context) {
+    public JsonObject buildElement(OperationUiContext context) {
         var result = new JsonObject();
         result.addProperty("id", String.valueOf(getId()));
         if (getTag() != null) {
@@ -104,16 +104,8 @@ public abstract class BaseUiElement {
         if (!this.children.isEmpty()) {
             var children = new JsonArray();
             result.add("children", children);
-            var uiChildren = uiData == null || !uiData.has("children")? new JsonArray() : uiData.get("children").getAsJsonArray();
             getChildren().forEach(ch -> {
-                var existingUiChild = ch.tag == null? null : uiChildren.asList().stream().filter(it -> {
-                    if(it instanceof JsonObject){
-                        JsonObject child = (JsonObject)it;
-                        return child.has("tag") && child.get("tag").getAsString().equals(ch.tag);
-                    }
-                    return false;
-                }).findFirst().orElse(null);
-                WebPeerUtils.wrapException(() -> children.add(ch.buildElement((JsonObject) existingUiChild, context)));
+                WebPeerUtils.wrapException(() -> children.add(ch.buildElement(context)));
             });
         }
         return result;

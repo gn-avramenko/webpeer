@@ -35,6 +35,10 @@ public class AntdDropDownImage extends BaseAntdUiElement {
     private List<ImageMenuItem> menu = new ArrayList<>();
     private String selectedItemId;
 
+    public AntdDropDownImage(OperationUiContext ctx) {
+        super(ctx);
+    }
+
     public String getSelectedItemId() {
         return selectedItemId;
     }
@@ -52,8 +56,8 @@ public class AntdDropDownImage extends BaseAntdUiElement {
     }
 
     @Override
-    public JsonObject buildElement(JsonObject uiData, OperationUiContext context) {
-        var result = super.buildElement(uiData, context);
+    public JsonObject buildElement(OperationUiContext context) {
+        var result = super.buildElement(context);
         result.addProperty("selectedItemId", selectedItemId);
         var its = new JsonArray();
         menu.forEach(it ->{

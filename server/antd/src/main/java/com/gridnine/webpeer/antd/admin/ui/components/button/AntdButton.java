@@ -38,6 +38,10 @@ public class AntdButton extends BaseAntdUiElement {
 
     private RunnableWithExceptionAndArgument<OperationUiContext> onClicked;
 
+    public AntdButton(OperationUiContext ctx) {
+        super(ctx);
+    }
+
     public void setOnClicked(RunnableWithExceptionAndArgument<OperationUiContext> onClicked) {
         this.onClicked = onClicked;
     }
@@ -52,8 +56,8 @@ public class AntdButton extends BaseAntdUiElement {
     }
 
     @Override
-    public JsonObject buildElement(JsonObject uiData, OperationUiContext context) {
-        var result = super.buildElement(uiData, context);
+    public JsonObject buildElement(OperationUiContext context) {
+        var result = super.buildElement(context);
         result.addProperty("title", title);
         return result;
     }

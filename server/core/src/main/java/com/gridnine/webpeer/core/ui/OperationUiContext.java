@@ -107,7 +107,7 @@ public class OperationUiContext extends HashMap<String, Object> {
         command.addProperty("cmd", "uc");
         command.addProperty("id", String.valueOf(parentId));
         WebPeerUtils.wrapException(()->{
-            command.add("data", child.buildElement(null, context));
+            command.add("data", child.buildElement(context));
         });
         getParameter(RESPONSE_COMMANDS).add(command);
     }

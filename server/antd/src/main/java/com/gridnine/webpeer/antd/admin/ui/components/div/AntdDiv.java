@@ -31,6 +31,10 @@ public class AntdDiv extends BaseAntdUiElement {
 
     private String content;
 
+    public AntdDiv(OperationUiContext ctx) {
+        super(ctx);
+    }
+
     public void setContent(String content) {
         this.content = content;
     }
@@ -41,8 +45,8 @@ public class AntdDiv extends BaseAntdUiElement {
     }
 
     @Override
-    public JsonObject buildElement(JsonObject uiData, OperationUiContext context) {
-        var result = super.buildElement(uiData, context);
+    public JsonObject buildElement(OperationUiContext context) {
+        var result = super.buildElement(context);
         if(WebPeerUtils.isNotBlank(content)){
             result.addProperty("content", content);
             result.remove("children");

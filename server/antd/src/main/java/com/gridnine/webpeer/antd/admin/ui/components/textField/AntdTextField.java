@@ -37,6 +37,10 @@ public class AntdTextField extends BaseAntdUiElement {
 
     private RunnableWithExceptionAndTwoArguments<String, OperationUiContext> onValueChanged;
 
+    public AntdTextField(OperationUiContext ctx) {
+        super(ctx);
+    }
+
     public void setOnValueChanged( RunnableWithExceptionAndTwoArguments<String, OperationUiContext> onValueChanged) {
         this.onValueChanged = onValueChanged;
     }
@@ -62,8 +66,8 @@ public class AntdTextField extends BaseAntdUiElement {
     }
 
     @Override
-    public JsonObject buildElement(JsonObject uiData, OperationUiContext context) {
-        var result = super.buildElement(uiData, context);
+    public JsonObject buildElement(OperationUiContext context) {
+        var result = super.buildElement(context);
         result.addProperty("value", value);
         result.addProperty("debounceTime", debounceTime);
         result.addProperty("deferred", deferred);

@@ -37,6 +37,10 @@ public class AntdNumberField extends BaseAntdUiElement {
 
     private RunnableWithExceptionAndTwoArguments<BigDecimal, OperationUiContext> onValueChanged;
 
+    public AntdNumberField(OperationUiContext ctx) {
+        super(ctx);
+    }
+
     public void setOnValueChanged( RunnableWithExceptionAndTwoArguments<BigDecimal, OperationUiContext> onValueChanged) {
         this.onValueChanged = onValueChanged;
     }
@@ -54,8 +58,8 @@ public class AntdNumberField extends BaseAntdUiElement {
     }
 
     @Override
-    public JsonObject buildElement(JsonObject uiData, OperationUiContext context) {
-        var result =  super.buildElement(uiData, context);
+    public JsonObject buildElement(OperationUiContext context) {
+        var result =  super.buildElement(context);
         result.addProperty("value", value);
         result.addProperty("deferred", deferred);
         return result;

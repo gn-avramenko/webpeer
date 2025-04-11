@@ -21,12 +21,12 @@
 
 package com.gridnine.webpeer.demo.app;
 
+import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrame;
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
 import com.gridnine.webpeer.core.servlet.CoreWebAppModule;
 import com.gridnine.webpeer.core.servlet.WebAppModule;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.ui.RootUiElement;
 import com.gridnine.webpeer.core.ui.UiModel;
 
 import java.net.URL;
@@ -55,7 +55,7 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
     }
 
     @Override
-    protected AntdMainFrame createRootElement(UiModel model, OperationUiContext operationUiContext) throws Exception {
-        return new AntdMainFrame(model);
+    protected AntdMainFrame createRootElement(UiModel model, JsonObject uiData, OperationUiContext operationUiContext) throws Exception {
+        return new AntdMainFrame(model, uiData, operationUiContext);
     }
 }

@@ -35,6 +35,10 @@ public class AntdDropDownIcon extends BaseAntdUiElement {
     private List<IconMenuItem> menu = new ArrayList<IconMenuItem>();
     private String selectedItemId;
 
+    public AntdDropDownIcon(OperationUiContext ctx) {
+        super(ctx);
+    }
+
     public String getSelectedItemId() {
         return selectedItemId;
     }
@@ -52,8 +56,8 @@ public class AntdDropDownIcon extends BaseAntdUiElement {
     }
 
     @Override
-    public JsonObject buildElement(JsonObject uiData, OperationUiContext context) {
-        var result = super.buildElement(uiData, context);
+    public JsonObject buildElement(OperationUiContext context) {
+        var result = super.buildElement(context);
         result.addProperty("type", "dropdown-icon");
         result.addProperty("selectedItemId", selectedItemId);
         var its = new JsonArray();

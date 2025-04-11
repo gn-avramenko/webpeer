@@ -33,6 +33,10 @@ public abstract class BaseAntdUiElement extends BaseUiElement {
 
     private Map<String,Object> style = new HashMap<>();
 
+    public BaseAntdUiElement(OperationUiContext ctx) {
+        super(ctx);
+    }
+
     public abstract String getType();
 
     public Map<String, Object> getStyle() {
@@ -44,8 +48,8 @@ public abstract class BaseAntdUiElement extends BaseUiElement {
     }
 
     @Override
-    public JsonObject buildElement(JsonObject uiData, OperationUiContext context) {
-        var result = super.buildElement(uiData, context);
+    public JsonObject buildElement(OperationUiContext context) {
+        var result = super.buildElement(context);
         if(getType() != null) {
             result.addProperty("type", getType());
         }

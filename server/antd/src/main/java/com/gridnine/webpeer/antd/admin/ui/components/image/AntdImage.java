@@ -33,6 +33,10 @@ public class AntdImage extends BaseAntdUiElement {
 
     private String src;
 
+    public AntdImage(OperationUiContext ctx) {
+        super(ctx);
+    }
+
     public void setSrc(String src) {
         this.src = src;
     }
@@ -54,8 +58,8 @@ public class AntdImage extends BaseAntdUiElement {
     }
 
     @Override
-    public JsonObject buildElement(JsonObject uiData, OperationUiContext context) {
-        var result =  super.buildElement(uiData, context);
+    public JsonObject buildElement( OperationUiContext context) {
+        var result =  super.buildElement(context);
         result.addProperty("width", this.width);
         result.addProperty("height", this.height);
         result.addProperty("src", String.format("/_resources/classpath/%s", src));

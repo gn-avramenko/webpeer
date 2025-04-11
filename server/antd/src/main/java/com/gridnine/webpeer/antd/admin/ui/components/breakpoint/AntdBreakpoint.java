@@ -36,6 +36,14 @@ public class AntdBreakpoint extends BaseAntdUiElement {
 
     private Map<String, Object> breakpoints = new HashMap<String, Object>();
 
+    private String breakPoint;
+
+    public AntdBreakpoint(JsonObject uiData, OperationUiContext ctx) {
+        super(ctx);
+        breakPoint = uiData == null || !uiData.has("breakpoint")? null : uiData.get("breakpoint").getAsString();
+        ctx.setParameter(BREAKPOINT, breakPoint);
+    }
+
     public void setBreakpoints(Map<String, Object> breakpoints) {
         this.breakpoints = breakpoints;
     }
@@ -45,8 +53,8 @@ public class AntdBreakpoint extends BaseAntdUiElement {
     }
 
     @Override
-    public JsonObject buildElement(JsonObject uiData, OperationUiContext context) {
-        if(uiData == null || !uiData.has("breakpoint")) {
+    public JsonObject buildElement(OperationUiContext context) {
+        if(breakPoint == null) {
             var result = new JsonObject();
             result.addProperty("type", "breakpoint");
             result.addProperty("id", getId());
@@ -54,10 +62,10 @@ public class AntdBreakpoint extends BaseAntdUiElement {
             result.add("breakpoints", WebPeerUtils.serialize(breakpoints));
             return result;
         }
-        context.setParameter(BREAKPOINT, uiData.get("breakpoint").getAsString());
-        var result =  super.buildElement(uiData, context);
+
+        var result =  super.buildElement(context);
         result.add("breakpoints", WebPeerUtils.serialize(breakpoints));
-        result.addProperty("breakpoint", uiData.get("breakpoint").getAsString());
+        result.addProperty("breakpoint", breakPoint);
         return result;
     }
 

@@ -33,8 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GlobalUiContext {
-    public final static TypedParameter<HttpServletRequest> REQUEST = new TypedParameter<>("request") ;
-    public final static TypedParameter<HttpServletResponse> RESPONSE = new TypedParameter<>("response");
+
     public final static TypedParameter<Instant> LAST_UPDATED = new TypedParameter<>("last-updated");
     public final static TypedParameter<AtomicLong> ELEMENT_INDEX_PROVIDER = new TypedParameter<>("element-index-provider");
     public final static TypedParameter<AtomicInteger> VERSION_PROVIDER = new TypedParameter<>("version-provider");
@@ -42,17 +41,6 @@ public class GlobalUiContext {
     public final static TypedParameter<UiModel> UI_MODEL = new TypedParameter<>("ui-model") ;
     public final static Map<String, Map<String, Map<String, Object>>> context = new ConcurrentHashMap<>();
 
-    private final static ThreadLocal<OperationContext> operationContext = new ThreadLocal<>();
-    public static void setOperationContext(String path, String clientId) {
-        operationContext.set(new OperationContext(path, clientId));
-    }
-    public static void clearOperationContext() {
-        operationContext.remove();
-    }
-    public static<T> void setParameter(TypedParameter<T> param, T value) {
-        var ctx = operationContext.get();
-        setParameter(ctx.path, ctx.clientId, param, value);
-    }
     public static<T> void setParameter(String path, String clientId, TypedParameter<T> param, T value) {
         var pathData = context.get(path);
         if(pathData == null) {
@@ -71,32 +59,18 @@ public class GlobalUiContext {
         clientData.put(param.name, value);
     }
 
-    public static<T> T getParameter(TypedParameter<T> param) {
-        var operation = operationContext.get();
-        var data = context.get(operation.path);
-        if(data == null){
+
+    public static<T> T getParameter(String path, String clientId, TypedParameter<T> param) {
+        var pathData = context.get(path);
+        if(pathData == null) {
             return null;
         }
-        var clientData = data.get(operation.clientId);
-        //noinspection unchecked
-        return clientData == null? null: (T) clientData.get(param.name);
-    }
-
-    public static Map<String, Object> getClientData(String path, String client) {
-        var data = context.get(path);
-        if(data == null){
+        var clientData = pathData.get(clientId);
+        if(clientData == null) {
             return null;
         }
-        return data.get(client);
+        return (T) clientData.get(param.name);
     }
 
-    static class OperationContext{
-        public final String clientId;
-        public final String path;
 
-         OperationContext(String path, String clientId) {
-            this.clientId = clientId;
-            this.path = path;
-        }
-    }
 }

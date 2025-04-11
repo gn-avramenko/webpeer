@@ -50,28 +50,28 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & RootUiElement>
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public BaseWebAppServlet(){
+    public BaseWebAppServlet() {
         var timerTask = new TimerTask() {
 
             @Override
             public void run() {
                 var now = Instant.now();
                 GlobalUiContext.context.keySet().forEach(it -> {
-                   var clients = new HashMap<>(GlobalUiContext.context.get(it));
-                   clients.forEach((k, v) -> {
-                       var upd = (Instant)v.get(GlobalUiContext.LAST_UPDATED.name);
-                       if(upd == null || Duration.between(upd, now).getSeconds() > TimeUnit.HOURS.toSeconds(1)){
-                           GlobalUiContext.context.get(it).remove(k);
-                           Session s = (Session) v.get(GlobalUiContext.WS_SESSION.name);
-                           if(s != null){
-                               try {
-                                   s.close();
-                               } catch (Throwable e) {
-                                   logger.error("Error closing session", e);
-                               }
-                           }
-                       }
-                   });
+                    var clients = new HashMap<>(GlobalUiContext.context.get(it));
+                    clients.forEach((k, v) -> {
+                        var upd = (Instant) v.get(GlobalUiContext.LAST_UPDATED.name);
+                        if (upd == null || Duration.between(upd, now).getSeconds() > TimeUnit.HOURS.toSeconds(1)) {
+                            GlobalUiContext.context.get(it).remove(k);
+                            Session s = (Session) v.get(GlobalUiContext.WS_SESSION.name);
+                            if (s != null) {
+                                try {
+                                    s.close();
+                                } catch (Throwable e) {
+                                    logger.error("Error closing session", e);
+                                }
+                            }
+                        }
+                    });
                 });
             }
         };
@@ -96,7 +96,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & RootUiElement>
                 return;
             }
             if (pathInfo.startsWith("/_resources/")) {
-                if(pathInfo.startsWith("/_resources/classpath/")){
+                if (pathInfo.startsWith("/_resources/classpath/")) {
                     var path = pathInfo.substring("/_resources/classpath/".length());
                     writeResource(getClass().getClassLoader().getResource(path), resp);
                     return;
@@ -111,19 +111,19 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & RootUiElement>
                 HtmlScriptWrapper scriptWrapper = getModules().stream().flatMap(it -> it.scripts.stream())
                         .filter(it -> it.name.equals(resourceName) || resourceName.equals(it.jsMapName)).findFirst().orElse(null);
                 if (scriptWrapper != null) {
-                    writeResource(resourceName.equals(scriptWrapper.name)? scriptWrapper.url: scriptWrapper.jsMapUrl, resp);
+                    writeResource(resourceName.equals(scriptWrapper.name) ? scriptWrapper.url : scriptWrapper.jsMapUrl, resp);
                     return;
                 }
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        } catch (Throwable e){
-            throw  new ServletException(e);
+        } catch (Throwable e) {
+            throw new ServletException(e);
         }
     }
 
-    protected abstract T createRootElement(UiModel model, OperationUiContext operationUiContext) throws Exception;
+    protected abstract T createRootElement(UiModel model, JsonObject uiData, OperationUiContext operationUiContext) throws Exception;
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -131,72 +131,69 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & RootUiElement>
             String pathInfo = req.getPathInfo();
             if (pathInfo.startsWith("/_ui")) {
                 List<JsonObject> requestCommands;
-                try(var is = req.getInputStream()){
+                try (var is = req.getInputStream()) {
                     requestCommands = (List) new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonArray.class).asList();
                 }
                 String clientId = req.getHeader("x-client-id");
                 var pi = URLEncoder.encode(pathInfo, StandardCharsets.UTF_8);
-                GlobalUiContext.setOperationContext(pi, clientId);
-                try {
-                    GlobalUiContext.setParameter(GlobalUiContext.LAST_UPDATED, Instant.now());
-                    var model = GlobalUiContext.getParameter(GlobalUiContext.UI_MODEL);
-                    if (model == null) {
-                        model = new UiModel();
-                        GlobalUiContext.setParameter(GlobalUiContext.UI_MODEL, model);
-                        GlobalUiContext.setParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER, new AtomicLong(-1));
-                        GlobalUiContext.setParameter(GlobalUiContext.VERSION_PROVIDER, new AtomicInteger(-1));
+                GlobalUiContext.setParameter(pathInfo, clientId, GlobalUiContext.LAST_UPDATED, Instant.now());
+                var model = GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.UI_MODEL);
+                if (model == null) {
+                    model = new UiModel();
+                    GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.UI_MODEL, model);
+                    GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.ELEMENT_INDEX_PROVIDER, new AtomicLong(-1));
+                    GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.VERSION_PROVIDER, new AtomicInteger(-1));
+                }
+                OperationUiContext operationUiContext = new OperationUiContext();
+                operationUiContext.setParameter(GlobalUiContext.UI_MODEL, model);
+                operationUiContext.setParameter(OperationUiContext.RESPONSE_COMMANDS, new JsonArray());
+                operationUiContext.setParameter(OperationUiContext.REQUEST, req);
+                operationUiContext.setParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER, GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.ELEMENT_INDEX_PROVIDER));
+                if (requestCommands.get(0).get("cmd").getAsString().equals("init")) {
+                    var data = requestCommands.get(0).get("data").getAsJsonObject();
+                    if (data.has("ls")) {
+                        operationUiContext.setParameter(OperationUiContext.LOCAL_STORAGE_DATA, data.get("ls").getAsJsonObject());
                     }
-                    OperationUiContext operationUiContext = new OperationUiContext();
-                    operationUiContext.setParameter(OperationUiContext.RESPONSE_COMMANDS, new JsonArray());
-                    operationUiContext.setParameter(OperationUiContext.REQUEST, req);
-                    if(requestCommands.get(0).get("cmd").getAsString().equals("init")){
-                        var data = requestCommands.get(0).get("data").getAsJsonObject();
-                        if(data.has("ls")) {
-                            operationUiContext.setParameter(OperationUiContext.LOCAL_STORAGE_DATA, data.get("ls").getAsJsonObject());
-                        }
-                        if(data.has("params")) {
-                            operationUiContext.setParameter(OperationUiContext.PARAMS, data.get("params").getAsJsonObject());
-                        }
-                        var uiData = data.has("uiData") ? data.get("uiData").getAsJsonObject() : null;
-                        var rootElement = createRootElement(model, operationUiContext);
+                    if (data.has("params")) {
+                        operationUiContext.setParameter(OperationUiContext.PARAMS, data.get("params").getAsJsonObject());
+                    }
+                    var uiData = data.has("uiData") ? data.get("uiData").getAsJsonObject() : null;
+                    var rootElement = createRootElement(model, uiData, operationUiContext);
+                    var command = new JsonObject();
+                    command.addProperty("cmd", "init");
+                    command.add("data", rootElement.buildElement(operationUiContext));
+                    operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
+                } else {
+                    long xVersion = Long.parseLong(req.getHeader("x-version"));
+                    if (GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.VERSION_PROVIDER).get() != xVersion) {
                         var command = new JsonObject();
-                        command.addProperty("cmd", "init");
-                        command.add("data", rootElement.buildElement(uiData, operationUiContext));
+                        command.addProperty("cmd", "resync");
                         operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
                     } else {
-                        long xVersion = Long.parseLong(req.getHeader("x-version"));
-                        if (GlobalUiContext.getParameter(GlobalUiContext.VERSION_PROVIDER).get() != xVersion) {
-                            var command = new JsonObject();
-                            command.addProperty("cmd", "resync");
-                            operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
-                        } else {
-                            var fModel = model;
-                            requestCommands.forEach(cmdData -> WebPeerUtils.wrapException(() ->{
-                                var rc = WebPeerUtils.getString(cmdData, "cmd");
-                                if("ec".equals(rc)){
-                                    var elementId = Long.parseLong(WebPeerUtils.getString(cmdData, "id"));
-                                    fModel.findElement(elementId).executeCommand(cmdData.get("data").getAsJsonObject(), operationUiContext);
-                                }
-                            }));
-                        }
+                        var fModel = model;
+                        requestCommands.forEach(cmdData -> WebPeerUtils.wrapException(() -> {
+                            var rc = WebPeerUtils.getString(cmdData, "cmd");
+                            if ("ec".equals(rc)) {
+                                var elementId = Long.parseLong(WebPeerUtils.getString(cmdData, "id"));
+                                fModel.findElement(elementId).executeCommand(cmdData.get("data").getAsJsonObject(), operationUiContext);
+                            }
+                        }));
                     }
-                    resp.setHeader("x-version", String.valueOf(GlobalUiContext.getParameter(GlobalUiContext.VERSION_PROVIDER).incrementAndGet()));
-                    resp.setHeader("Content-Type", "application/json");
-                    try (var os = resp.getOutputStream()) {
-                        var jw = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
-                        new Gson().toJson(operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS), jw);
-                        jw.flush();
-                    }
-                    resp.setStatus(HttpServletResponse.SC_OK);
-                } finally {
-                    GlobalUiContext.clearOperationContext();
                 }
+                resp.setHeader("x-version", String.valueOf(GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.VERSION_PROVIDER).incrementAndGet()));
+                resp.setHeader("Content-Type", "application/json");
+                try (var os = resp.getOutputStream()) {
+                    var jw = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
+                    new Gson().toJson(operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS), jw);
+                    jw.flush();
+                }
+                resp.setStatus(HttpServletResponse.SC_OK);
                 return;
             }
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        } catch (Throwable e){
+        } catch (Throwable e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            throw  new ServletException(e);
+            throw new ServletException(e);
         }
     }
 
@@ -206,10 +203,10 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & RootUiElement>
 
     protected void writeResource(URL url, HttpServletResponse resp) throws IOException {
         resp.setStatus(HttpServletResponse.SC_OK);
-        if(url.toString().endsWith(".svg")) {
+        if (url.toString().endsWith(".svg")) {
             resp.setHeader("Content-Type", "image/svg+xml");
         }
-        try(var is = url.openStream()) {
+        try (var is = url.openStream()) {
             try (var os = resp.getOutputStream()) {
                 is.transferTo(os);
                 os.flush();
@@ -222,12 +219,12 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & RootUiElement>
         String content = getContent(getIndexHtmlUrl());
         content = content.replace("${title}", getTitle());
         String scripts = getModules().stream().flatMap(it -> it.scripts.stream())
-                .map(it -> String.format("<script type=\"text/javascript\" src=\"_resources/%s\"></script>\n", it.name)).reduce("", (a,b) -> a+b);
+                .map(it -> String.format("<script type=\"text/javascript\" src=\"_resources/%s\"></script>\n", it.name)).reduce("", (a, b) -> a + b);
         String links = getModules().stream().flatMap(it -> it.links.stream())
-                .map(it -> String.format("<link rel=\"%s\" type=\"%s\" src=\"_resources/%s\"></link>\n", it.rel, it.type, it.name)).reduce("", (a,b) -> a+b);
+                .map(it -> String.format("<link rel=\"%s\" type=\"%s\" src=\"_resources/%s\"></link>\n", it.rel, it.type, it.name)).reduce("", (a, b) -> a + b);
         String parameters = getWebAppParameters().entrySet().stream()
-                .map(it -> String.format("%s: \"%s\",\n", it.getKey(), it.getValue())).reduce("", (a,b) -> a+b);
-        content = content.replace("${favicon}", getFaviconUrl() == null? "": "<link rel=\"icon\" type=\"image/x-icon\" href=\"/fav.ico\">");
+                .map(it -> String.format("%s: \"%s\",\n", it.getKey(), it.getValue())).reduce("", (a, b) -> a + b);
+        content = content.replace("${favicon}", getFaviconUrl() == null ? "" : "<link rel=\"icon\" type=\"image/x-icon\" href=\"/fav.ico\">");
         content = content.replace("${links}", links);
         content = content.replace("${scripts}", scripts);
         content = content.replace("${parameters}", String.format("<script>\nwindow.webPeer = {parameters: {\n%s\n}\n}\n</script>", parameters));
@@ -246,18 +243,18 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & RootUiElement>
 
     protected String getContent(URL indexHtmlUrl) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try(var is = indexHtmlUrl.openStream()){
+        try (var is = indexHtmlUrl.openStream()) {
             is.transferTo(baos);
             baos.flush();
         }
         return baos.toString(StandardCharsets.UTF_8);
     }
 
-    protected abstract Map<String,String> getWebAppParameters();
+    protected abstract Map<String, String> getWebAppParameters();
 
     protected abstract String getTitle();
 
-    protected URL getIndexHtmlUrl(){
+    protected URL getIndexHtmlUrl() {
         return getClass().getClassLoader().getResource("webpeerCore/index.html");
     }
 }
