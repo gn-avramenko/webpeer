@@ -42,8 +42,7 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
         breakpoints.put("desktop", 1024);
         setBreakpoints(breakpoints);
         var div = new AntdDiv(ctx);
-        getChildren().add(div);
-        div.setParent(this);
+        ctx.appendChild(div, this);
         div.setContent("Hello " + ctx.getParameter(BREAKPOINT));
     }
 

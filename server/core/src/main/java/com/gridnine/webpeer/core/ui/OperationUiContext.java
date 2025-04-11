@@ -31,20 +31,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 
 public class OperationUiContext extends HashMap<String, Object> {
-    public final static TypedParameter<HttpServletRequest> REQUEST = new TypedParameter<>("request") ;
-    public final static TypedParameter<JsonArray> RESPONSE_COMMANDS = new TypedParameter<>("response-commands") ;
-    public final static TypedParameter<JsonObject> LOCAL_STORAGE_DATA = new TypedParameter<>("local-storage-data") ;
-    public final static TypedParameter<JsonObject> PARAMS = new TypedParameter<>("params") ;
+    public final static TypedParameter<HttpServletRequest> REQUEST = new TypedParameter<>("request");
+    public final static TypedParameter<JsonArray> RESPONSE_COMMANDS = new TypedParameter<>("response-commands");
+    public final static TypedParameter<JsonObject> LOCAL_STORAGE_DATA = new TypedParameter<>("local-storage-data");
+    public final static TypedParameter<JsonObject> PARAMS = new TypedParameter<>("params");
 
-    public<T> void setParameter(TypedParameter<T> param, T value) {
+    public <T> void setParameter(TypedParameter<T> param, T value) {
         super.put(param.name, value);
     }
 
     public <T> T getParameter(TypedParameter<T> param) {
-        return (T)super.get(param.name);
+        return (T) super.get(param.name);
     }
 
-    public void sendElementPropertyChange(long elementId, String property, Object value){
+    public void sendElementPropertyChange(long elementId, String property, Object value) {
         var command = new JsonObject();
         command.addProperty("cmd", "ec");
         command.addProperty("id", String.valueOf(elementId));
@@ -53,14 +53,14 @@ public class OperationUiContext extends HashMap<String, Object> {
         var commandData = new JsonObject();
         data.add("data", commandData);
         commandData.addProperty("pn", property);
-        if(value != null){
-            if(value instanceof String){
+        if (value != null) {
+            if (value instanceof String) {
                 commandData.addProperty("pv", (String) value);
-            } else if (value instanceof Number){
+            } else if (value instanceof Number) {
                 commandData.addProperty("pv", (Number) value);
-            } else if (value instanceof Boolean){
+            } else if (value instanceof Boolean) {
                 commandData.addProperty("pv", (Boolean) value);
-            } else if (value instanceof JsonElement){
+            } else if (value instanceof JsonElement) {
                 commandData.add("pv", (JsonElement) value);
             }
         }
@@ -68,15 +68,15 @@ public class OperationUiContext extends HashMap<String, Object> {
         getParameter(RESPONSE_COMMANDS).add(command);
     }
 
-    public void setLocalStorageParam(String param, Object value){
+    public void setLocalStorageParam(String param, Object value) {
         var command = new JsonObject();
         command.addProperty("cmd", "uls");
         var data = new JsonObject();
         command.add("data", data);
         data.addProperty("pn", param);
-        if(value instanceof String){
+        if (value instanceof String) {
             data.addProperty("pv", (String) value);
-        } else if (value instanceof Number){
+        } else if (value instanceof Number) {
             data.addProperty("pv", (Number) value);
         } else if (value instanceof Boolean) {
             data.addProperty("pv", (Boolean) value);
@@ -87,29 +87,44 @@ public class OperationUiContext extends HashMap<String, Object> {
     }
 
 
-    public void reload(){
+    public void reload() {
         var command = new JsonObject();
         command.addProperty("cmd", "reload");
         getParameter(RESPONSE_COMMANDS).add(command);
     }
 
-    public String getStringLocalStorageParam(String paramName){
+    public String getStringLocalStorageParam(String paramName) {
         var data = getParameter(LOCAL_STORAGE_DATA);
-        if(data == null){
+        if (data == null) {
             return null;
         }
-        return data.has(paramName)? data.get(paramName).getAsString(): null;
+        return data.has(paramName) ? data.get(paramName).getAsString() : null;
     }
 
 
-    public void upsertChildCommand(BaseUiElement child, long parentId, OperationUiContext context) {
-        var command = new JsonObject();
-        command.addProperty("cmd", "uc");
-        command.addProperty("id", String.valueOf(parentId));
-        WebPeerUtils.wrapException(()->{
-            command.add("data", child.buildElement(context));
-        });
-        getParameter(RESPONSE_COMMANDS).add(command);
+    private RootUiElement findRootElement(BaseUiElement child) {
+        if (child instanceof RootUiElement) {
+            return (RootUiElement) child;
+        }
+        if (child.getParent() == null) {
+            return null;
+        }
+        return findRootElement(child.getParent());
+    }
+
+    public void appendChild(BaseUiElement child, BaseUiElement parent) {
+        child.setParent(parent);
+        parent.getChildren().add(child);
+        var root = findRootElement(parent);
+        if (root != null) {
+            var command = new JsonObject();
+            command.addProperty("cmd", "uc");
+            command.addProperty("id", String.valueOf(parent.getId()));
+            WebPeerUtils.wrapException(() -> {
+                command.add("data", child.buildElement(this));
+            });
+            getParameter(RESPONSE_COMMANDS).add(command);
+        }
     }
 
 }
