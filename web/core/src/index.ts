@@ -24,8 +24,9 @@ export const api = new API({
 
 async function init(){
     await api.sendCommand({cmd: 'init', data: {
-        ls: JSON.parse(window.localStorage.getItem("webpeer") || "{}"),
-        params: {windowWidth: window.innerWidth, ...(window as any).webPeer}}})
+            ls: JSON.parse(window.localStorage.getItem("webpeer") || "{}"),
+            params: (window as any).webPeer
+        }})
 }
 
 document.addEventListener("DOMContentLoaded", init);

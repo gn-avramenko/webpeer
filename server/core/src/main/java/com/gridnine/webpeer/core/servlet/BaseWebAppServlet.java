@@ -151,8 +151,12 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & RootUiElement>
                     operationUiContext.setParameter(OperationUiContext.REQUEST, req);
                     if(requestCommands.get(0).get("cmd").getAsString().equals("init")){
                         var data = requestCommands.get(0).get("data").getAsJsonObject();
-                        operationUiContext.setParameter(OperationUiContext.LOCAL_STORAGE_DATA, data.get("ls").getAsJsonObject());
-                        operationUiContext.setParameter(OperationUiContext.PARAMS, data.get("params").getAsJsonObject());
+                        if(data.has("ls")) {
+                            operationUiContext.setParameter(OperationUiContext.LOCAL_STORAGE_DATA, data.get("ls").getAsJsonObject());
+                        }
+                        if(data.has("params")) {
+                            operationUiContext.setParameter(OperationUiContext.PARAMS, data.get("params").getAsJsonObject());
+                        }
                         var uiData = data.has("uiData") ? data.get("uiData").getAsJsonObject() : null;
                         var rootElement = createRootElement(model, operationUiContext);
                         var command = new JsonObject();

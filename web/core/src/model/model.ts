@@ -52,6 +52,7 @@ export class UiModel{
             if (this.rootElement) {
                 this.removeNode(this.rootElement)
             }
+            this.rootElement = elm
             this.addNode(elm)
         }
     }

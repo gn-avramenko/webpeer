@@ -21,17 +21,23 @@
 
 package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
+import com.gridnine.webpeer.antd.admin.ui.components.breakpoint.AntdBreakpoint;
 import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
 import com.gridnine.webpeer.core.ui.RootUiElement;
 import com.gridnine.webpeer.core.ui.UiModel;
 
-public class AntdMainFrame extends AntdDiv implements RootUiElement {
+import java.util.HashMap;
+
+public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
 
     private final UiModel model;
 
     public AntdMainFrame(UiModel model) {
         this.model = model;
-        setContent("Hello world");
+        var breakpoints  = new HashMap<String,Object>();
+        breakpoints.put("mobile", 0);
+        breakpoints.put("desktop", 1024);
+        setBreakpoints(breakpoints);
     }
 
     @Override

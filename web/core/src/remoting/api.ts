@@ -103,6 +103,15 @@ export class API {
         await this.sendCommand(cmd)
     }
 
+    async resync(){
+        const cmd = {
+            cmd: 'init',
+            data: {
+                uiData: uiModel.getRootElement()!.serialize()
+            }
+        };
+        await this.sendCommand(cmd)
+    }
 
     async sendAction(elementId:string, actionId: string, actionData: any|null|undefined){
         await this.sendCommand({
@@ -153,7 +162,7 @@ export class API {
                 if(commands.find(it => it.cmd === "resync")){
                     const queueItem = {
                         payload: {
-                            command: 'resync',
+                            command: 'init',
                             model: uiModel.getRootElement()!.serialize()
                         },
                         reject: () => {
