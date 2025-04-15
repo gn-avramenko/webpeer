@@ -24,28 +24,107 @@ package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.breakpoint.AntdBreakpoint;
 import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
+import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdContent;
+import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdHeader;
+import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdLayout;
+import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdSider;
+import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenu;
+import com.gridnine.webpeer.antd.admin.ui.components.theme.AntdTheme;
+import com.gridnine.webpeer.core.ui.GlobalUiContext;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.RootUiElement;
 import com.gridnine.webpeer.core.ui.UiModel;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
 
+    public static String MOBILE_BREAKPOINT = "mobile";
+
+    public static String DESKTOP_BREAKPOINT = "desktop";
+
     private final UiModel model;
 
-    public AntdMainFrame(UiModel model, JsonObject data, OperationUiContext ctx) {
-        super(data, ctx);
-        this.model = model;
-        var breakpoints  = new HashMap<String,Object>();
-        breakpoints.put("mobile", 0);
-        breakpoints.put("desktop", 1024);
-        setBreakpoints(breakpoints);
-        var div = new AntdDiv(ctx);
-        ctx.appendChild(div, this);
-        div.setContent("Hello " + ctx.getParameter(BREAKPOINT));
+    private AntdTheme theme;
+
+    public static AntdMainFrame lookup(OperationUiContext context) {
+        return (AntdMainFrame) context.getParameter(GlobalUiContext.UI_MODEL).getRootElement();
     }
 
+    public AntdMainFrame(UiModel model, JsonObject data, OperationUiContext ctx, AntdMainFrameConfiguration configuration) {
+        super(data, ctx);
+        this.model = model;
+        model.setRootElement(this);
+        final Map<String, Object> breakPoints = new HashMap<>();
+        breakPoints.put(MOBILE_BREAKPOINT, 0);
+        if (configuration.getDesktopWidth() > 0) {
+            breakPoints.put(DESKTOP_BREAKPOINT, configuration.getDesktopWidth());
+        }
+        setBreakpoints(breakPoints);
+        var breakpoint = ctx.getParameter(AntdBreakpoint.BREAKPOINT);
+        if (breakpoint == null) {
+            return;
+        }
+        theme = new AntdTheme(ctx, configuration.getTheme());
+        UiModel.addElement(theme, this);
+        var layout = new AntdLayout(ctx);
+        var layoutStyle = new HashMap<String,Object>();
+        layoutStyle.put("height", "100%");
+        layoutStyle.put("borderRadius", "token:borderRadiusLG");
+        layout.setStyle(layoutStyle);
+        layout.setTag("layout");
+        UiModel.addElement(layout, theme);
+        if (DESKTOP_BREAKPOINT.equals(breakpoint)) {
+            {
+                var header = new AntdHeader(ctx);
+                header.setTag("header");
+                header.setStyle(configuration.getHeaderStyle());
+                if (configuration.getHeader() != null) {
+                    UiModel.addElement(configuration.getHeader(), header);
+                }
+                UiModel.addElement(header, layout);
+            }
+            {
+                var content = new AntdContent(ctx);
+                var contentStyle = new HashMap<String,Object>();
+                contentStyle.put("height", "100%");
+                content.setStyle(contentStyle);
+                content.setTag("content");
+                UiModel.addElement(content, layout);
+                {
+                   var innerLayout = new AntdLayout(ctx);
+                   innerLayout.setTag("inner-layout");
+                   UiModel.addElement(innerLayout,  content);
+                    {
+                        var sider = new AntdSider(ctx);
+                        sider.setTag("sider");
+                        UiModel.addElement(sider, innerLayout);
+                        {
+                            var menu = new AntdMenu(ctx, configuration.getMenuItems());
+                            UiModel.addElement(menu, sider);
+                        }
+                    }
+                    {
+                        var innerContent = new AntdContent(ctx);
+                        innerContent.setTag("inner-content");
+                        UiModel.addElement(innerContent, innerLayout);
+                        {
+                            var realContent = new AntdDiv(ctx);
+                            realContent.setContent("Hello content");
+                            UiModel.addElement(realContent, innerContent);
+                        }
+                    }
+                }
+            }
+            return;
+        }
+
+    }
+
+    public void setTheme(JsonObject theme, OperationUiContext ctx){
+        this.theme.setTheme(theme, ctx);
+    }
     @Override
     public UiModel getModel() {
         return model;

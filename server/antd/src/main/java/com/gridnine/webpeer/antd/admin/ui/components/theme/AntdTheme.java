@@ -19,11 +19,36 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components;
+package com.gridnine.webpeer.antd.admin.ui.components.theme;
 
-public enum AntdIcons {
-    SUN_OUTLINED,
-    MOON_FILLED,
-    MENU_FOLD_OUTLINED
+import com.google.gson.JsonObject;
+import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
 
+public class AntdTheme extends BaseAntdUiElement {
+
+    public AntdTheme(OperationUiContext ctx, JsonObject algorithm) {
+        super(ctx);
+        this.theme = algorithm;
+    }
+
+    private JsonObject theme;
+
+
+    @Override
+    public JsonObject buildElement(OperationUiContext context) {
+        var result =  super.buildElement(context);
+        result.add("theme", theme);
+        return result;
+    }
+
+    public void setTheme(JsonObject theme, OperationUiContext operationUiContext) {
+        this.theme = theme;
+        operationUiContext.sendElementPropertyChange(getId(), "theme", theme);
+    }
+
+    @Override
+    public String getType() {
+        return "theme";
+    }
 }

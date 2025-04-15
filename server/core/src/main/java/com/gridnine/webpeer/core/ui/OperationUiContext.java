@@ -112,16 +112,27 @@ public class OperationUiContext extends HashMap<String, Object> {
         return findRootElement(child.getParent());
     }
 
-    public void appendChild(BaseUiElement child, BaseUiElement parent) {
-        child.setParent(parent);
-        parent.getChildren().add(child);
+    public void upsertChild(BaseUiElement oldChild, BaseUiElement newChild, BaseUiElement parent, boolean sendCommand) {
+        if (oldChild != null && newChild.getId() == oldChild.getId()) {
+            return;
+        }
         var root = findRootElement(parent);
-        if (root != null) {
+        if (oldChild != null) {
+            UiModel.removeElement(oldChild);
+            if (root != null && sendCommand) {
+                var command = new JsonObject();
+                command.addProperty("cmd", "rc");
+                command.addProperty("id", String.valueOf(parent.getId()));
+                getParameter(RESPONSE_COMMANDS).add(command);
+            }
+        }
+        UiModel.addElement(newChild, parent);
+        if (root != null && sendCommand) {
             var command = new JsonObject();
-            command.addProperty("cmd", "uc");
+            command.addProperty("cmd", "ac");
             command.addProperty("id", String.valueOf(parent.getId()));
             WebPeerUtils.wrapException(() -> {
-                command.add("data", child.buildElement(this));
+                command.add("data", newChild.buildElement(this));
             });
             getParameter(RESPONSE_COMMANDS).add(command);
         }

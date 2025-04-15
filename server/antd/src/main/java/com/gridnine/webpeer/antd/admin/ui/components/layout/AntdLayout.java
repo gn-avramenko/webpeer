@@ -19,33 +19,20 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.dropdown;
+package com.gridnine.webpeer.antd.admin.ui.components.layout;
 
+import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 
-public class AntdDropDownImageBuilder {
+public class AntdLayout extends BaseAntdUiElement {
 
-    private final AntdDropDownImage element;
-
-    public AntdDropDownImageBuilder(AntdDropDownImage image) {
-        this.element = image;
-    }
-
-    public void menuItem(String id, String image, String name, String width, String height, RunnableWithExceptionAndArgument<OperationUiContext> handler){
-        var item = new ImageMenuItem();
-        item.setId(id);
-        item.setImage(image);
-        item.setName(name);
-        item.setImageWidth(width);
-        item.setImageHeight(height);
-        item.setOnClick(handler);
-        element.getMenu().add(item);
-    }
-
-    public void selectItem(String id){
-        element.setSelectedItemId(id);
+    public AntdLayout(OperationUiContext ctx) {
+        super(ctx);
     }
 
 
+    @Override
+    public String getType() {
+        return "layout";
+    }
 }

@@ -36,7 +36,7 @@ public class AntdBreakpoint extends BaseAntdUiElement {
 
     private Map<String, Object> breakpoints = new HashMap<String, Object>();
 
-    private String breakPoint;
+    private final String breakPoint;
 
     public AntdBreakpoint(JsonObject uiData, OperationUiContext ctx) {
         super(ctx);

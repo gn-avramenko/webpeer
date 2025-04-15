@@ -19,11 +19,23 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components;
+package com.gridnine.webpeer.antd.admin.ui.builder;
 
-public enum AntdIcons {
-    SUN_OUTLINED,
-    MOON_FILLED,
-    MENU_FOLD_OUTLINED
+import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenuItem;
 
+public class AntdMenuGroupBuilder {
+    private final AntdMenuItem group;
+
+    public AntdMenuGroupBuilder(AntdMenuItem item) {
+        this.group = item;
+    }
+
+    public void item(String name, String link){
+        var item = new AntdMenuItem();
+        item.setName(name);
+        item.setHandler((c) ->{
+            System.out.println(link);
+        });
+        group.getChildren().add(item);
+    }
 }

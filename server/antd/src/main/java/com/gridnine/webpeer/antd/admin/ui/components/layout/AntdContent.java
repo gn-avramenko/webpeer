@@ -19,11 +19,20 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components;
+package com.gridnine.webpeer.antd.admin.ui.components.layout;
 
-public enum AntdIcons {
-    SUN_OUTLINED,
-    MOON_FILLED,
-    MENU_FOLD_OUTLINED
+import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
 
+public class AntdContent extends BaseAntdUiElement {
+
+    public AntdContent(OperationUiContext ctx) {
+        super(ctx);
+    }
+
+
+    @Override
+    public String getType() {
+        return "content";
+    }
 }

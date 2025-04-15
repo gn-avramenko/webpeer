@@ -1,8 +1,8 @@
-import {AntdUiElementFactory, BaseAntdUiElement, updateStyle} from "@/ui/components/common.tsx";
-import React, {useEffect, useState} from "react";
-import {Dropdown, MenuProps, theme} from "antd";
-import {generateUUID} from "../../../../core/src/utils/utils.ts";
-import {api} from "../../../../core/src/index.ts";
+import React, { useEffect, useState } from 'react';
+import { Dropdown, MenuProps, theme } from 'antd';
+import { AntdUiElementFactory, BaseAntdUiElement, buildStyle } from '@/ui/components/common.tsx';
+import { generateUUID } from '../../../../core/src/utils/utils.ts';
+import { api } from '../../../../core/src/index.ts';
 
 type AntdMenuItem = {
     id: string,
@@ -21,105 +21,134 @@ type AntdDropdownImageInternal = {
 }
 
 function AntdDropdownImage(props: { component: AntdDropdownImageInternal }): React.ReactElement {
-    const [menu, setMenu] = useState<AntdMenuItem[]>([])
-    const [selectedMenuItemId, setSelectedMenuItemId] = useState("")
-    const [style, setStyle] = useState({})
-    props.component.setSelectedMenuItemIdSetter(setSelectedMenuItemId)
-    props.component.setMenuSetter(setMenu)
-    props.component.setStyleSetter(setStyle)
-    useEffect(() => {
-        props.component.onAfterInitialized()
-    }, []);
-    const { token } = theme.useToken()
-    const hs = (style && {...style} || {}) as any
-    updateStyle(hs, token, true)
-    if(!hs.display){
-        hs.display = "flex"
-        hs.flexDirection = "row"
-        hs.alignItems= "center"
-    }
-    hs.verticalAlign = "center"
-    const items: MenuProps['items'] = menu.map(mi => ({
-        label: (<div style={{display: "flex", flexDirection: "row", alignItems: "center"} }><img style={{display:"inline-block"}} alt={""} key={props.component.id || generateUUID()} width={mi.imageWidth} src={mi.image}
-                                                                                                 height={mi.imageHeight}/> <div style={{display:"inline-block", padding:5}}>{mi.name}</div></div>),
-        key: mi.id
-    }))
-    const selectedItem = menu.find(it => it.id === selectedMenuItemId)
-    return (<Dropdown placement="bottomLeft" menu={{
-        items,  onClick: (item) => {
-            api.sendPropertyChanged(props.component.id, "si", item.key)
-        }
-    }
-    }>
-        {selectedItem? (<div style={hs}><img alt={""} key={props.component.id || generateUUID()} width={selectedItem.imageWidth}
-                                   src={selectedItem.image} height={selectedItem.imageHeight}/> </div>): (<span style={hs}>Not Selected</span>)}
-    </Dropdown>)
+  const [menu, setMenu] = useState<AntdMenuItem[]>([]);
+  const [selectedMenuItemId, setSelectedMenuItemId] = useState('');
+  const [style, setStyle] = useState({});
+  props.component.setSelectedMenuItemIdSetter(setSelectedMenuItemId);
+  props.component.setMenuSetter(setMenu);
+  props.component.setStyleSetter(setStyle);
+  useEffect(() => {
+    props.component.onAfterInitialized();
+  }, []);
+  const { token } = theme.useToken();
+  const hs = buildStyle(style, token);
+
+  if (!hs.display) {
+    hs.display = 'flex';
+    hs.flexDirection = 'row';
+    hs.alignItems = 'center';
+  }
+  hs.verticalAlign = 'center';
+  const items: MenuProps['items'] = menu.map((mi) => ({
+    label: (<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+      <img
+        style={{ display: 'inline-block' }}
+        alt=""
+        key={props.component.id || generateUUID()}
+        width={mi.imageWidth}
+        src={mi.image}
+        height={mi.imageHeight}
+      />
+      {' '}
+      <div style={{ display: 'inline-block', padding: 5 }}>{mi.name}</div>
+    </div>),
+    key: mi.id,
+  }));
+  const selectedItem = menu.find((it) => it.id === selectedMenuItemId);
+  return (
+    <Dropdown
+      placement="bottomLeft"
+      menu={{
+        items,
+        onClick: (item) => {
+          api.sendPropertyChanged(props.component.id, 'si', item.key);
+        },
+      }}
+    >
+      {selectedItem ? (
+        <div style={hs}>
+          <img
+            alt=""
+            key={props.component.id || generateUUID()}
+            width={selectedItem.imageWidth}
+            src={selectedItem.image}
+            height={selectedItem.imageHeight}
+          />
+          {' '}
+
+        </div>
+      ) : (<span style={hs}>Not Selected</span>)}
+    </Dropdown>
+  );
 }
 
 class AntdDropdownImageElement extends BaseAntdUiElement implements AntdDropdownImageInternal {
-
     private selectedMenuItemIdSetter?: (id: string) => void;
+
     private menuSetter?: (menu: AntdMenuItem[]) => void
+
     private styleSetter?: (setter: (style: any) => void) => void
 
-    private  menu: AntdMenuItem[] = []
-    private selectedItemId: string = ""
+    private menu: AntdMenuItem[] = []
+
+    private selectedItemId: string = ''
+
     private style: any | undefined
 
     index: number;
 
-
     constructor(model: any) {
-        super(model)
-        this.index = model.index
-        this.selectedItemId = model.selectedItemId || ""
-        this.menu = model.menu
-        this.style = model.style
+      super(model);
+      this.index = model.index;
+      this.selectedItemId = model.selectedItemId || '';
+      this.menu = model.menu;
+      this.style = model.style;
     }
 
     setStyleSetter = (setter: (style: any) => void) => {
-        this.styleSetter = setter
+      this.styleSetter = setter;
     }
 
     setSelectedMenuItemIdSetter = (setter: (id: string) => void) => {
-        this.selectedMenuItemIdSetter = setter
+      this.selectedMenuItemIdSetter = setter;
     }
-    setMenuSetter =  (setter: (menu: AntdMenuItem[]) => void) => {
-        this.menuSetter = setter
+
+    setMenuSetter = (setter: (menu: AntdMenuItem[]) => void) => {
+      this.menuSetter = setter;
     }
 
     serialize = () => {
-        const result = {} as any
-        result.id = this.id;
-        result.index = this.index;
-        result.type = "dropdown-image";
-        result.selectedItemId = this.selectedItemId;
-        result.menu = this.menu
-        result.style = this.style
-        return result;
+      const result = {} as any;
+      result.id = this.id;
+      result.index = this.index;
+      result.type = 'dropdown-image';
+      result.selectedItemId = this.selectedItemId;
+      result.menu = this.menu;
+      result.style = this.style;
+      return result;
     }
 
     onAfterInitialized() {
-        this.menuSetter!(this.menu)
-        this.selectedMenuItemIdSetter!(this.selectedItemId)
-        this.menuSetter!(this.menu)
-        this.styleSetter!(this.style)
+        this.menuSetter!(this.menu);
+        this.selectedMenuItemIdSetter!(this.selectedItemId);
+        this.menuSetter!(this.menu);
+        this.styleSetter!(this.style);
     }
 
     updatePropertyValue(propertyName: string, propertyValue: any) {
-        if("si" === propertyName){
-            this.selectedItemId = propertyValue
-            this.selectedMenuItemIdSetter!(propertyValue)
-        }
+      if (propertyName === 'si') {
+        this.selectedItemId = propertyValue;
+            this.selectedMenuItemIdSetter!(propertyValue);
+      }
     }
 
     createReactElement(): React.ReactElement {
-        return React.createElement(AntdDropdownImage, {component: this, key: this.id})
+      return React.createElement(AntdDropdownImage, { component: this, key: this.id });
     }
 }
 
 export class AntdDropdownImageElementFactory implements AntdUiElementFactory {
-    createElement(node: any): AntdDropdownImageElement {
-        return new AntdDropdownImageElement(node)
-    }
+  createElement(node: any): AntdDropdownImageElement {
+    return new AntdDropdownImageElement(node);
+  }
 }

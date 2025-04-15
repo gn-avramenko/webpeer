@@ -44,7 +44,13 @@
     "tsdef": "^0.0.14",
     "vite-plugin-dts": "^4.5.0",
     "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4"
+    "@types/react-dom": "^19.0.4",
+    "@typescript-eslint/eslint-plugin": "^5.30.7",
+    "@typescript-eslint/parser": "^5.30.7",
+    "eslint": "^7.11.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jsx-a11y": "^6.6.1"
   },
   "dependencies": {
     "@webpeer/core": "file:../core",

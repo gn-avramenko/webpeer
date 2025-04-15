@@ -1,7 +1,9 @@
-import {AntdUiElementFactory, antdWebpeerExt, BaseAntdUiElement, updateStyle} from "@/ui/components/common.tsx";
-import React, {useEffect, useState} from "react";
-import {Dropdown, MenuProps, theme} from "antd";
-import {api} from "../../../../core/src/index.ts"
+import React, { useEffect, useState } from 'react';
+import { Dropdown, MenuProps, theme } from 'antd';
+import {
+  AntdUiElementFactory, antdWebpeerExt, BaseAntdUiElement, buildStyle,
+} from '@/ui/components/common.tsx';
+import { api } from '../../../../core/src/index.ts';
 
 type AntdMenuItem = {
     id: string,
@@ -18,95 +20,102 @@ type AntdDropdownIconInternal = {
 }
 
 function AntdDropdownIcon(props: { component: AntdDropdownIconInternal }): React.ReactElement {
-    const [menu, setMenu] = useState<AntdMenuItem[]>([])
-    const [selectedMenuItemId, setSelectedMenuItemId] = useState("")
-    const [style, setStyle] = useState({})
-    props.component.setSelectedMenuItemIdSetter(setSelectedMenuItemId)
-    props.component.setMenuSetter(setMenu)
-    props.component.setStyleSetter(setStyle)
-    useEffect(() => {
-        props.component.onAfterInitialized()
-    }, []);
-    const { token } = theme.useToken()
-    const hs = (style && {...style} || {}) as any
-    updateStyle(hs, token, true)
-    if(!hs.display){
-        hs.display = "inline-block"
-    }
-    const items: MenuProps['items'] = menu.map(mi => ({
-        label: (<span>{antdWebpeerExt.icons.get(mi.icon)!()} {mi.name}</span>),
-        key: mi.id
-    }))
-    const selectedItem = menu.find(it => it.id === selectedMenuItemId)
-    return (<Dropdown placement="bottomLeft" menu={{
+  const [menu, setMenu] = useState<AntdMenuItem[]>([]);
+  const [selectedMenuItemId, setSelectedMenuItemId] = useState('');
+  const [style, setStyle] = useState({});
+  props.component.setSelectedMenuItemIdSetter(setSelectedMenuItemId);
+  props.component.setMenuSetter(setMenu);
+  props.component.setStyleSetter(setStyle);
+  useEffect(() => {
+    props.component.onAfterInitialized();
+  }, []);
+  const { token } = theme.useToken();
+
+  const items: MenuProps['items'] = menu.map((mi) => ({
+    label: <span>
+      {antdWebpeerExt.icons.get(mi.icon)!()}
+      {' '}
+      {mi.name}
+    </span>,
+    key: mi.id,
+  }));
+  const selectedItem = menu.find((it) => it.id === selectedMenuItemId);
+  return (
+    <Dropdown
+      placement="bottomLeft"
+      menu={{
         items,
         onClick: (item) => {
-            api.sendPropertyChanged(props.component.id, "si", item.key)
-        }
-    }
-    }>
-        {selectedItem? (<div style={hs}>{antdWebpeerExt.icons.get(selectedItem.icon)!()}</div>) : (<span>Not selected</span>)}
-    </Dropdown>)
+          api.sendPropertyChanged(props.component.id, 'si', item.key);
+        },
+      }}
+    >
+      {selectedItem ? (<div style={buildStyle(style, token)}>{antdWebpeerExt.icons.get(selectedItem.icon)!()}</div>) : (<span>Not selected</span>)}
+    </Dropdown>
+  );
 }
 
 class AntdDropdownIconElement extends BaseAntdUiElement implements AntdDropdownIconInternal {
-
     private selectedMenuItemIdSetter?: (id: string) => void;
+
     private menuSetter?: (menu: AntdMenuItem[]) => void
+
     private styleSetter?: (setter: (style: any) => void) => void
 
-    private  menu: AntdMenuItem[] = []
-    private selectedItemId: string = ""
+    private menu: AntdMenuItem[] = []
+
+    private selectedItemId: string = ''
+
     private style: any | undefined
 
     constructor(model: any) {
-        super(model)
-        this.selectedItemId = model.selectedItemId || ""
-        this.menu = model.menu
+      super(model);
+      this.selectedItemId = model.selectedItemId || '';
+      this.menu = model.menu;
     }
 
     setSelectedMenuItemIdSetter = (setter: (id: string) => void) => {
-        this.selectedMenuItemIdSetter = setter
+      this.selectedMenuItemIdSetter = setter;
     }
-    setMenuSetter =  (setter: (menu: AntdMenuItem[]) => void) => {
-        this.menuSetter = setter
+
+    setMenuSetter = (setter: (menu: AntdMenuItem[]) => void) => {
+      this.menuSetter = setter;
     }
 
     setStyleSetter = (setter: (style: any) => void) => {
-        this.styleSetter = setter
+      this.styleSetter = setter;
     }
 
     serialize = () => {
-        const result = {} as any
-        result.id = this.id;
-        result.type = "dropdown-icon";
-        result.selectedItemId = this.selectedItemId;
-        result.menu = this.menu
-        result.style = this.style
-        return result;
+      const result = {} as any;
+      result.id = this.id;
+      result.type = 'dropdown-icon';
+      result.selectedItemId = this.selectedItemId;
+      result.menu = this.menu;
+      result.style = this.style;
+      return result;
     }
 
     onAfterInitialized() {
-        this.menuSetter!(this.menu)
-        this.selectedMenuItemIdSetter!(this.selectedItemId)
-        this.styleSetter!(this.style)
+        this.menuSetter!(this.menu);
+        this.selectedMenuItemIdSetter!(this.selectedItemId);
+        this.styleSetter!(this.style);
     }
 
     updatePropertyValue(propertyName: string, propertyValue: any) {
-        if("si" === propertyName){
-            this.selectedItemId = propertyValue
-            this.selectedMenuItemIdSetter!(propertyValue)
-        }
+      if (propertyName === 'si') {
+        this.selectedItemId = propertyValue;
+            this.selectedMenuItemIdSetter!(propertyValue);
+      }
     }
 
     createReactElement(): React.ReactElement {
-        return React.createElement(AntdDropdownIcon, {component: this, key: this.id})
+      return React.createElement(AntdDropdownIcon, { component: this, key: this.id });
     }
-
 }
 
 export class AntdDropdownIconElementFactory implements AntdUiElementFactory {
-    createElement(node: any): AntdDropdownIconElement {
-        return new AntdDropdownIconElement(node)
-    }
+  createElement(node: any): AntdDropdownIconElement {
+    return new AntdDropdownIconElement(node);
+  }
 }

@@ -19,11 +19,35 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components;
+package com.gridnine.webpeer.antd.admin.ui.builder;
 
-public enum AntdIcons {
-    SUN_OUTLINED,
-    MOON_FILLED,
-    MENU_FOLD_OUTLINED
+import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownImage;
+import com.gridnine.webpeer.antd.admin.ui.components.dropdown.ImageMenuItem;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
+
+public class AntdDropDownImageBuilder {
+
+    private final AntdDropDownImage element;
+
+    public AntdDropDownImageBuilder(AntdDropDownImage image) {
+        this.element = image;
+    }
+
+    public void menuItem(String id, String image, String name, String width, String height, RunnableWithExceptionAndArgument<OperationUiContext> handler){
+        var item = new ImageMenuItem();
+        item.setId(id);
+        item.setImage(image);
+        item.setName(name);
+        item.setImageWidth(width);
+        item.setImageHeight(height);
+        item.setOnClick(handler);
+        element.getMenu().add(item);
+    }
+
+    public void selectItem(String id){
+        element.setSelectedItemId(id);
+    }
+
 
 }

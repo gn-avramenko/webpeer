@@ -107,6 +107,8 @@ export class API {
         const cmd = {
             cmd: 'init',
             data: {
+                ls: JSON.parse(window.localStorage.getItem("webpeer") || "{}"),
+                params: (window as any).webPeer,
                 uiData: uiModel.getRootElement()!.serialize()
             }
         };

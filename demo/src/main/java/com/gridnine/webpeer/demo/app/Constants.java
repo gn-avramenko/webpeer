@@ -25,17 +25,17 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 public class Constants {
-    public static final JsonObject LIGHT_THEME = new JsonObject();
-    public static final JsonObject DARK_THEME = new JsonObject();
+    public static final JsonObject LIGHT_DESKTOP_THEME = new JsonObject();
+    public static final JsonObject DARK_DESKTOP_THEME = new JsonObject();
+
+    public static final JsonObject DARK_MOBILE_THEME = new JsonObject();
+    public static final JsonObject LIGHT_MOBILE_THEME = new JsonObject();
+
     static {
         {
-            var desktopAlgorithm = new JsonArray();
-            desktopAlgorithm.add("darkAlgorithm");
-            DARK_THEME.add("desktopAlgorithm", desktopAlgorithm);
-            var mobileAlgorithm = new JsonArray();
-            mobileAlgorithm.add("darkAlgorithm");
-            mobileAlgorithm.add("compactAlgorithm");
-            DARK_THEME.add("mobileAlgorithm", mobileAlgorithm);
+            var darkDesktopAlgorithm = new JsonArray();
+            darkDesktopAlgorithm.add("darkAlgorithm");
+            DARK_DESKTOP_THEME.add("algorithm", darkDesktopAlgorithm);
         }
         {
 
@@ -46,16 +46,27 @@ public class Constants {
             layout.addProperty( "siderBg", "rgb(255,255,255)");
             layout.addProperty( "lightTriggerColor", "rgb(255,255,255)");
             layout.addProperty( "triggerBg", "rgb(255,255,255)");
-            LIGHT_THEME.add("components", components);
+            LIGHT_DESKTOP_THEME.add("components", components);
             {
                 var desktopAlgorithm = new JsonArray();
                 desktopAlgorithm.add("defaultAlgorithm");
-                LIGHT_THEME.add("desktopAlgorithm", desktopAlgorithm);
-                var mobileAlgorithm = new JsonArray();
-                mobileAlgorithm.add("defaultAlgorithm");
-                mobileAlgorithm.add("compactAlgorithm");
-                LIGHT_THEME.add("mobileAlgorithm", mobileAlgorithm);
+                LIGHT_DESKTOP_THEME.add("algorithm", desktopAlgorithm);
             }
+        }
+        DARK_MOBILE_THEME.asMap().putAll(DARK_DESKTOP_THEME.asMap());
+        LIGHT_MOBILE_THEME.asMap().putAll(LIGHT_DESKTOP_THEME.asMap());
+        {
+            var darkMobileAlgorithm = new JsonArray();
+            darkMobileAlgorithm.add("darkAlgorithm");
+            darkMobileAlgorithm.add("compactAlgorithm");
+            DARK_MOBILE_THEME.remove("algorithm");
+            DARK_MOBILE_THEME.add("algorithm", darkMobileAlgorithm);
+        }
+        {
+            var lightMobileAlgorithm = new JsonArray();
+            lightMobileAlgorithm.add("compactAlgorithm");
+            LIGHT_MOBILE_THEME.remove("algorithm");
+            LIGHT_MOBILE_THEME.add("algorithm", lightMobileAlgorithm);
         }
     }
 }

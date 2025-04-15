@@ -136,7 +136,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & RootUiElement>
                 }
                 String clientId = req.getHeader("x-client-id");
                 var pi = URLEncoder.encode(pathInfo, StandardCharsets.UTF_8);
-                GlobalUiContext.setParameter(pathInfo, clientId, GlobalUiContext.LAST_UPDATED, Instant.now());
+                GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.LAST_UPDATED, Instant.now());
                 var model = GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.UI_MODEL);
                 if (model == null) {
                     model = new UiModel();
