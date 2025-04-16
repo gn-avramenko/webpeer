@@ -32,17 +32,11 @@ function AntdTheme(props: { component: AntdThemeInternal }): React.ReactElement 
 class AntdThemeElement extends BaseAntdUiElement implements AntdThemeInternal {
     private theme:any = {}
 
-    private childrenSetter?: (content: BaseAntdUiElement[]) => void
-
     private themeSetter?: (th: any) => void
 
     constructor(model: any) {
       super(model);
       this.theme = model.theme;
-    }
-
-    setChildrenSetter = (setter: (children: BaseAntdUiElement[]) => void) => {
-      this.childrenSetter = setter;
     }
 
     setThemeSetter = (setter: (th: any) => void) => {

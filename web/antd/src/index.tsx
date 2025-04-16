@@ -17,6 +17,7 @@ import { AntdMenuElementFactory } from '@/ui/components/menu.tsx';
 import { AntdThemeElementFactory } from '@/ui/components/theme.tsx';
 import { uiModel } from '../../core/src/index.ts';
 import { BaseUiElement } from '../../core/src/model/model.ts';
+import {AntdRouterElementFactory} from "@/ui/components/router.tsx";
 
 antdWebpeerExt.elementHandlersFactories.set('div', new AntdDivElementFactory());
 antdWebpeerExt.elementHandlersFactories.set('img', new AntdImgElementFactory());
@@ -32,6 +33,7 @@ antdWebpeerExt.elementHandlersFactories.set('header', new AntdHeaderElementFacto
 antdWebpeerExt.elementHandlersFactories.set('sider', new AntdSiderElementFactory());
 antdWebpeerExt.elementHandlersFactories.set('menu', new AntdMenuElementFactory());
 antdWebpeerExt.elementHandlersFactories.set('theme', new AntdThemeElementFactory());
+antdWebpeerExt.elementHandlersFactories.set('router', new AntdRouterElementFactory());
 
 antdWebpeerExt.icons.set('SUN_OUTLINED', () => <SunOutlined />);
 antdWebpeerExt.icons.set('MOON_FILLED', () => <MoonFilled />);

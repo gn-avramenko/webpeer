@@ -28,7 +28,7 @@ function AntdDropdownIcon(props: { component: AntdDropdownIconInternal }): React
   props.component.setStyleSetter(setStyle);
   useEffect(() => {
     props.component.onAfterInitialized();
-  }, []);
+  }, [props.component]);
   const { token } = theme.useToken();
 
   const items: MenuProps['items'] = menu.map((mi) => ({

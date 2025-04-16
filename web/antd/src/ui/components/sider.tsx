@@ -22,7 +22,7 @@ function AntdSider(props: { component: AntdSiderInternal }): React.ReactElement 
   props.component.setStyleSetter(setStyle);
   useEffect(() => {
     props.component.onAfterInitialized();
-  }, []);
+  }, [props.component]);
   return (
     <Sider key={props.component.id} style={buildStyle(style, token)} width={width}>
       {children.map((ch) => ch.createReactElement())}
@@ -31,8 +31,6 @@ function AntdSider(props: { component: AntdSiderInternal }): React.ReactElement 
 }
 
 class AntdSiderElement extends BaseAntdUiElement implements AntdSiderInternal {
-    private childrenSetter?: (children: BaseAntdUiElement[]) => void
-
     private styleSetter?: (style: any) => void
 
     private widthSetter?: (width: number) => void
@@ -65,10 +63,6 @@ class AntdSiderElement extends BaseAntdUiElement implements AntdSiderInternal {
       result.children = this.children.map((ch) => ch.serialize());
       return result;
     };
-
-    setChildrenSetter = (setter: (children: BaseAntdUiElement[]) => void) => {
-      this.childrenSetter = setter;
-    }
 
     setStyleSetter = (setter: (style: any) => void) => {
       this.styleSetter = setter;

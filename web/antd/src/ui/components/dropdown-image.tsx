@@ -29,7 +29,7 @@ function AntdDropdownImage(props: { component: AntdDropdownImageInternal }): Rea
   props.component.setStyleSetter(setStyle);
   useEffect(() => {
     props.component.onAfterInitialized();
-  }, []);
+  }, [props.component]);
   const { token } = theme.useToken();
   const hs = buildStyle(style, token);
 

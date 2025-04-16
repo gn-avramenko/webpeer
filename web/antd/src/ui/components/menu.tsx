@@ -20,7 +20,7 @@ function AntdMenu(props: { component: AntdMenuInternal }): React.ReactElement {
   props.component.setMenuItemsSetter(setMenuItems);
   useEffect(() => {
     props.component.onAfterInitialized();
-  }, []);
+  }, [props.component]);
   return (
     <Menu
       mode="inline"
@@ -45,6 +45,27 @@ class AntdMenuElement extends BaseAntdUiElement implements AntdMenuInternal {
       super(model);
       this.id = model.id;
       this.style = model.style || {};
+      this.menuItems = this.buildMenuItems(model.menuItems);
+    }
+
+    private buildMenuItems(menuItems:any) {
+      return ((menuItems || []) as any[]).map((it, idx) => ({
+        key: `group-${idx}`,
+        icon: it.icon && antdWebpeerExt.icons.get(it.icon)!(),
+        label: it.name,
+        children: (it.children || []).map((ch:any, idx2:any) => {
+          const elementKey = `element-${idx}-${idx2}`;
+          return {
+            key: elementKey,
+            label: ch.name,
+            link: ch.link,
+            onClick: () => {
+              api.sendAction(this.id, 'click', `${idx}-${idx2}`);
+            },
+          };
+        }),
+      }
+      ));
     }
 
     executeCommand = () => {
@@ -61,23 +82,6 @@ class AntdMenuElement extends BaseAntdUiElement implements AntdMenuInternal {
       result.id = this.id;
       result.type = 'menu';
       result.tag = this.tag;
-      result.menuItems = ((this.menuItems || []) as any[]).map((it, idx) => ({
-        key: `group-${idx}`,
-        icon: it.icon && antdWebpeerExt.icons.get(it.icon)!(),
-        label: it.name,
-        children: (it.children || []).map((ch:any, idx2:any) => {
-          const elementKey = `element-${idx}-${idx2}`;
-          return {
-            key: elementKey,
-            label: ch.name,
-            link: ch.link,
-            onClick: () => {
-              api.sendAction(this.id, 'click', null);
-            },
-          };
-        }),
-      }
-      ));
       return result;
     };
 

@@ -26,6 +26,8 @@ import com.gridnine.webpeer.antd.admin.ui.builder.AntdAdminStyles;
 import com.gridnine.webpeer.antd.admin.ui.builder.AntdUiBuilder;
 import com.gridnine.webpeer.antd.admin.ui.components.AntdIcons;
 import com.gridnine.webpeer.antd.admin.ui.components.breakpoint.AntdBreakpoint;
+import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
+import com.gridnine.webpeer.antd.admin.ui.components.textField.AntdTextField;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrame;
 import com.gridnine.webpeer.antd.admin.ui.builder.AntdMainFrameConfigurationBuilder;
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
@@ -110,12 +112,16 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
                     var fn = n;
                     menu.group(String.format("%s %s","ru".equals(lang)? "Группа": "Group", n), AntdIcons.SUN_OUTLINED.name(), g->{
                         for(var m =1; m<10;m++){
-                            g.item(String.format("%s %s - %s","ru".equals(lang)? "Элемент": "Item", fn, m), String.format("/view-%s", fn));
+                            g.item(String.format("%s %s - %s","ru".equals(lang)? "Элемент": "Item", fn, m), String.format("/view-%s-%s", fn, m));
                         }
                     });
                 }
             });
-
+            c.viewProvider((path,ui,ctx) ->{
+                var textField = new AntdTextField(ui, ctx);
+                textField.setDeferred(true);
+                return textField;
+            });
         }));
     }
 }

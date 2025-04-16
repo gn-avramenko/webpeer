@@ -3,6 +3,7 @@ package com.gridnine.webpeer.antd.admin.ui.builder;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrameConfiguration;
+import com.gridnine.webpeer.antd.admin.ui.components.router.AntdViewProvider;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
@@ -23,6 +24,9 @@ public class AntdMainFrameConfigurationBuilder {
         configuration.setTheme(obj);
     }
 
+    public void viewProvider(AntdViewProvider provider){
+        configuration.setViewProvider(provider);
+    }
     public void menu(RunnableWithExceptionAndArgument<AntdMenuBuilder> configurator){
         var builder = new AntdMenuBuilder(configuration.getMenuItems());
         WebPeerUtils.wrapException(()->{

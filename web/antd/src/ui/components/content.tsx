@@ -18,7 +18,7 @@ function AntdContent(props: { component: AntdContentInternal }): React.ReactElem
   props.component.setStyleSetter(setStyle);
   useEffect(() => {
     props.component.onAfterInitialized();
-  }, []);
+  }, [props.component]);
   return (
     <Content key={props.component.id} style={buildStyle(style, token)}>
       {children.map((ch) => ch.createReactElement())}
@@ -27,8 +27,6 @@ function AntdContent(props: { component: AntdContentInternal }): React.ReactElem
 }
 
 class AntdContentElement extends BaseAntdUiElement implements AntdContentInternal {
-    private childrenSetter?: (children: BaseAntdUiElement[]) => void
-
     private styleSetter?: (style: any) => void
 
     private style: any = {}
@@ -52,10 +50,6 @@ class AntdContentElement extends BaseAntdUiElement implements AntdContentInterna
       result.children = this.children.map((ch) => ch.serialize());
       return result;
     };
-
-    setChildrenSetter = (setter: (children: BaseAntdUiElement[]) => void) => {
-      this.childrenSetter = setter;
-    }
 
     setStyleSetter = (setter: (style: any) => void) => {
       this.styleSetter = setter;

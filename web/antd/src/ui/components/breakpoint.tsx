@@ -6,32 +6,26 @@ import { api } from '../../../../core/src/index';
 type AntdBreakpointInternal = {
     id: string
     breakpoints: {}
-    setContentSetter: (setter: (content: BaseAntdUiElement) => void) => void
+    setChildrenSetter: (setter: (children: BaseAntdUiElement[]) => void) => void
     updateBreakpoint: (bp:string) => void
     onAfterInitialized: () => void
 }
 
 function AntdBreakpoint(props: { component: AntdBreakpointInternal }): React.ReactElement {
-  const [content, setContent] = useState<BaseAntdUiElement|null>(null);
-  props.component.setContentSetter(setContent);
+  const [children, setChildren] = useState<BaseAntdUiElement[]>([]);
+  props.component.setChildrenSetter(setChildren);
   useEffect(() => {
     props.component.onAfterInitialized();
-  }, []);
+  }, [props.component]);
   const { breakpoint } = useBreakpoint(props.component.breakpoints);
   props.component.updateBreakpoint(breakpoint as any);
-  return content?.createReactElement() ?? <></>;
+  return <>{children.map((it) => it.createReactElement())}</>;
 }
 
 class AntdBreakpointElement extends BaseAntdUiElement implements AntdBreakpointInternal {
     breakpoints = {};
 
     private breakpoint: string = ''
-
-    private contentSetter: (content: BaseAntdUiElement) => void = () => {}
-
-    setContentSetter = (setter: (content: BaseAntdUiElement) => void) => {
-      this.contentSetter = setter;
-    }
 
     constructor(model: any) {
       super(model);
@@ -60,7 +54,7 @@ class AntdBreakpointElement extends BaseAntdUiElement implements AntdBreakpointI
     };
 
     onAfterInitialized() {
-        this.contentSetter!(this.children?.[0]);
+        this.childrenSetter!(this.children);
     }
 
     createReactElement(): React.ReactElement {

@@ -102,7 +102,7 @@ public class OperationUiContext extends HashMap<String, Object> {
     }
 
 
-    private RootUiElement findRootElement(BaseUiElement child) {
+    public RootUiElement findRootElement(BaseUiElement child) {
         if (child instanceof RootUiElement) {
             return (RootUiElement) child;
         }
@@ -122,7 +122,7 @@ public class OperationUiContext extends HashMap<String, Object> {
             if (root != null && sendCommand) {
                 var command = new JsonObject();
                 command.addProperty("cmd", "rc");
-                command.addProperty("id", String.valueOf(parent.getId()));
+                command.addProperty("id", String.valueOf(oldChild.getId()));
                 getParameter(RESPONSE_COMMANDS).add(command);
             }
         }

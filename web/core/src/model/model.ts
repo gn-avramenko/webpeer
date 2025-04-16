@@ -13,6 +13,8 @@ export abstract class BaseUiElement{
 
     children: BaseUiElement[]|undefined = undefined
 
+    abstract onChildrenChanged: ()=>void
+
     constructor(model:any) {
         this.id = model.id;
         this.tag = model.tag;

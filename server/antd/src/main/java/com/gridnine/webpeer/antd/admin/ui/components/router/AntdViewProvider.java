@@ -19,24 +19,12 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.builder;
+package com.gridnine.webpeer.antd.admin.ui.components.router;
 
-import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenuItem;
-import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrame;
+import com.google.gson.JsonObject;
+import com.gridnine.webpeer.core.ui.BaseUiElement;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
 
-public class AntdMenuGroupBuilder {
-    private final AntdMenuItem group;
-
-    public AntdMenuGroupBuilder(AntdMenuItem item) {
-        this.group = item;
-    }
-
-    public void item(String name, String link){
-        var item = new AntdMenuItem();
-        item.setName(name);
-        item.setHandler((c) ->{
-            AntdMainFrame.lookup(c).navigate(link, c);
-        });
-        group.getChildren().add(item);
-    }
+public interface AntdViewProvider {
+    BaseUiElement createElement(String path, JsonObject uidData, OperationUiContext context) throws Exception;
 }

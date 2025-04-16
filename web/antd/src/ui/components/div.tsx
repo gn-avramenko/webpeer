@@ -22,7 +22,7 @@ function AntdDiv(props: { component: AntdDivInternal }): React.ReactElement {
   props.component.setStyleSetter(setStyle);
   useEffect(() => {
     props.component.onAfterInitialized();
-  }, []);
+  }, [props.component]);
   if (isBlank(content)) {
     return (
       <div key={props.component.id} style={buildStyle(style, token)}>
@@ -35,8 +35,6 @@ function AntdDiv(props: { component: AntdDivInternal }): React.ReactElement {
 
 class AntdDivElement extends BaseAntdUiElement implements AntdDivInternal {
     private contentSetter?: (content: string | undefined | null) => void
-
-    private childrenSetter?: (children: BaseAntdUiElement[]) => void
 
     private styleSetter?: (style: any) => void
 
@@ -67,10 +65,6 @@ class AntdDivElement extends BaseAntdUiElement implements AntdDivInternal {
 
     setContentSetter = (setter: (content: string | undefined | null) => void) => {
       this.contentSetter = setter;
-    }
-
-    setChildrenSetter = (setter: (children: BaseAntdUiElement[]) => void) => {
-      this.childrenSetter = setter;
     }
 
     setStyleSetter = (setter: (style: any) => void) => {

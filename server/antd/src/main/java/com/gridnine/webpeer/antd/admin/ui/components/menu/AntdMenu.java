@@ -45,7 +45,7 @@ public class AntdMenu extends BaseAntdUiElement {
     public JsonObject buildElement(OperationUiContext context) {
         var result = super.buildElement(context);
         var menu = new JsonArray();
-        result.add("menu", menu);
+        result.add("menuItems", menu);
         menuItems.forEach(g -> {
             var gi = new JsonObject();
             menu.add(gi);
@@ -71,7 +71,7 @@ public class AntdMenu extends BaseAntdUiElement {
 
     @Override
     protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
-        if("si".equals(actionId)) {
+        if("click".equals(actionId)) {
             var itemId = actionData.getAsString();
             String[] items = itemId.split("-");
             WebPeerUtils.wrapException(() ->{

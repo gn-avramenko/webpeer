@@ -163,10 +163,14 @@ export class API {
                 const commands = (res.response || []) as any[]
                 if(commands.find(it => it.cmd === "resync")){
                     const queueItem = {
-                        payload: {
-                            command: 'init',
-                            model: uiModel.getRootElement()!.serialize()
-                        },
+                        payload: [{
+                            cmd: 'init',
+                            data: {
+                                uiData: uiModel.getRootElement()!.serialize(),
+                                ls: JSON.parse(window.localStorage.getItem("webpeer") || "{}"),
+                                params: (window as any).webPeer
+                            }
+                        }],
                         reject: () => {
                             this.queue.forEach(it => {
                                 if (it !== queueItem && it.reject) {
@@ -193,13 +197,16 @@ export class API {
                     }
                     if(cmd.cmd === 'rc'){
                         const node = uiModel.findNode(cmd.id)!
+                        const parent = node.parent!;
                         uiModel.removeNode(node)
+                        parent.onChildrenChanged()
                     }
                     if(cmd.cmd === 'ac'){
                         const parent = uiModel.findNode(cmd.id)!
                         const data = cmd.data
                         const node = webpeerExt.uiHandler.createElement(data)
                         uiModel.addNode(node, parent)
+                        parent.onChildrenChanged();
                     }
                     if(cmd.cmd === 'uls'){
                         const paramName = cmd.data.pn

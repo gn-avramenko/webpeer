@@ -24,7 +24,7 @@ function AntdImg(props: { component: AntdImgInternal }): React.ReactElement {
   props.component.setStyleSetter(setStyle);
   useEffect(() => {
     props.component.onAfterInitialized();
-  }, []);
+  }, [props.component]);
   return (
     <img
       alt=""

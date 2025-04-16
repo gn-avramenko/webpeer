@@ -18,7 +18,7 @@ function AntdLayout(props: { component: AntdLayoutInternal }): React.ReactElemen
   props.component.setStyleSetter(setStyle);
   useEffect(() => {
     props.component.onAfterInitialized();
-  }, []);
+  }, [props.component]);
   return (
     <Layout key={props.component.id} style={buildStyle(style, token)}>
       {children.map((ch) => ch.createReactElement())}
@@ -27,7 +27,6 @@ function AntdLayout(props: { component: AntdLayoutInternal }): React.ReactElemen
 }
 
 class AntdLayoutElement extends BaseAntdUiElement implements AntdLayoutInternal {
-    private childrenSetter?: (children: BaseAntdUiElement[]) => void
 
     private styleSetter?: (style: any) => void
 
@@ -52,10 +51,6 @@ class AntdLayoutElement extends BaseAntdUiElement implements AntdLayoutInternal 
       result.children = this.children.map((ch) => ch.serialize());
       return result;
     };
-
-    setChildrenSetter = (setter: (children: BaseAntdUiElement[]) => void) => {
-      this.childrenSetter = setter;
-    }
 
     setStyleSetter = (setter: (style: any) => void) => {
       this.styleSetter = setter;

@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.builder.Style;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenuItem;
+import com.gridnine.webpeer.antd.admin.ui.components.router.AntdViewProvider;
 
 import java.util.*;
 
@@ -16,6 +17,16 @@ public class AntdMainFrameConfiguration {
     private BaseAntdUiElement header;
 
     private Map<String, Object> headerStyle = new HashMap<String, Object>();
+
+    private AntdViewProvider viewProvider;
+
+    public void setViewProvider(AntdViewProvider viewProvider) {
+        this.viewProvider = viewProvider;
+    }
+
+    public AntdViewProvider getViewProvider() {
+        return viewProvider;
+    }
 
     public void setHeaderStyle(Style... headerStyles) {
         Arrays.stream(headerStyles).forEach(style -> {
@@ -56,4 +67,5 @@ public class AntdMainFrameConfiguration {
     public void setHeader(BaseAntdUiElement header) {
         this.header = header;
     }
+
 }

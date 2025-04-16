@@ -23,12 +23,13 @@ package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.breakpoint.AntdBreakpoint;
-import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
+import com.gridnine.webpeer.antd.admin.ui.components.common.AntdUtils;
 import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdContent;
 import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdHeader;
 import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdLayout;
 import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdSider;
 import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenu;
+import com.gridnine.webpeer.antd.admin.ui.components.router.AntdRouter;
 import com.gridnine.webpeer.antd.admin.ui.components.theme.AntdTheme;
 import com.gridnine.webpeer.core.ui.GlobalUiContext;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
@@ -48,10 +49,16 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
 
     private AntdTheme theme;
 
+    private AntdRouter router;
+
+
     public static AntdMainFrame lookup(OperationUiContext context) {
         return (AntdMainFrame) context.getParameter(GlobalUiContext.UI_MODEL).getRootElement();
     }
 
+    public void navigate(String path, OperationUiContext ctx){
+        router.setPath(path, ctx);
+    }
     public AntdMainFrame(UiModel model, JsonObject data, OperationUiContext ctx, AntdMainFrameConfiguration configuration) {
         super(data, ctx);
         this.model = model;
@@ -66,10 +73,15 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
         if (breakpoint == null) {
             return;
         }
+        String initPath = "/";
+        var params = ctx.getParameter(OperationUiContext.PARAMS);
+        if(params != null) {
+            initPath = params.get("initPath").getAsString();
+        }
         theme = new AntdTheme(ctx, configuration.getTheme());
         UiModel.addElement(theme, this);
         var layout = new AntdLayout(ctx);
-        var layoutStyle = new HashMap<String,Object>();
+        var layoutStyle = new HashMap<String, Object>();
         layoutStyle.put("height", "100%");
         layoutStyle.put("borderRadius", "token:borderRadiusLG");
         layout.setStyle(layoutStyle);
@@ -87,15 +99,18 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
             }
             {
                 var content = new AntdContent(ctx);
-                var contentStyle = new HashMap<String,Object>();
+                var contentStyle = new HashMap<String, Object>();
                 contentStyle.put("height", "100%");
                 content.setStyle(contentStyle);
                 content.setTag("content");
                 UiModel.addElement(content, layout);
                 {
-                   var innerLayout = new AntdLayout(ctx);
-                   innerLayout.setTag("inner-layout");
-                   UiModel.addElement(innerLayout,  content);
+                    var innerLayout = new AntdLayout(ctx);
+                    innerLayout.setTag("inner-layout");
+                    var innerLayoutStyle = new HashMap<String, Object>();
+                    innerLayoutStyle.put("height", "100%");
+                    innerLayout.setStyle(innerLayoutStyle);
+                    UiModel.addElement(innerLayout, content);
                     {
                         var sider = new AntdSider(ctx);
                         sider.setTag("sider");
@@ -110,9 +125,8 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
                         innerContent.setTag("inner-content");
                         UiModel.addElement(innerContent, innerLayout);
                         {
-                            var realContent = new AntdDiv(ctx);
-                            realContent.setContent("Hello content");
-                            UiModel.addElement(realContent, innerContent);
+                            router = new AntdRouter(data == null? null: AntdUtils.getFirstChildData(AntdUtils.getFirstChildData(AntdUtils.findUiDataByTag(data,"inner-content"))), initPath, configuration.getViewProvider(), ctx);
+                            UiModel.addElement(router, innerContent);
                         }
                     }
                 }
@@ -122,9 +136,10 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
 
     }
 
-    public void setTheme(JsonObject theme, OperationUiContext ctx){
+    public void setTheme(JsonObject theme, OperationUiContext ctx) {
         this.theme.setTheme(theme, ctx);
     }
+
     @Override
     public UiModel getModel() {
         return model;

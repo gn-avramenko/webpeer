@@ -18,7 +18,7 @@ function AntdHeader(props: { component: AntdHeaderInternal }): React.ReactElemen
   props.component.setStyleSetter(setStyle);
   useEffect(() => {
     props.component.onAfterInitialized();
-  }, []);
+  }, [props.component]);
   return (
     <Header key={props.component.id} style={buildStyle(style, token)}>
       {children.map((ch) => ch.createReactElement())}
@@ -27,7 +27,6 @@ function AntdHeader(props: { component: AntdHeaderInternal }): React.ReactElemen
 }
 
 class AntdHeaderElement extends BaseAntdUiElement implements AntdHeaderInternal {
-    private childrenSetter?: (children: BaseAntdUiElement[]) => void
 
     private styleSetter?: (style: any) => void
 
@@ -52,10 +51,6 @@ class AntdHeaderElement extends BaseAntdUiElement implements AntdHeaderInternal 
       result.children = this.children.map((ch) => ch.serialize());
       return result;
     };
-
-    setChildrenSetter = (setter: (children: BaseAntdUiElement[]) => void) => {
-      this.childrenSetter = setter;
-    }
 
     setStyleSetter = (setter: (style: any) => void) => {
       this.styleSetter = setter;

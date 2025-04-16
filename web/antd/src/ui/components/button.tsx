@@ -18,7 +18,7 @@ function ButtonComponent(props: { component: ButtonComponentInternal }): React.R
   const { token } = theme.useToken();
   useEffect(() => {
     props.component.onAfterInitialized();
-  }, []);
+  }, [props.component]);
   return (<Button style={buildStyle(style, token)} key={props.component.id} onClick={() => props.component.onClick()}>{props.component.title}</Button>);
 }
 

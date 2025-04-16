@@ -15,20 +15,30 @@ antdWebpeerExt.icons = new Map();
 export abstract class BaseAntdUiElement extends BaseUiElement {
    abstract createReactElement(): React.ReactElement
 
+   protected childrenSetter?: (children: BaseAntdUiElement[]) => void
+
    children: BaseAntdUiElement[] = []
 
-   constructor(model:any) {
-     super(model);
-     (model.children || []).forEach((ch:any) => {
-       const elm = antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch);
-       elm.parent = this;
-       this.children.push(elm);
-     });
-   }
+    setChildrenSetter = (setter: (children: BaseAntdUiElement[]) => void) => {
+      this.childrenSetter = setter;
+    }
 
-   findByTag(tag: string) {
-     return this.children?.find((it) => it.tag === tag) as BaseAntdUiElement | undefined;
-   }
+    onChildrenChanged = () => {
+      this.childrenSetter?.([...this.children]);
+    }
+
+    constructor(model:any) {
+      super(model);
+      (model.children || []).forEach((ch:any) => {
+        const elm = antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch);
+        elm.parent = this;
+        this.children.push(elm);
+      });
+    }
+
+    findByTag(tag: string) {
+      return this.children?.find((it) => it.tag === tag) as BaseAntdUiElement | undefined;
+    }
 }
 
 export interface AntdUiElementFactory {
@@ -59,6 +69,12 @@ export const emptyAntdUiElement:BaseAntdUiElement = {
   },
   serialize(): {} {
     return {};
+  },
+  onChildrenChanged() { // noops
+  },
+
+  setChildrenSetter() {
+
   },
 };
 

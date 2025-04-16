@@ -37,8 +37,9 @@ public class AntdTextField extends BaseAntdUiElement {
 
     private RunnableWithExceptionAndTwoArguments<String, OperationUiContext> onValueChanged;
 
-    public AntdTextField(OperationUiContext ctx) {
+    public AntdTextField(JsonObject uiData, OperationUiContext ctx) {
         super(ctx);
+        this.value = uiData != null && uiData.has("value")? uiData.get("value").getAsString(): null;
     }
 
     public void setOnValueChanged( RunnableWithExceptionAndTwoArguments<String, OperationUiContext> onValueChanged) {
@@ -86,7 +87,9 @@ public class AntdTextField extends BaseAntdUiElement {
 
     public void setValue(String value, OperationUiContext context){
         this.value = value;
-        context.sendElementPropertyChange(getId(), "value", value);
+        if(context.findRootElement(this) != null){
+            context.sendElementPropertyChange(getId(), "value", value);
+        }
     }
 
     @Override

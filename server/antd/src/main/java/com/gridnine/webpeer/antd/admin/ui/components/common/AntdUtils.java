@@ -21,6 +21,8 @@
 
 package com.gridnine.webpeer.antd.admin.ui.components.common;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
 import java.util.HashMap;
@@ -44,5 +46,37 @@ public class AntdUtils {
             }
         }
         return styleMap;
+    }
+
+    public static JsonElement findUiDataByTag(JsonObject data, String tag) {
+        if(data.has("tag") && tag.equals(data.get("tag").getAsString())) {
+            return data;
+        }
+        var children= data.getAsJsonObject().get("children");
+        if(children == null) {
+            return null;
+        }
+        for(var child: children.getAsJsonArray()){
+            if(child.isJsonObject()) {
+               var res =  findUiDataByTag(child.getAsJsonObject(), tag);
+               if(res != null) {
+                   return res;
+               }
+            }
+        }
+        return null;
+    }
+
+    public static JsonObject getFirstChildData(JsonElement uiDataByTag) {
+        if(uiDataByTag == null || !uiDataByTag.isJsonObject()){
+            return null;
+        }
+        var obj= uiDataByTag.getAsJsonObject();
+        var children = obj.get("children");
+        if(children == null) {
+            return null;
+        }
+        var ch = children.getAsJsonArray();
+        return ch.isEmpty()? null : ch.get(0).getAsJsonObject();
     }
 }
