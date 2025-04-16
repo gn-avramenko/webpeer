@@ -20,7 +20,7 @@ function AntdTheme(props: { component: AntdThemeInternal }): React.ReactElement 
   const t = { ...th };
   if (t.algorithm) {
     // @ts-ignore
-    t.algorithm = theme[t.algorithm];
+    t.algorithm = t.algorithm.map((a) => theme[a]);
   }
   return (
     <ConfigProvider theme={t}>

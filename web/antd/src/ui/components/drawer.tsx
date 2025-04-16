@@ -86,11 +86,7 @@ class AntdDrawerElement extends BaseAntdUiElement implements AntdDrawerInternal 
     }
 
     onClose = () => {
-      super.sendPropertyChange('close', true);
-    };
-
-    executeCommand = () => {
-      // noops
+      super.executeAction('close');
     };
 
     serialize = () => {

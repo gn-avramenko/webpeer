@@ -19,56 +19,36 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.breakpoint;
+package com.gridnine.webpeer.antd.admin.ui.components.icon;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.utils.TypedParameter;
+import com.gridnine.webpeer.core.utils.RunnableWithException;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class AntdBreakpoint extends BaseAntdUiElement {
+public class AntdIcon extends BaseAntdUiElement {
 
 
-    private Map<String, Object> breakpoints = new HashMap<String, Object>();
+    private final String icon;
 
-    private final String breakPoint;
-
-    public AntdBreakpoint(JsonObject uiData, OperationUiContext ctx) {
+    public AntdIcon(String icon, OperationUiContext ctx) {
         super(ctx);
-        breakPoint = uiData == null || !uiData.has("breakpoint")? null : uiData.get("breakpoint").getAsString();
-    }
-
-    public void setBreakpoints(Map<String, Object> breakpoints) {
-        this.breakpoints = breakpoints;
-    }
-
-    public Map<String, Object> getBreakpoints() {
-        return breakpoints;
+        this.icon = icon;
     }
 
     @Override
     public JsonObject buildElement(OperationUiContext context) {
-        if(breakPoint == null) {
-            var result = new JsonObject();
-            result.addProperty("type", "breakpoint");
-            result.addProperty("id", getId());
-            result.addProperty("tag", getTag());
-            result.add("breakpoints", WebPeerUtils.serialize(breakpoints));
-            return result;
-        }
-
-        var result =  super.buildElement(context);
-        result.add("breakpoints", WebPeerUtils.serialize(breakpoints));
-        result.addProperty("breakpoint", breakPoint);
+        var result = super.buildElement(context);
+        result.addProperty("type", "icon");
+        result.addProperty("icon", icon);
         return result;
     }
 
+
     @Override
     public String getType() {
-        return "breakpoint";
+        return "icon";
     }
 }

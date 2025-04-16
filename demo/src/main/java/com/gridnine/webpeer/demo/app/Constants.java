@@ -54,7 +54,6 @@ public class Constants {
             }
         }
         DARK_MOBILE_THEME.asMap().putAll(DARK_DESKTOP_THEME.asMap());
-        LIGHT_MOBILE_THEME.asMap().putAll(LIGHT_DESKTOP_THEME.asMap());
         {
             var darkMobileAlgorithm = new JsonArray();
             darkMobileAlgorithm.add("darkAlgorithm");
@@ -62,6 +61,7 @@ public class Constants {
             DARK_MOBILE_THEME.remove("algorithm");
             DARK_MOBILE_THEME.add("algorithm", darkMobileAlgorithm);
         }
+        LIGHT_MOBILE_THEME.asMap().putAll(LIGHT_DESKTOP_THEME.asMap());
         {
             var lightMobileAlgorithm = new JsonArray();
             lightMobileAlgorithm.add("compactAlgorithm");

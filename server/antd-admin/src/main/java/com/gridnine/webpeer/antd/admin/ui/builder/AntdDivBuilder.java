@@ -54,13 +54,13 @@ public class AntdDivBuilder {
     }
 
     public void div(String content, Style... styles){
-        var ch = new AntdDiv(context);
+        var ch = new AntdDiv(null, context);
         ch.setStyle(buildStyle(styles));
         ch.setContent(content);
         UiModel.addElement(ch, div);
     }
     public void div(RunnableWithExceptionAndArgument<AntdDivBuilder> configurator, Style... styles){
-        var ch = new AntdDiv(context);
+        var ch = new AntdDiv(null, context);
         ch.setStyle(buildStyle(styles));
         WebPeerUtils.wrapException(() ->{
             configurator.run(new AntdDivBuilder(ch, context));

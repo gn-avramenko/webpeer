@@ -161,36 +161,11 @@ export class API {
                 } as Context
                 const res = await this.requestWithMiddleware(req, 0, item.initOverrides)
                 const commands = (res.response || []) as any[]
-                if(commands.find(it => it.cmd === "resync")){
-                    const queueItem = {
-                        payload: [{
-                            cmd: 'init',
-                            data: {
-                                uiData: uiModel.getRootElement()!.serialize(),
-                                ls: JSON.parse(window.localStorage.getItem("webpeer") || "{}"),
-                                params: (window as any).webPeer
-                            }
-                        }],
-                        reject: () => {
-                            this.queue.forEach(it => {
-                                if (it !== queueItem && it.reject) {
-                                    it.reject("Unable to connect to server")
-                                }
-                            })
-                            this.queue = [];
-                        }
-                    }
-                    this.queue = [queueItem, ...this.queue]
-                    break;
-                }
-                if(commands.find(it => it.cmd === "init")){
-                    if (item.resolve) {
-                        item.resolve(res.response)
-                    }
-                    webpeerExt.uiHandler.drawUi(commands.find(it => it.cmd === "init").data)
-                    break;
-                }
+                let skip = false;
                 commands.forEach((cmd:any) =>{
+                    if(skip){
+                        return;
+                    }
                     if(cmd.cmd === 'ec'){
                         const node = uiModel.findNode(cmd.id)!
                         node.executeCommand(cmd.data)
@@ -218,6 +193,36 @@ export class API {
                             delete data[paramName]
                         }
                         window.localStorage.setItem("webpeer", JSON.stringify(data))
+                    }
+                    if(cmd.cmd == 'init'){
+                        skip = true;
+                        if (item.resolve) {
+                            item.resolve(res.response)
+                        }
+                        webpeerExt.uiHandler.drawUi(commands.find(it => it.cmd === "init").data)
+                    }
+                    if(cmd.cmd === 'resync'){
+                        skip = true;
+                        const queueItem = {
+                            payload: [{
+                                cmd: 'init',
+                                data: {
+                                    uiData: uiModel.getRootElement()!.serialize(),
+                                    ls: JSON.parse(window.localStorage.getItem("webpeer") || "{}"),
+                                    params: (window as any).webPeer
+                                }
+                            }],
+                            reject: () => {
+                                this.queue.forEach(it => {
+                                    if (it !== queueItem && it.reject) {
+                                        it.reject("Unable to connect to server")
+                                    }
+                                })
+                                this.queue = [];
+                            }
+                        }
+                        this.queue = [queueItem, ...this.queue]
+
                     }
                     if(cmd.cmd === 'reload'){
                         window.location.reload()

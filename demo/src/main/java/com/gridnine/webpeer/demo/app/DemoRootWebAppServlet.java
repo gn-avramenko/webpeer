@@ -66,7 +66,7 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
         return new AntdMainFrame(model, uiData, operationUiContext, AntdMainFrameConfigurationBuilder.build(c->{
             var lang = "en".equals(operationUiContext.getStringLocalStorageParam("lang"))? "en": "ru";
             c.desktopWidth(1024);
-            var mobile = "mobile".equals(operationUiContext.getParameter(AntdBreakpoint.BREAKPOINT));
+            var mobile = uiData != null && uiData.has("breakpoint") && uiData.get("breakpoint").getAsString().equals("mobile");
             if("dark".equals(operationUiContext.getStringLocalStorageParam("theme"))){
                 c.theme(mobile? Constants.DARK_MOBILE_THEME: Constants.DARK_DESKTOP_THEME);
             } else {
@@ -79,10 +79,12 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
                 d.hGlue();
                 d.dropdownImage(dd ->{
                     dd.menuItem("en", "classpath/demo/en-flag.png", "english", "20px", null, (ctx)->{
-                        //TODO implement
+                        ctx.setLocalStorageParam("lang", "en");
+                        ctx.resync();
                     });
                     dd.menuItem("ru", "classpath/demo/ru-flag.png", "русский", "20px", null, (ctx)->{
-                        //TODO implement
+                        ctx.setLocalStorageParam("lang", "ru");
+                        ctx.resync();
                     });
                     if("en".equals(lang)){
                         dd.selectItem("en");

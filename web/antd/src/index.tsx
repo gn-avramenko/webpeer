@@ -1,5 +1,5 @@
 import { createRoot, Root } from 'react-dom/client';
-import { SunOutlined, MoonFilled, RightOutlined } from '@ant-design/icons';
+import {SunOutlined, MoonFilled, RightOutlined, MenuFoldOutlined} from '@ant-design/icons';
 import { antdWebpeerExt } from './ui/components/common.tsx';
 import { AntdDivElementFactory } from './ui/components/div.tsx';
 import { AntdImgElementFactory } from './ui/components/img.tsx';
@@ -18,6 +18,7 @@ import { AntdThemeElementFactory } from '@/ui/components/theme.tsx';
 import { uiModel } from '../../core/src/index.ts';
 import { BaseUiElement } from '../../core/src/model/model.ts';
 import {AntdRouterElementFactory} from "@/ui/components/router.tsx";
+import {AntdIconElementFactory} from "@/ui/components/icon.tsx";
 
 antdWebpeerExt.elementHandlersFactories.set('div', new AntdDivElementFactory());
 antdWebpeerExt.elementHandlersFactories.set('img', new AntdImgElementFactory());
@@ -34,10 +35,13 @@ antdWebpeerExt.elementHandlersFactories.set('sider', new AntdSiderElementFactory
 antdWebpeerExt.elementHandlersFactories.set('menu', new AntdMenuElementFactory());
 antdWebpeerExt.elementHandlersFactories.set('theme', new AntdThemeElementFactory());
 antdWebpeerExt.elementHandlersFactories.set('router', new AntdRouterElementFactory());
+antdWebpeerExt.elementHandlersFactories.set('icon', new AntdIconElementFactory());
 
 antdWebpeerExt.icons.set('SUN_OUTLINED', () => <SunOutlined />);
 antdWebpeerExt.icons.set('MOON_FILLED', () => <MoonFilled />);
 antdWebpeerExt.icons.set('RightOutlined', () => <RightOutlined />);
+antdWebpeerExt.icons.set('MENU_FOLD_OUTLINED', () => <MenuFoldOutlined />);
+
 antdWebpeerExt.lang = JSON.parse(window.localStorage.getItem('webpeer') || '{}').lang ?? 'en';
 
 let root: Root|null = null;

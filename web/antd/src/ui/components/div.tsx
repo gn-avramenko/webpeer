@@ -7,6 +7,7 @@ type AntdDivInternal = {
     id: string
     setContentSetter: (setter: (content: string | undefined | null) => void) => void
     setChildrenSetter: (setter: (children: BaseAntdUiElement[]) => void) => void
+    onClickHandler?: ()=>void
     onAfterInitialized: () => void
     setStyleSetter: (setter: (style: any) => void) => void
 }
@@ -25,7 +26,13 @@ function AntdDiv(props: { component: AntdDivInternal }): React.ReactElement {
   }, [props.component]);
   if (isBlank(content)) {
     return (
-      <div key={props.component.id} style={buildStyle(style, token)}>
+      <div
+        onClick={() => {
+          props.component.onClickHandler?.();
+        }}
+        key={props.component.id}
+        style={buildStyle(style, token)}
+      >
         {children.map((ch) => ch.createReactElement())}
       </div>
     );
@@ -42,11 +49,18 @@ class AntdDivElement extends BaseAntdUiElement implements AntdDivInternal {
 
     private content: string|undefined
 
+    onClickHandler?: ()=>void
+
     constructor(model: any) {
       super(model);
       this.id = model.id;
       this.style = model.style || {};
       this.content = model.content;
+      if (model.handleClick) {
+        this.onClickHandler = () => {
+          super.executeAction('click');
+        };
+      }
     }
 
     executeCommand = () => {

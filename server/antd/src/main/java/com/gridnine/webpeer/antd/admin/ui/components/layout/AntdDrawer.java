@@ -29,8 +29,9 @@ import com.gridnine.webpeer.core.ui.OperationUiContext;
 
 public class AntdDrawer extends BaseAntdUiElement {
 
-    public AntdDrawer(OperationUiContext ctx) {
+    public AntdDrawer(final boolean open, OperationUiContext ctx) {
         super(ctx);
+        this.open = open;
     }
 
     private boolean open;
@@ -56,8 +57,9 @@ public class AntdDrawer extends BaseAntdUiElement {
     @Override
     protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
         if("close".equals(actionId)) {
-            open = true;
+            open = false;
             operationUiContext.sendElementPropertyChange(getId(), "open", open);
+            return;
         }
         super.executeAction(actionId, actionData, operationUiContext);
     }

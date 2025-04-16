@@ -35,7 +35,7 @@ import java.util.Map;
 public class AntdUiBuilder {
 
     public static AntdDiv div(OperationUiContext context, RunnableWithExceptionAndArgument<AntdDivBuilder> configurator){
-        var result = new AntdDiv(context);
+        var result = new AntdDiv(null, context);
         var builder = new AntdDivBuilder(result, context);
         WebPeerUtils.wrapException(() ->{
             configurator.run(builder);

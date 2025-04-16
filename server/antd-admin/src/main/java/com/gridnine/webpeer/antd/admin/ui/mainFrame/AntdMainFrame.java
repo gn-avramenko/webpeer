@@ -22,12 +22,13 @@
 package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
 import com.google.gson.JsonObject;
+import com.gridnine.webpeer.antd.admin.ui.builder.AntdAdminStyles;
+import com.gridnine.webpeer.antd.admin.ui.components.AntdIcons;
 import com.gridnine.webpeer.antd.admin.ui.components.breakpoint.AntdBreakpoint;
 import com.gridnine.webpeer.antd.admin.ui.components.common.AntdUtils;
-import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdContent;
-import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdHeader;
-import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdLayout;
-import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdSider;
+import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
+import com.gridnine.webpeer.antd.admin.ui.components.icon.AntdIcon;
+import com.gridnine.webpeer.antd.admin.ui.components.layout.*;
 import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenu;
 import com.gridnine.webpeer.antd.admin.ui.components.router.AntdRouter;
 import com.gridnine.webpeer.antd.admin.ui.components.theme.AntdTheme;
@@ -51,12 +52,16 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
 
     private AntdRouter router;
 
+    private AntdDrawer drawer;
 
     public static AntdMainFrame lookup(OperationUiContext context) {
         return (AntdMainFrame) context.getParameter(GlobalUiContext.UI_MODEL).getRootElement();
     }
 
     public void navigate(String path, OperationUiContext ctx){
+        if(drawer != null){
+            drawer.setOpen(false, ctx);
+        }
         router.setPath(path, ctx);
     }
     public AntdMainFrame(UiModel model, JsonObject data, OperationUiContext ctx, AntdMainFrameConfiguration configuration) {
@@ -69,7 +74,7 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
             breakPoints.put(DESKTOP_BREAKPOINT, configuration.getDesktopWidth());
         }
         setBreakpoints(breakPoints);
-        var breakpoint = ctx.getParameter(AntdBreakpoint.BREAKPOINT);
+        var breakpoint = data == null || !data.has("breakpoint")? null : data.get("breakpoint").getAsString();
         if (breakpoint == null) {
             return;
         }
@@ -133,7 +138,64 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
             }
             return;
         }
+        {
+            var header = new AntdHeader(ctx);
+            header.setTag("header");
+            header.setStyle(configuration.getHeaderStyle());
+            header.getStyle().put("display","flex");
+            var iconDiv = new AntdDiv(null, ctx);
+            iconDiv.setStyle(AntdAdminStyles.parseStyle("lineHeight=35px;padding=token:padding"));
+            UiModel.addElement(iconDiv, header);
+            iconDiv.setClickHandler((context)->{
+                drawer.setOpen(true, context);
+            });
+            var icon = new AntdIcon(AntdIcons.MENU_FOLD_OUTLINED.name(), ctx);
+            UiModel.addElement(icon, iconDiv);
+            if (configuration.getHeader() != null) {
+                UiModel.addElement(configuration.getHeader(), header);
+            }
+            UiModel.addElement(header, layout);
+            {
+                {
+                    var content = new AntdContent(ctx);
+                    var contentStyle = new HashMap<String, Object>();
+                    contentStyle.put("height", "100%");
+                    content.setStyle(contentStyle);
+                    content.setTag("content");
+                    UiModel.addElement(content, layout);
+                    {
+                        drawer  = new AntdDrawer(false, ctx);
+                        drawer.setTag("drawer");
+                        UiModel.addElement(drawer, content);
+                        {
+                            var menu = new AntdMenu(ctx, configuration.getMenuItems());
+                            menu.getStyle().put("height", "100%");
+                            menu.getStyle().put("overflowY", "auto");
+                            UiModel.addElement(menu, drawer);
+                        }
+                    }
+                    {
+                        var innerLayout = new AntdLayout(ctx);
+                        innerLayout.setTag("inner-layout");
+                        var innerLayoutStyle = new HashMap<String, Object>();
+                        innerLayoutStyle.put("height", "100%");
+                        innerLayout.setStyle(innerLayoutStyle);
+                        UiModel.addElement(innerLayout, content);
+                        {
+                            var innerContent = new AntdContent(ctx);
+                            innerContent.setTag("inner-content");
+                            UiModel.addElement(innerContent, innerLayout);
+                            {
+                                router = new AntdRouter(data == null? null: AntdUtils.getFirstChildData(AntdUtils.getFirstChildData(AntdUtils.findUiDataByTag(data,"inner-content"))), initPath, configuration.getViewProvider(), ctx);
+                                UiModel.addElement(router, innerContent);
+                            }
+                        }
+                    }
 
+                }
+            }
+
+        }
     }
 
     public void setTheme(JsonObject theme, OperationUiContext ctx) {

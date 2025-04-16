@@ -86,6 +86,12 @@ public class OperationUiContext extends HashMap<String, Object> {
         getParameter(RESPONSE_COMMANDS).add(command);
     }
 
+    public void resync() {
+        var command = new JsonObject();
+        command.addProperty("cmd", "resync");
+        getParameter(RESPONSE_COMMANDS).add(command);
+    }
+
 
     public void reload() {
         var command = new JsonObject();
