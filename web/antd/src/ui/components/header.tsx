@@ -27,7 +27,6 @@ function AntdHeader(props: { component: AntdHeaderInternal }): React.ReactElemen
 }
 
 class AntdHeaderElement extends BaseAntdUiElement implements AntdHeaderInternal {
-
     private styleSetter?: (style: any) => void
 
     private style: any = {}

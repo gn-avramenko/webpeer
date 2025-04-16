@@ -130,7 +130,7 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
                         innerContent.setTag("inner-content");
                         UiModel.addElement(innerContent, innerLayout);
                         {
-                            router = new AntdRouter(data == null? null: AntdUtils.getFirstChildData(AntdUtils.getFirstChildData(AntdUtils.findUiDataByTag(data,"inner-content"))), initPath, configuration.getViewProvider(), ctx);
+                            router = new AntdRouter(AntdUtils.getFirstChildData(AntdUtils.getFirstChildData(AntdUtils.findUiDataByTag(data,"inner-content"))), initPath, configuration.getViewProvider(), ctx);
                             UiModel.addElement(router, innerContent);
                         }
                     }
@@ -186,7 +186,7 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
                             innerContent.setTag("inner-content");
                             UiModel.addElement(innerContent, innerLayout);
                             {
-                                router = new AntdRouter(data == null? null: AntdUtils.getFirstChildData(AntdUtils.getFirstChildData(AntdUtils.findUiDataByTag(data,"inner-content"))), initPath, configuration.getViewProvider(), ctx);
+                                router = new AntdRouter(AntdUtils.getFirstChildData(AntdUtils.getFirstChildData(AntdUtils.findUiDataByTag(data,"inner-content"))), initPath, configuration.getViewProvider(), ctx);
                                 UiModel.addElement(router, innerContent);
                             }
                         }

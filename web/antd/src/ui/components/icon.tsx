@@ -9,10 +9,7 @@ class AntdIconElement extends BaseAntdUiElement {
       this.icon = model.icon;
     }
 
-    serialize = () => {
-      const result = {} as any;
-      return result;
-    }
+    serialize = () => ({} as any)
 
     createReactElement(): React.ReactElement {
       return <div key={this.icon}>{antdWebpeerExt.icons.get(this.icon)!()}</div>;

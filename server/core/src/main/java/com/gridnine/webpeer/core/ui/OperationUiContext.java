@@ -41,6 +41,7 @@ public class OperationUiContext extends HashMap<String, Object> {
     }
 
     public <T> T getParameter(TypedParameter<T> param) {
+        //noinspection unchecked
         return (T) super.get(param.name);
     }
 

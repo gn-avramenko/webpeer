@@ -27,7 +27,6 @@ function AntdLayout(props: { component: AntdLayoutInternal }): React.ReactElemen
 }
 
 class AntdLayoutElement extends BaseAntdUiElement implements AntdLayoutInternal {
-
     private styleSetter?: (style: any) => void
 
     private style: any = {}

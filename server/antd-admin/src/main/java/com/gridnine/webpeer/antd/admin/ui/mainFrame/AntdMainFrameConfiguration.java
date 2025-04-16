@@ -16,7 +16,7 @@ public class AntdMainFrameConfiguration {
 
     private BaseAntdUiElement header;
 
-    private Map<String, Object> headerStyle = new HashMap<String, Object>();
+    private final Map<String, Object> headerStyle = new HashMap<String, Object>();
 
     private AntdViewProvider viewProvider;
 

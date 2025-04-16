@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class AntdUtils {
     public static Map<String, Object> parseStyle(String style) {
-        Map<String, Object> styleMap = new HashMap<String, Object>();
+        Map<String, Object> styleMap = new HashMap<>();
         if(WebPeerUtils.isNotBlank(style)) {
             String[] styles = style.split(";");
             for(String styleStr : styles) {

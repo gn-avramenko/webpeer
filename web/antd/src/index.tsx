@@ -1,5 +1,7 @@
 import { createRoot, Root } from 'react-dom/client';
-import {SunOutlined, MoonFilled, RightOutlined, MenuFoldOutlined} from '@ant-design/icons';
+import {
+  SunOutlined, MoonFilled, RightOutlined, MenuFoldOutlined,
+} from '@ant-design/icons';
 import { antdWebpeerExt } from './ui/components/common.tsx';
 import { AntdDivElementFactory } from './ui/components/div.tsx';
 import { AntdImgElementFactory } from './ui/components/img.tsx';
@@ -17,8 +19,8 @@ import { AntdMenuElementFactory } from '@/ui/components/menu.tsx';
 import { AntdThemeElementFactory } from '@/ui/components/theme.tsx';
 import { uiModel } from '../../core/src/index.ts';
 import { BaseUiElement } from '../../core/src/model/model.ts';
-import {AntdRouterElementFactory} from "@/ui/components/router.tsx";
-import {AntdIconElementFactory} from "@/ui/components/icon.tsx";
+import { AntdRouterElementFactory } from '@/ui/components/router.tsx';
+import { AntdIconElementFactory } from '@/ui/components/icon.tsx';
 
 antdWebpeerExt.elementHandlersFactories.set('div', new AntdDivElementFactory());
 antdWebpeerExt.elementHandlersFactories.set('img', new AntdImgElementFactory());

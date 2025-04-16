@@ -34,7 +34,7 @@ import java.util.List;
 
 public class AntdMenu extends BaseAntdUiElement {
 
-    private List<AntdMenuItem> menuItems = new ArrayList<>();
+    private final List<AntdMenuItem> menuItems;
 
     public AntdMenu(OperationUiContext ctx, List<AntdMenuItem> items) {
         super(ctx);

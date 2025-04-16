@@ -22,15 +22,9 @@
 package com.gridnine.webpeer.antd.admin.ui.builder;
 
 import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
-import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownIcon;
-import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownImage;
-import com.gridnine.webpeer.antd.admin.ui.components.image.AntdImage;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.ui.UiModel;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
-
-import java.util.Map;
 
 public class AntdUiBuilder {
 

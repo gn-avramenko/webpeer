@@ -62,9 +62,7 @@ public class AntdDivBuilder {
     public void div(RunnableWithExceptionAndArgument<AntdDivBuilder> configurator, Style... styles){
         var ch = new AntdDiv(null, context);
         ch.setStyle(buildStyle(styles));
-        WebPeerUtils.wrapException(() ->{
-            configurator.run(new AntdDivBuilder(ch, context));
-        });
+        WebPeerUtils.wrapException(() -> configurator.run(new AntdDivBuilder(ch, context)));
         UiModel.addElement(ch, div);
     }
 

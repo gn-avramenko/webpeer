@@ -24,14 +24,9 @@ package com.gridnine.webpeer.antd.admin.ui.components.router;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.core.ui.GlobalUiContext;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.UiModel;
-import com.gridnine.webpeer.core.utils.TypedParameter;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class AntdRouter extends BaseAntdUiElement {
 

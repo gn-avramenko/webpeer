@@ -29,9 +29,7 @@ public class AntdMainFrameConfigurationBuilder {
     }
     public void menu(RunnableWithExceptionAndArgument<AntdMenuBuilder> configurator){
         var builder = new AntdMenuBuilder(configuration.getMenuItems());
-        WebPeerUtils.wrapException(()->{
-            configurator.run(builder);
-        });
+        WebPeerUtils.wrapException(()-> configurator.run(builder));
     }
 
 

@@ -34,9 +34,7 @@ public class AntdMenuGroupBuilder {
     public void item(String name, String link){
         var item = new AntdMenuItem();
         item.setName(name);
-        item.setHandler((c) ->{
-            AntdMainFrame.lookup(c).navigate(link, c);
-        });
+        item.setHandler((c) -> AntdMainFrame.lookup(c).navigate(link, c));
         group.getChildren().add(item);
     }
 }

@@ -28,6 +28,7 @@ module.exports = {
     'no-param-reassign': 'off',
     'react/react-in-jsx-scope': 'off',
     'react/jsx-no-useless-fragment': 'off',
+    'react/jsx-closing-tag-location': 'off',
     'react/destructuring-assignment': 'off',
     'import/no-unresolved': 'off',
     'class-methods-use-this': 'off',
