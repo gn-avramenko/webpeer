@@ -37,7 +37,7 @@ public abstract class BaseUiElement {
 
     private BaseUiElement parent;
 
-    private List<BaseUiElement> children = new ArrayList<>();
+    private final List<BaseUiElement> children = new ArrayList<>();
 
     public long getId() {
         return id;
@@ -48,11 +48,12 @@ public abstract class BaseUiElement {
     }
 
     public BaseUiElement findChildByTag(String tag){
-        return  getChildren().stream().filter(it -> tag.equals(it.getTag())).findFirst().orElse(null);
+        return  getChildren().stream().filter(it -> tag.equals(it.tag)).findFirst().orElse(null);
     }
 
     public BaseUiElement(OperationUiContext ctx) {
         this.id = ctx.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
+        this.tag = tag;
     }
 
     public void setParent(BaseUiElement parent) {
@@ -61,6 +62,10 @@ public abstract class BaseUiElement {
 
     public BaseUiElement getParent() {
         return parent;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
     public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
@@ -79,14 +84,6 @@ public abstract class BaseUiElement {
         }
     }
 
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
-
     protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
         throw new UnsupportedOperationException();
     }
@@ -98,8 +95,8 @@ public abstract class BaseUiElement {
     public JsonObject buildElement(OperationUiContext context) {
         var result = new JsonObject();
         result.addProperty("id", String.valueOf(getId()));
-        if (getTag() != null) {
-            result.addProperty("tag", getTag());
+        if (tag != null) {
+            result.addProperty("tag", tag);
         }
         if (!this.children.isEmpty()) {
             var children = new JsonArray();
@@ -115,7 +112,5 @@ public abstract class BaseUiElement {
         return children;
     }
 
-    public void setChildren(List<BaseUiElement> children) {
-        this.children = children;
-    }
+
 }

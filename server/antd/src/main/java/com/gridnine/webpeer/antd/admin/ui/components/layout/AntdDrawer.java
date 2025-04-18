@@ -23,33 +23,29 @@ package com.gridnine.webpeer.antd.admin.ui.components.layout;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.gridnine.webpeer.antd.admin.ui.components.AntdIcons;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 
-public class AntdDrawer extends BaseAntdUiElement {
-
-    public AntdDrawer(final boolean open, OperationUiContext ctx) {
-        super(ctx);
-        this.open = open;
-    }
+public class AntdDrawer extends BaseAntdUiElement<AntdDrawerConfiguration> {
 
     private boolean open;
+
+    public AntdDrawer(AntdDrawerConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
+        this.open = config.isOpen();
+    }
+
 
     @Override
     public JsonObject buildElement(OperationUiContext context) {
         var result =  super.buildElement(context);
-        result.addProperty("closeIcon", AntdIcons.MENU_FOLD_OUTLINED.name());
-        result.addProperty("placement", "left");
+        result.addProperty("closeIcon", configuration.getCloseIcon());
+        result.addProperty("placement", configuration.getPlacement());
         result.addProperty("closable", true);
-        result.addProperty("open", open);
+        result.addProperty("open", configuration.isOpen());
         var styles = new JsonObject();
-        var bodyStyle = new JsonObject();
-        bodyStyle.addProperty("padding", 0);
-        styles.add("body", bodyStyle);
-        var headerStyle = new JsonObject();
-        headerStyle.addProperty("padding", 0);
-        styles.add("header", bodyStyle);
+        styles.add("body", configuration.getBodyStyle());
+        styles.add("header", configuration.getHeaderStyle());
         result.add("styles", styles);
         return result;
     }

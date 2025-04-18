@@ -19,20 +19,31 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.layout;
+package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
-import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenuConfiguration;
+import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenuItem;
+import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public class AntdContent extends BaseAntdUiElement<AntdContentConfiguration> {
+import java.util.List;
 
-    public AntdContent(AntdContentConfiguration config, OperationUiContext ctx) {
-        super(config, ctx);
+public class AntdMenuConfigurationBuilder extends BaseAntdConfigurationBuilder<AntdMenuConfiguration> {
+
+    private AntdMenuConfigurationBuilder(){
+        super(new AntdMenuConfiguration());
     }
 
-
-    @Override
-    public String getType() {
-        return "content";
+    public void menuItems(List<AntdMenuItem> menuItems) {
+        config.setMenu(menuItems);
     }
+
+    public static AntdMenuConfiguration createConfiguration(RunnableWithExceptionAndArgument<AntdMenuConfigurationBuilder> configurator){
+        var builder = new AntdMenuConfigurationBuilder();
+        return WebPeerUtils.wrapException(() ->{
+            configurator.run(builder);
+            return builder.config;
+        });
+    }
+
 }

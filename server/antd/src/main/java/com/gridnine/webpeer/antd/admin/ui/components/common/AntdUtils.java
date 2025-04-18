@@ -49,6 +49,9 @@ public class AntdUtils {
     }
 
     public static JsonElement findUiDataByTag(JsonObject data, String tag) {
+        if(data == null){
+            return null;
+        }
         if(data.has("tag") && tag.equals(data.get("tag").getAsString())) {
             return data;
         }

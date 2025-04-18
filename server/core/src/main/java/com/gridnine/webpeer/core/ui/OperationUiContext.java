@@ -109,7 +109,7 @@ public class OperationUiContext extends HashMap<String, Object> {
     }
 
 
-    public RootUiElement findRootElement(BaseUiElement child) {
+    public static RootUiElement findRootElement(BaseUiElement child) {
         if (child instanceof RootUiElement) {
             return (RootUiElement) child;
         }
@@ -119,29 +119,31 @@ public class OperationUiContext extends HashMap<String, Object> {
         return findRootElement(child.getParent());
     }
 
-    public void upsertChild(BaseUiElement oldChild, BaseUiElement newChild, BaseUiElement parent, boolean sendCommand) {
-        if (oldChild != null && newChild.getId() == oldChild.getId()) {
+    public static void upsertChild(BaseUiElement oldChild, BaseUiElement newChild, BaseUiElement parent, OperationUiContext context) {
+        if (oldChild != null && newChild != null && newChild.getId() == oldChild.getId()) {
             return;
         }
         var root = findRootElement(parent);
         if (oldChild != null) {
             UiModel.removeElement(oldChild);
-            if (root != null && sendCommand) {
+            if (root != null && context != null) {
                 var command = new JsonObject();
                 command.addProperty("cmd", "rc");
                 command.addProperty("id", String.valueOf(oldChild.getId()));
-                getParameter(RESPONSE_COMMANDS).add(command);
+                context.getParameter(RESPONSE_COMMANDS).add(command);
             }
         }
-        UiModel.addElement(newChild, parent);
-        if (root != null && sendCommand) {
-            var command = new JsonObject();
-            command.addProperty("cmd", "ac");
-            command.addProperty("id", String.valueOf(parent.getId()));
-            WebPeerUtils.wrapException(() -> {
-                command.add("data", newChild.buildElement(this));
-            });
-            getParameter(RESPONSE_COMMANDS).add(command);
+        if (newChild != null) {
+            UiModel.addElement(newChild, parent);
+            if (root != null && context != null) {
+                var command = new JsonObject();
+                command.addProperty("cmd", "ac");
+                command.addProperty("id", String.valueOf(parent.getId()));
+                WebPeerUtils.wrapException(() -> {
+                    command.add("data", newChild.buildElement(context));
+                });
+                context.getParameter(RESPONSE_COMMANDS).add(command);
+            }
         }
     }
 

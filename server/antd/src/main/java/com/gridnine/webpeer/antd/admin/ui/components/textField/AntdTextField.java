@@ -28,50 +28,21 @@ import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndTwoArguments;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public class AntdTextField extends BaseAntdUiElement {
+public class AntdTextField extends BaseAntdUiElement<AntdTextFieldConfiguration> {
     private String value;
 
-    private int debounceTime;
 
-    private boolean deferred;
-
-    private RunnableWithExceptionAndTwoArguments<String, OperationUiContext> onValueChanged;
-
-    public AntdTextField(JsonObject uiData, OperationUiContext ctx) {
-        super(ctx);
-        this.value = uiData != null && uiData.has("value")? uiData.get("value").getAsString(): null;
-    }
-
-    public void setOnValueChanged( RunnableWithExceptionAndTwoArguments<String, OperationUiContext> onValueChanged) {
-        this.onValueChanged = onValueChanged;
-    }
-
-    public boolean isDeferred() {
-        return deferred;
-    }
-
-    public void setDeferred(boolean deferred) {
-        this.deferred = deferred;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public int getDebounceTime() {
-        return debounceTime;
-    }
-
-    public void setDebounceTime(int debounceTime) {
-        this.debounceTime = debounceTime;
+    public AntdTextField(AntdTextFieldConfiguration config,  OperationUiContext ctx) {
+        super(config, ctx);
+        this.value = config.getInitValue();
     }
 
     @Override
     public JsonObject buildElement(OperationUiContext context) {
         var result = super.buildElement(context);
         result.addProperty("value", value);
-        result.addProperty("debounceTime", debounceTime);
-        result.addProperty("deferred", deferred);
+        result.addProperty("debounceTime", configuration.getDebounceTime());
+        result.addProperty("deferred", configuration.isDeferred());
         return result;
     }
 
@@ -79,17 +50,15 @@ public class AntdTextField extends BaseAntdUiElement {
     protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext) {
         if("value".equals(propertyName)){
             this.value = propertyValue.getAsString();
-            if(onValueChanged != null){
-                WebPeerUtils.wrapException(() -> onValueChanged.run(this.value, operationUiContext));
+            if(configuration.getValueChangedHandler() != null){
+                WebPeerUtils.wrapException(() -> configuration.getValueChangedHandler().run(this.value, operationUiContext));
             }
         }
     }
 
     public void setValue(String value, OperationUiContext context){
         this.value = value;
-        if(context.findRootElement(this) != null){
-            context.sendElementPropertyChange(getId(), "value", value);
-        }
+        context.sendElementPropertyChange(getId(), "value", value);
     }
 
     @Override

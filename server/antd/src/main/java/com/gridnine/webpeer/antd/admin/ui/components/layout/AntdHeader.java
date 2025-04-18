@@ -24,10 +24,10 @@ package com.gridnine.webpeer.antd.admin.ui.components.layout;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 
-public class AntdHeader extends BaseAntdUiElement {
+public class AntdHeader extends BaseAntdUiElement<AntdHeaderConfiguration> {
 
-    public AntdHeader(OperationUiContext ctx) {
-        super(ctx);
+    public AntdHeader(AntdHeaderConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
     }
 
     @Override

@@ -19,20 +19,31 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.layout;
+package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
-import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
+import com.google.gson.JsonObject;
+import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDivConfiguration;
+import com.gridnine.webpeer.antd.admin.ui.components.icon.AntdIconConfiguration;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public class AntdContent extends BaseAntdUiElement<AntdContentConfiguration> {
+public class AntdIconConfigurationBuilder extends BaseAntdConfigurationBuilder<AntdIconConfiguration> {
 
-    public AntdContent(AntdContentConfiguration config, OperationUiContext ctx) {
-        super(config, ctx);
+    private AntdIconConfigurationBuilder(){
+        super(new AntdIconConfiguration());
     }
 
-
-    @Override
-    public String getType() {
-        return "content";
+    public void icon(String icon){
+        config.setIcon(icon);
     }
+
+    public static AntdIconConfiguration createConfiguration( RunnableWithExceptionAndArgument<AntdIconConfigurationBuilder> configurator){
+        var builder = new AntdIconConfigurationBuilder();
+        return WebPeerUtils.wrapException(() ->{
+            configurator.run(builder);
+            return builder.config;
+        });
+    }
+
 }

@@ -22,12 +22,12 @@
 package com.gridnine.webpeer.demo.app;
 
 import com.google.gson.JsonObject;
-import com.gridnine.webpeer.antd.admin.ui.builder.AntdAdminStyles;
-import com.gridnine.webpeer.antd.admin.ui.builder.AntdUiBuilder;
+import com.gridnine.webpeer.antd.admin.ui.builders.AntdMainFrameConfigurationBuilder;
 import com.gridnine.webpeer.antd.admin.ui.components.AntdIcons;
+import com.gridnine.webpeer.antd.admin.ui.components.builders.AntdDivConfigurationBuilder;
+import com.gridnine.webpeer.antd.admin.ui.components.builders.AntdTextFieldConfigurationBuilder;
 import com.gridnine.webpeer.antd.admin.ui.components.textField.AntdTextField;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrame;
-import com.gridnine.webpeer.antd.admin.ui.builder.AntdMainFrameConfigurationBuilder;
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
 import com.gridnine.webpeer.core.servlet.CoreWebAppModule;
 import com.gridnine.webpeer.core.servlet.WebAppModule;
@@ -61,7 +61,7 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
 
     @Override
     protected AntdMainFrame createRootElement(UiModel model, JsonObject uiData, OperationUiContext operationUiContext) throws Exception {
-        return new AntdMainFrame(model, uiData, operationUiContext, AntdMainFrameConfigurationBuilder.build(c->{
+        return new AntdMainFrame(uiData, operationUiContext, AntdMainFrameConfigurationBuilder.build(c->{
             var lang = "en".equals(operationUiContext.getStringLocalStorageParam("lang"))? "en": "ru";
             c.desktopWidth(1024);
             var mobile = uiData != null && uiData.has("breakpoint") && uiData.get("breakpoint").getAsString().equals("mobile");
@@ -70,11 +70,14 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
             } else {
                 c.theme(mobile? Constants.LIGHT_MOBILE_THEME: Constants.LIGHT_DESKTOP_THEME);
             }
-            c.header(AntdUiBuilder.div(operationUiContext, d ->{
-                d.style(AntdAdminStyles.parseStyle("width=100%;display=flex;flexDirection=row;alignItems=center;lineHeight=20px;height=50px"));
-                d.img("demo/logo.svg", null, "45px",AntdAdminStyles.parseStyle("display=inline-block"));
-                d.div("ru".equals(lang)? "Веб аватар": "Web peer", AntdAdminStyles.parseStyle("fontSize=token:fontSizeHeading2;fontWeight=token:fontWeightStrong"), AntdAdminStyles.STANDARD_PADDING);
-                d.hGlue();
+            c.header(AntdDivConfigurationBuilder.createElement(operationUiContext, operationUiContext, d ->{
+                d.style("width=100%;display=flex;flexDirection=row;alignItems=center;lineHeight=20px;height=50px;padding=token:padding");
+                d.img("demo/logo.svg", null, "45px",AntdS.parseStyle("display=inline-block"));
+                d.div(null, operationUiContext, title ->{
+                    title.style("fontSize=token:fontSizeHeading2;fontWeight=token:fontWeightStrong;padding=token:padding");
+                    title.content("ru".equals(lang)? "Веб аватар": "Web peer");
+                });
+                d.glue(operationUiContext);
                 d.dropdownImage(dd ->{
                     dd.menuItem("en", "classpath/demo/en-flag.png", "english", "20px", null, (ctx)->{
                         ctx.setLocalStorageParam("lang", "en");
@@ -89,7 +92,7 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
                     } else {
                         dd.selectItem("ru");
                     }
-                }, AntdAdminStyles.STANDARD_PADDING);
+                });
                 d.dropdownIcon( dd ->{
                     dd.menuItem("light", AntdIcons.SUN_OUTLINED.name(), "Light", (ctx)->{
                         ctx.setLocalStorageParam("theme", "light");
@@ -104,9 +107,9 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
                     } else {
                         dd.selectItem("light");
                     }
-                }, AntdAdminStyles.STANDARD_PADDING);
+                });
 
-            }), AntdAdminStyles.SMALL_PADDING);
+            }));
             c.menu(menu ->{
                 for(var n =1; n<3;n++){
                     var fn = n;
@@ -118,8 +121,9 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
                 }
             });
             c.viewProvider((path,ui,ctx) ->{
-                var textField = new AntdTextField(ui, ctx);
-                textField.setDeferred(true);
+                var textField = new AntdTextField(AntdTextFieldConfigurationBuilder.createConfiguration(ui, b->{
+                    b.deferred(true);
+                }), ctx);
                 return textField;
             });
         }));

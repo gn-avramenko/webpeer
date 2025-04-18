@@ -30,27 +30,12 @@ import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
 import java.math.BigDecimal;
 
-public class AntdNumberField extends BaseAntdUiElement {
+public class AntdNumberField extends BaseAntdUiElement<AntdNumberFieldConfiguration> {
     private BigDecimal value;
 
-    private boolean deferred;
-
-    private RunnableWithExceptionAndTwoArguments<BigDecimal, OperationUiContext> onValueChanged;
-
-    public AntdNumberField(OperationUiContext ctx) {
-        super(ctx);
-    }
-
-    public void setOnValueChanged( RunnableWithExceptionAndTwoArguments<BigDecimal, OperationUiContext> onValueChanged) {
-        this.onValueChanged = onValueChanged;
-    }
-
-    public boolean isDeferred() {
-        return deferred;
-    }
-
-    public void setDeferred(boolean deferred) {
-        this.deferred = deferred;
+    public AntdNumberField(AntdNumberFieldConfiguration config, OperationUiContext ctx) {
+        super(config,ctx);
+        value = config.getInitValue();
     }
 
     public BigDecimal getValue() {
@@ -61,7 +46,7 @@ public class AntdNumberField extends BaseAntdUiElement {
     public JsonObject buildElement(OperationUiContext context) {
         var result =  super.buildElement(context);
         result.addProperty("value", value);
-        result.addProperty("deferred", deferred);
+        result.addProperty("deferred", configuration.isDeferred() && configuration.getValueChangedHandler() == null);
         return result;
     }
 
@@ -69,8 +54,8 @@ public class AntdNumberField extends BaseAntdUiElement {
     protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext) {
         if("value".equals(propertyName)){
             this.value = propertyValue.getAsBigDecimal();
-            if(onValueChanged != null){
-                WebPeerUtils.wrapException(() -> onValueChanged.run(this.value, operationUiContext));
+            if(configuration.getValueChangedHandler() != null) {
+                WebPeerUtils.wrapException(() -> configuration.getValueChangedHandler().run(this.value, operationUiContext));
             }
         }
     }

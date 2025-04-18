@@ -1,7 +1,7 @@
 package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
 import com.google.gson.JsonObject;
-import com.gridnine.webpeer.antd.admin.ui.builder.Style;
+import com.gridnine.webpeer.antd.admin.ui.components.common.AntdStyle;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenuItem;
 import com.gridnine.webpeer.antd.admin.ui.components.router.AntdViewProvider;
@@ -14,9 +14,9 @@ public class AntdMainFrameConfiguration {
 
     private JsonObject theme;
 
-    private BaseAntdUiElement header;
+    private BaseAntdUiElement<?> header;
 
-    private final Map<String, Object> headerStyle = new HashMap<String, Object>();
+    private AntdStyle headerStyle = new AntdStyle();
 
     private AntdViewProvider viewProvider;
 
@@ -28,10 +28,8 @@ public class AntdMainFrameConfiguration {
         return viewProvider;
     }
 
-    public void setHeaderStyle(Style... headerStyles) {
-        Arrays.stream(headerStyles).forEach(style -> {
-            headerStyle.putAll(style);
-        });
+    public void setHeaderStyle(AntdStyle... headerStyles) {
+        Arrays.stream(headerStyles).forEach(headerStyle::putAll);
     }
 
     public void setTheme(JsonObject theme) {
@@ -42,7 +40,7 @@ public class AntdMainFrameConfiguration {
         return theme;
     }
 
-    public Map<String, Object> getHeaderStyle() {
+    public AntdStyle getHeaderStyle() {
         return headerStyle;
     }
 
@@ -60,12 +58,20 @@ public class AntdMainFrameConfiguration {
         this.desktopWidth = desktopWidth;
     }
 
-    public BaseAntdUiElement getHeader() {
+    public BaseAntdUiElement<?> getHeader() {
         return header;
     }
 
-    public void setHeader(BaseAntdUiElement header) {
+    public void setHeader(BaseAntdUiElement<?> header) {
         this.header = header;
+    }
+
+    public void setHeaderStyle(AntdStyle headerStyle) {
+        this.headerStyle = headerStyle;
+    }
+
+    public void setMenuItems(List<AntdMenuItem> menuItems) {
+        this.menuItems = menuItems;
     }
 
 }

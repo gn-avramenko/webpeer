@@ -26,19 +26,18 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
+import com.gridnine.webpeer.antd.admin.ui.components.image.AntdImageConfiguration;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AntdMenu extends BaseAntdUiElement {
+public class AntdMenu extends BaseAntdUiElement<AntdMenuConfiguration> {
 
-    private final List<AntdMenuItem> menuItems;
 
-    public AntdMenu(OperationUiContext ctx, List<AntdMenuItem> items) {
-        super(ctx);
-        this.menuItems = items;
+    public AntdMenu(AntdMenuConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
     }
 
     @Override
@@ -46,7 +45,7 @@ public class AntdMenu extends BaseAntdUiElement {
         var result = super.buildElement(context);
         var menu = new JsonArray();
         result.add("menuItems", menu);
-        menuItems.forEach(g -> {
+        configuration.getMenu().forEach(g -> {
             var gi = new JsonObject();
             menu.add(gi);
             gi.addProperty("name", g.getName());
@@ -75,7 +74,7 @@ public class AntdMenu extends BaseAntdUiElement {
             var itemId = actionData.getAsString();
             String[] items = itemId.split("-");
             WebPeerUtils.wrapException(() ->{
-                menuItems.get(Integer.parseInt(items[0])).getChildren().get(Integer.parseInt(items[1])).getHandler().run(operationUiContext);
+                configuration.getMenu().get(Integer.parseInt(items[0])).getChildren().get(Integer.parseInt(items[1])).getHandler().run(operationUiContext);
             });
             return;
         }

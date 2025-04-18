@@ -19,22 +19,9 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.builder;
+package com.gridnine.webpeer.antd.admin.ui.components.common;
 
-import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
-import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
-import com.gridnine.webpeer.core.utils.WebPeerUtils;
+import java.util.HashMap;
 
-public class AntdUiBuilder {
-
-    public static AntdDiv div(OperationUiContext context, RunnableWithExceptionAndArgument<AntdDivBuilder> configurator){
-        var result = new AntdDiv(null, context);
-        var builder = new AntdDivBuilder(result, context);
-        WebPeerUtils.wrapException(() ->{
-            configurator.run(builder);
-        });
-        return result;
-    }
-
+public class AntdStyle extends HashMap<String, Object> {
 }

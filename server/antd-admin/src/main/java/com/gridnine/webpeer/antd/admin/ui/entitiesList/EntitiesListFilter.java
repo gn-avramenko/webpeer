@@ -19,20 +19,14 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.layout;
+package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
-import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
+import com.google.gson.JsonElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 
-public class AntdContent extends BaseAntdUiElement<AntdContentConfiguration> {
+import java.util.function.Supplier;
 
-    public AntdContent(AntdContentConfiguration config, OperationUiContext ctx) {
-        super(config, ctx);
-    }
-
-
-    @Override
-    public String getType() {
-        return "content";
-    }
+public interface EntitiesListFilter extends Supplier<JsonElement> {
+    void clear(OperationUiContext context);
+    void setData(JsonElement data, OperationUiContext context);
 }

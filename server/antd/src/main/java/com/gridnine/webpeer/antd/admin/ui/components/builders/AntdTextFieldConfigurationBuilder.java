@@ -19,43 +19,40 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.button;
+package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.core.ui.BaseUiElement;
+import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdLayoutConfiguration;
+import com.gridnine.webpeer.antd.admin.ui.components.textField.AntdTextFieldConfiguration;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
+import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndTwoArguments;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+public class AntdTextFieldConfigurationBuilder extends BaseAntdConfigurationBuilder<AntdTextFieldConfiguration> {
 
-public class AntdButton extends BaseAntdUiElement<AntdButtonConfiguration> {
-
-    public AntdButton(AntdButtonConfiguration configuration, OperationUiContext ctx) {
-        super(configuration, ctx);
+    private AntdTextFieldConfigurationBuilder(JsonObject uiData){
+        super(new AntdTextFieldConfiguration(uiData));
     }
 
-    @Override
-    public String getType() {
-        return "button";
+    public void debounceTime(int debounceTime) {
+        config.setDebounceTime(debounceTime);
     }
 
-    @Override
-    public JsonObject buildElement(OperationUiContext context) {
-        var result = super.buildElement(context);
-        result.addProperty("title", configuration.getTitle());
-        return result;
+    public  void deferred(boolean deferred) {
+        config.setDeferred(deferred);
     }
 
-    @Override
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
-        if(actionId.equals("click")){
-            WebPeerUtils.wrapException(() ->configuration.getClickHandler().run(operationUiContext));
-            return;
-        }
-        super.executeAction(actionId, actionData, operationUiContext);
+    public void valueChangedHandler(RunnableWithExceptionAndTwoArguments<String, OperationUiContext> valueChangedHandler) {
+        config.setValueChangedHandler(valueChangedHandler);
     }
+
+    public static AntdTextFieldConfiguration createConfiguration(JsonObject uiData, RunnableWithExceptionAndArgument<AntdTextFieldConfigurationBuilder> configurator){
+        var builder = new AntdTextFieldConfigurationBuilder(uiData);
+        return WebPeerUtils.wrapException(() ->{
+            configurator.run(builder);
+            return builder.config;
+        });
+    }
+
 }

@@ -25,15 +25,14 @@ import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 
-public class AntdTheme extends BaseAntdUiElement {
+public class AntdTheme extends BaseAntdUiElement<AntdThemeConfiguration> {
 
-    public AntdTheme(OperationUiContext ctx, JsonObject algorithm) {
-        super(ctx);
-        this.theme = algorithm;
+    public AntdTheme(AntdThemeConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
+        this.theme = config.getTheme();
     }
 
     private JsonObject theme;
-
 
     @Override
     public JsonObject buildElement(OperationUiContext context) {

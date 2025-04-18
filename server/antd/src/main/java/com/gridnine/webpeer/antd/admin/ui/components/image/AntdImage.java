@@ -25,44 +25,19 @@ import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 
-public class AntdImage extends BaseAntdUiElement {
+public class AntdImage extends BaseAntdUiElement<AntdImageConfiguration> {
 
-    private String width;
 
-    private String height;
-
-    private String src;
-
-    public AntdImage(OperationUiContext ctx) {
-        super(ctx);
-    }
-
-    public void setSrc(String src) {
-        this.src = src;
-    }
-
-    public String getWidth() {
-        return width;
-    }
-
-    public void setWidth(String width) {
-        this.width = width;
-    }
-
-    public String getHeight() {
-        return height;
-    }
-
-    public void setHeight(String height) {
-        this.height = height;
+    public AntdImage(AntdImageConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
     }
 
     @Override
     public JsonObject buildElement( OperationUiContext context) {
         var result =  super.buildElement(context);
-        result.addProperty("width", this.width);
-        result.addProperty("height", this.height);
-        result.addProperty("src", String.format("/_resources/classpath/%s", src));
+        result.addProperty("width", configuration.getWidth());
+        result.addProperty("height", configuration.getHeight());
+        result.addProperty("src", String.format("/_resources/classpath/%s", configuration.getSrc()));
         return result;
     }
 

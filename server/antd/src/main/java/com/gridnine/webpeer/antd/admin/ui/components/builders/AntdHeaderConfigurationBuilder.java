@@ -19,20 +19,25 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.layout;
+package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
-import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdHeaderConfiguration;
+import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdLayoutConfiguration;
+import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public class AntdContent extends BaseAntdUiElement<AntdContentConfiguration> {
+public class AntdHeaderConfigurationBuilder extends BaseAntdConfigurationBuilder<AntdHeaderConfiguration> {
 
-    public AntdContent(AntdContentConfiguration config, OperationUiContext ctx) {
-        super(config, ctx);
+    private AntdHeaderConfigurationBuilder(){
+        super(new AntdHeaderConfiguration());
     }
 
-
-    @Override
-    public String getType() {
-        return "content";
+    public static AntdHeaderConfiguration createConfiguration(RunnableWithExceptionAndArgument<AntdHeaderConfigurationBuilder> configurator){
+        var builder = new AntdHeaderConfigurationBuilder();
+        return WebPeerUtils.wrapException(() ->{
+            configurator.run(builder);
+            return builder.config;
+        });
     }
+
 }

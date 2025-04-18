@@ -28,33 +28,25 @@ import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.UiModel;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public class AntdRouter extends BaseAntdUiElement {
+public class AntdRouter extends BaseAntdUiElement<AntdRouterConfiguration> {
 
     private String path;
 
-    private final AntdViewProvider viewProvider;
-
-    public AntdRouter(JsonObject uiData, String initPath, AntdViewProvider viewProvider, OperationUiContext ctx) {
-        super(ctx);
-        path = initPath;
-        this.viewProvider = viewProvider;
+    public AntdRouter(AntdRouterConfiguration config, JsonObject uiData, OperationUiContext ctx) {
+        super(config, ctx);
+        path = config.getInitPath();
         WebPeerUtils.wrapException(() ->{
-            var child = viewProvider.createElement(initPath, uiData, ctx);
+            var child = config.getViewProvider().createElement(path, uiData, ctx);
             UiModel.addElement(child, AntdRouter.this);
         });
-    }
-
-    @Override
-    public JsonObject buildElement(OperationUiContext context) {
-        return super.buildElement(context);
     }
 
     public void setPath(String path, OperationUiContext ctx) {
         if(!this.path.equals(path)){
             this.path = path;
             WebPeerUtils.wrapException(()->{
-                var newChild = viewProvider.createElement(path, null, ctx);
-                ctx.upsertChild(getChildren().get(0), newChild, AntdRouter.this, true);
+                var newChild = configuration.getViewProvider().createElement(path, null, ctx);
+                OperationUiContext.upsertChild(getChildren().get(0), newChild, AntdRouter.this, ctx);
             });
             ctx.sendElementPropertyChange(getId(), "path", path);
         }

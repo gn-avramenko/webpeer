@@ -25,21 +25,16 @@ import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 
-public class AntdIcon extends BaseAntdUiElement {
+public class AntdIcon extends BaseAntdUiElement<AntdIconConfiguration> {
 
-
-    private final String icon;
-
-    public AntdIcon(String icon, OperationUiContext ctx) {
-        super(ctx);
-        this.icon = icon;
+    public AntdIcon(AntdIconConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
     }
 
     @Override
     public JsonObject buildElement(OperationUiContext context) {
         var result = super.buildElement(context);
-        result.addProperty("type", "icon");
-        result.addProperty("icon", icon);
+        result.addProperty("icon", configuration.getIcon());
         return result;
     }
 

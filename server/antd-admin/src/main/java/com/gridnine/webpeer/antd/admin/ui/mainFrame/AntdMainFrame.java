@@ -22,14 +22,12 @@
 package com.gridnine.webpeer.antd.admin.ui.mainFrame;
 
 import com.google.gson.JsonObject;
-import com.gridnine.webpeer.antd.admin.ui.builder.AntdAdminStyles;
 import com.gridnine.webpeer.antd.admin.ui.components.AntdIcons;
 import com.gridnine.webpeer.antd.admin.ui.components.breakpoint.AntdBreakpoint;
+import com.gridnine.webpeer.antd.admin.ui.components.breakpoint.AntdBreakpointConfiguration;
+import com.gridnine.webpeer.antd.admin.ui.components.builders.AntdBreakpointConfigurationBuilder;
 import com.gridnine.webpeer.antd.admin.ui.components.common.AntdUtils;
-import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
-import com.gridnine.webpeer.antd.admin.ui.components.icon.AntdIcon;
 import com.gridnine.webpeer.antd.admin.ui.components.layout.*;
-import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenu;
 import com.gridnine.webpeer.antd.admin.ui.components.router.AntdRouter;
 import com.gridnine.webpeer.antd.admin.ui.components.theme.AntdTheme;
 import com.gridnine.webpeer.core.ui.GlobalUiContext;
@@ -37,8 +35,6 @@ import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.RootUiElement;
 import com.gridnine.webpeer.core.ui.UiModel;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
 
@@ -58,144 +54,105 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
         return (AntdMainFrame) context.getParameter(GlobalUiContext.UI_MODEL).getRootElement();
     }
 
-    public void navigate(String path, OperationUiContext ctx){
-        if(drawer != null){
+    public void navigate(String path, OperationUiContext ctx) {
+        if (drawer != null) {
             drawer.setOpen(false, ctx);
         }
         router.setPath(path, ctx);
     }
-    public AntdMainFrame(UiModel model, JsonObject data, OperationUiContext ctx, AntdMainFrameConfiguration configuration) {
-        super(data, ctx);
-        this.model = model;
-        model.setRootElement(this);
-        final Map<String, Object> breakPoints = new HashMap<>();
-        breakPoints.put(MOBILE_BREAKPOINT, 0);
-        if (configuration.getDesktopWidth() > 0) {
-            breakPoints.put(DESKTOP_BREAKPOINT, configuration.getDesktopWidth());
-        }
-        setBreakpoints(breakPoints);
-        var breakpoint = data == null || !data.has("breakpoint")? null : data.get("breakpoint").getAsString();
-        if (breakpoint == null) {
-            return;
-        }
-        String initPath = "/";
-        var params = ctx.getParameter(OperationUiContext.PARAMS);
-        if(params != null) {
-            initPath = params.get("initPath").getAsString();
-        }
-        theme = new AntdTheme(ctx, configuration.getTheme());
-        UiModel.addElement(theme, this);
-        var layout = new AntdLayout(ctx);
-        var layoutStyle = new HashMap<String, Object>();
-        layoutStyle.put("height", "100%");
-        layoutStyle.put("borderRadius", "token:borderRadiusLG");
-        layout.setStyle(layoutStyle);
-        layout.setTag("layout");
-        UiModel.addElement(layout, theme);
-        if (DESKTOP_BREAKPOINT.equals(breakpoint)) {
-            {
-                var header = new AntdHeader(ctx);
-                header.setTag("header");
-                header.setStyle(configuration.getHeaderStyle());
-                if (configuration.getHeader() != null) {
-                    UiModel.addElement(configuration.getHeader(), header);
-                }
-                UiModel.addElement(header, layout);
+
+
+    @Override
+    protected AntdBreakpointConfiguration createConfiguration(JsonObject uiData, Object config, OperationUiContext ctx) {
+        AntdMainFrameConfiguration conf = (AntdMainFrameConfiguration) config;
+        return AntdBreakpointConfigurationBuilder.createConfiguration(uiData, (bp) -> {
+            bp.breakPoint(MOBILE_BREAKPOINT, 0);
+            if (conf.getDesktopWidth() > 0) {
+                bp.breakPoint(DESKTOP_BREAKPOINT, conf.getDesktopWidth());
             }
-            {
-                var content = new AntdContent(ctx);
-                var contentStyle = new HashMap<String, Object>();
-                contentStyle.put("height", "100%");
-                content.setStyle(contentStyle);
-                content.setTag("content");
-                UiModel.addElement(content, layout);
-                {
-                    var innerLayout = new AntdLayout(ctx);
-                    innerLayout.setTag("inner-layout");
-                    var innerLayoutStyle = new HashMap<String, Object>();
-                    innerLayoutStyle.put("height", "100%");
-                    innerLayout.setStyle(innerLayoutStyle);
-                    UiModel.addElement(innerLayout, content);
-                    {
-                        var sider = new AntdSider(ctx);
-                        sider.setTag("sider");
-                        UiModel.addElement(sider, innerLayout);
-                        {
-                            var menu = new AntdMenu(ctx, configuration.getMenuItems());
-                            UiModel.addElement(menu, sider);
-                        }
-                    }
-                    {
-                        var innerContent = new AntdContent(ctx);
-                        innerContent.setTag("inner-content");
-                        UiModel.addElement(innerContent, innerLayout);
-                        {
-                            router = new AntdRouter(AntdUtils.getFirstChildData(AntdUtils.getFirstChildData(AntdUtils.findUiDataByTag(data,"inner-content"))), initPath, configuration.getViewProvider(), ctx);
-                            UiModel.addElement(router, innerContent);
-                        }
-                    }
-                }
-            }
-            return;
-        }
-        {
-            var header = new AntdHeader(ctx);
-            header.setTag("header");
-            header.setStyle(configuration.getHeaderStyle());
-            header.getStyle().put("display","flex");
-            var iconDiv = new AntdDiv(null, ctx);
-            iconDiv.setStyle(AntdAdminStyles.parseStyle("lineHeight=35px;padding=token:padding"));
-            UiModel.addElement(iconDiv, header);
-            iconDiv.setClickHandler((context)->{
-                drawer.setOpen(true, context);
-            });
-            var icon = new AntdIcon(AntdIcons.MENU_FOLD_OUTLINED.name(), ctx);
-            UiModel.addElement(icon, iconDiv);
-            if (configuration.getHeader() != null) {
-                UiModel.addElement(configuration.getHeader(), header);
-            }
-            UiModel.addElement(header, layout);
-            {
-                {
-                    var content = new AntdContent(ctx);
-                    var contentStyle = new HashMap<String, Object>();
-                    contentStyle.put("height", "100%");
-                    content.setStyle(contentStyle);
-                    content.setTag("content");
-                    UiModel.addElement(content, layout);
-                    {
-                        drawer  = new AntdDrawer(false, ctx);
-                        drawer.setTag("drawer");
-                        UiModel.addElement(drawer, content);
-                        {
-                            var menu = new AntdMenu(ctx, configuration.getMenuItems());
-                            menu.getStyle().put("height", "100%");
-                            menu.getStyle().put("overflowY", "auto");
-                            UiModel.addElement(menu, drawer);
-                        }
-                    }
-                    {
-                        var innerLayout = new AntdLayout(ctx);
-                        innerLayout.setTag("inner-layout");
-                        var innerLayoutStyle = new HashMap<String, Object>();
-                        innerLayoutStyle.put("height", "100%");
-                        innerLayout.setStyle(innerLayoutStyle);
-                        UiModel.addElement(innerLayout, content);
-                        {
-                            var innerContent = new AntdContent(ctx);
-                            innerContent.setTag("inner-content");
-                            UiModel.addElement(innerContent, innerLayout);
-                            {
-                                router = new AntdRouter(AntdUtils.getFirstChildData(AntdUtils.getFirstChildData(AntdUtils.findUiDataByTag(data,"inner-content"))), initPath, configuration.getViewProvider(), ctx);
-                                UiModel.addElement(router, innerContent);
+            String initPath = ctx.getParameter(OperationUiContext.PARAMS) != null ? ctx.getParameter(OperationUiContext.PARAMS).get("initPath").getAsString() : "/";
+            theme = bp.theme(ctx, th -> {
+                th.layout(ctx, ml -> {
+                    ml.tag("main-layout");
+                    ml.style("height=100%;borderRadius=token:borderRadiusLG");
+                    if (DESKTOP_BREAKPOINT.equals(bp.currentBreakPoint())) {
+                        ml.header(ctx, mh -> {
+                            mh.tag("main-header");
+                            if (conf.getHeader() != null) {
+                                mh.appendChild(conf.getHeader());
                             }
-                        }
+                            if (!conf.getHeaderStyle().isEmpty()) {
+                                mh.style(conf.getHeaderStyle());
+                            }
+                        });
+                        ml.content(ctx, mc -> {
+                            mc.tag("main-content");
+                            mc.style("height=100%");
+                            mc.layout(ctx, il -> {
+                                il.tag("inner-layout");
+                                il.style("height=100%");
+                                il.sider(ctx, ins -> {
+                                    ins.tag("sider");
+                                    ins.menu(ctx, m -> m.menuItems(conf.getMenuItems()));
+                                });
+                                il.content(ctx, ic -> {
+                                    ic.tag("inner-content");
+                                    router = ic.router(AntdUtils.getFirstChildData(AntdUtils.getFirstChildData(AntdUtils.findUiDataByTag(uiData, "inner-content"))),
+                                            ctx, router -> {
+                                                router.initPath(initPath);
+                                                router.viewProvider(conf.getViewProvider());
+                                            });
+                                });
+                            });
+                        });
+                        return;
                     }
+                    ml.header(ctx, mh -> {
+                        mh.tag("main-header");
+                        mh.style(conf.getHeaderStyle());
+                        mh.style("display","flex");
+                        mh.div(null, ctx, d ->{
+                            d.style("lineHeight=35px;padding=token:padding");
+                            d.clickHandler(c ->{
+                                drawer.setOpen(false, c);
+                            });
+                            d.icon(ctx, i -> i.icon(AntdIcons.MENU_FOLD_OUTLINED.name()));
+                        });
+                        if(conf.getHeader() != null){
+                            mh.appendChild(conf.getHeader());
+                        }
+                    });
+                    ml.content(ctx, mc -> {
+                        mc.tag("main-content");
+                        mc.style("height=100%");
+                        drawer = mc.drawer(ctx, drawer->{
+                            setTag("drawer");
+                            drawer.menu(ctx, m -> m.menuItems(conf.getMenuItems()));
+                        });
+                        mc.layout(ctx, il -> {
+                            il.tag("inner-layout");
+                            il.style("height=100%");
+                            il.content(ctx, ic -> {
+                                ic.tag("inner-content");
+                                router = ic.router(AntdUtils.getFirstChildData(AntdUtils.getFirstChildData(AntdUtils.findUiDataByTag(uiData, "inner-content"))),
+                                        ctx, router -> {
+                                            router.initPath(initPath);
+                                            router.viewProvider(conf.getViewProvider());
+                                        });
+                            });
+                        });
+                    });
+                });
+            });
 
-                }
-            }
+        });
+    }
 
-        }
+    public AntdMainFrame(JsonObject uiData, OperationUiContext ctx, AntdMainFrameConfiguration conf) {
+        super(uiData, conf, ctx);
+        this.model = ctx.getParameter(GlobalUiContext.UI_MODEL);
+        model.setRootElement(this);
+
     }
 
     public void setTheme(JsonObject theme, OperationUiContext ctx) {

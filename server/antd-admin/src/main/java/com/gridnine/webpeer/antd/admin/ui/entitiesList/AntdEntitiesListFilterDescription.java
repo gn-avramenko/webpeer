@@ -19,20 +19,34 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.layout;
+package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
-import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.core.ui.OperationUiContext;
+public class AntdEntitiesListFilterDescription {
+    private String id;
+    private String title;
+    private AntdEntitiesListFilterType type;
 
-public class AntdContent extends BaseAntdUiElement<AntdContentConfiguration> {
-
-    public AntdContent(AntdContentConfiguration config, OperationUiContext ctx) {
-        super(config, ctx);
+    public String getId() {
+        return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    @Override
-    public String getType() {
-        return "content";
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public AntdEntitiesListFilterType getType() {
+        return type;
+    }
+
+    public void setType(AntdEntitiesListFilterType type) {
+        this.type = type;
     }
 }

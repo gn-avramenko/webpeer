@@ -19,20 +19,13 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.layout;
+package com.gridnine.webpeer.antd.admin.ui.entitiesList;
 
-import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.google.gson.JsonElement;
 
-public class AntdContent extends BaseAntdUiElement<AntdContentConfiguration> {
+import java.util.List;
+import java.util.Map;
 
-    public AntdContent(AntdContentConfiguration config, OperationUiContext ctx) {
-        super(config, ctx);
-    }
-
-
-    @Override
-    public String getType() {
-        return "content";
-    }
+public interface AntdEntitiesListDataProvider {
+    //AntdListData getData(List<AntdEntitiesListColumnDescription> columns, int limit, AntdSorting sort, String searchText, Map<String, JsonElement> filters);
 }

@@ -19,20 +19,33 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.layout;
+package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
-import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.antd.admin.ui.components.router.AntdRouterConfiguration;
+import com.gridnine.webpeer.antd.admin.ui.components.router.AntdViewProvider;
+import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public class AntdContent extends BaseAntdUiElement<AntdContentConfiguration> {
+public class AntdRouterConfigurationBuilder extends BaseAntdConfigurationBuilder<AntdRouterConfiguration> {
 
-    public AntdContent(AntdContentConfiguration config, OperationUiContext ctx) {
-        super(config, ctx);
+    private AntdRouterConfigurationBuilder(){
+        super(new AntdRouterConfiguration());
     }
 
-
-    @Override
-    public String getType() {
-        return "content";
+    public void initPath(String path){
+        config.setInitPath(path);
     }
+
+    public void viewProvider(AntdViewProvider viewProvider){
+        config.setViewProvider(viewProvider);
+    }
+
+    public static AntdRouterConfiguration createConfiguration(RunnableWithExceptionAndArgument<AntdRouterConfigurationBuilder> configurator){
+        var builder = new AntdRouterConfigurationBuilder();
+        return WebPeerUtils.wrapException(() ->{
+            configurator.run(builder);
+            return builder.config;
+        });
+    }
+
 }

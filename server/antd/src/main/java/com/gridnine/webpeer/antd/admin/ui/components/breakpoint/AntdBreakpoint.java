@@ -23,47 +23,37 @@ package com.gridnine.webpeer.antd.admin.ui.components.breakpoint;
 
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
+import com.gridnine.webpeer.core.ui.BaseUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Supplier;
 
-public class AntdBreakpoint extends BaseAntdUiElement {
+public class AntdBreakpoint extends BaseAntdUiElement<AntdBreakpointConfiguration> {
 
-
-    private Map<String, Object> breakpoints = new HashMap<String, Object>();
-
-    private final String breakPoint;
-
-    public AntdBreakpoint(JsonObject uiData, OperationUiContext ctx) {
-        super(ctx);
-        breakPoint = uiData == null || !uiData.has("breakpoint")? null : uiData.get("breakpoint").getAsString();
+    public AntdBreakpoint(AntdBreakpointConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
     }
 
-    public void setBreakpoints(Map<String, Object> breakpoints) {
-        this.breakpoints = breakpoints;
-    }
-
-    public Map<String, Object> getBreakpoints() {
-        return breakpoints;
+    public AntdBreakpoint(JsonObject uiData, Object config, OperationUiContext ctx) {
+        super(uiData, config, ctx);
     }
 
     @Override
     public JsonObject buildElement(OperationUiContext context) {
-        if(breakPoint == null) {
-            var result = new JsonObject();
-            result.addProperty("type", "breakpoint");
-            result.addProperty("id", getId());
-            result.addProperty("tag", getTag());
-            result.add("breakpoints", WebPeerUtils.serialize(breakpoints));
-            return result;
-        }
-
         var result =  super.buildElement(context);
-        result.add("breakpoints", WebPeerUtils.serialize(breakpoints));
-        result.addProperty("breakpoint", breakPoint);
+        result.add("breakpoints", WebPeerUtils.serialize(configuration.getBreakPoints()));
+        if(configuration.getBreakPoint() != null) {
+            result.addProperty("breakpoint", configuration.getBreakPoint());
+        }
         return result;
+    }
+
+    @Override
+    public List<BaseUiElement> getChildren() {
+        return configuration.getBreakPoint() != null? super.getChildren(): Collections.emptyList();
     }
 
     @Override

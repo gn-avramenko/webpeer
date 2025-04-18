@@ -24,6 +24,7 @@ package com.gridnine.webpeer.antd.admin.ui.components;
 public enum AntdIcons {
     SUN_OUTLINED,
     MOON_FILLED,
-    MENU_FOLD_OUTLINED
+    MENU_FOLD_OUTLINED,
+    FILTER_OUTLINED
 
 }

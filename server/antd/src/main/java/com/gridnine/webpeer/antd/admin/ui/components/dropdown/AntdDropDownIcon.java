@@ -31,28 +31,16 @@ import com.gridnine.webpeer.core.utils.WebPeerUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AntdDropDownIcon extends BaseAntdUiElement {
-    private List<IconMenuItem> menu = new ArrayList<IconMenuItem>();
+public class AntdDropDownIcon extends BaseAntdUiElement<AntdDropDownIconConfiguration> {
     private String selectedItemId;
 
-    public AntdDropDownIcon(OperationUiContext ctx) {
-        super(ctx);
+    public AntdDropDownIcon(AntdDropDownIconConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
+        this.selectedItemId = config.getSelectedItemId();
     }
 
     public String getSelectedItemId() {
         return selectedItemId;
-    }
-
-    public void setSelectedItemId(String selectedItemId) {
-        this.selectedItemId = selectedItemId;
-    }
-
-    public List<IconMenuItem> getMenu() {
-        return menu;
-    }
-
-    public void setMenu(List<IconMenuItem> menu) {
-        this.menu = menu;
     }
 
     @Override
@@ -61,7 +49,7 @@ public class AntdDropDownIcon extends BaseAntdUiElement {
         result.addProperty("type", "dropdown-icon");
         result.addProperty("selectedItemId", selectedItemId);
         var its = new JsonArray();
-        menu.forEach(it ->{
+        configuration.getMenu().forEach(it ->{
             var obj = new JsonObject();
             obj.addProperty("id", it.getId());
             obj.addProperty("icon", it.getIcon());
@@ -77,7 +65,7 @@ public class AntdDropDownIcon extends BaseAntdUiElement {
         if("si".equals(propertyName)){
             String itemId = propertyValue.getAsString();
             if(!itemId.equals(selectedItemId)){
-                menu.stream().filter(it -> it.getId().equals(itemId)).findFirst().ifPresent(it -> {
+                configuration.getMenu().stream().filter(it -> it.getId().equals(itemId)).findFirst().ifPresent(it -> {
                     WebPeerUtils.wrapException(()->{
                         it.getOnClick().run(operationUiContext);
                         selectedItemId = itemId;

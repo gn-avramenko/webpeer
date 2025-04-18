@@ -19,43 +19,40 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.button;
+package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.core.ui.BaseUiElement;
+import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdLayoutConfiguration;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+public class AntdLayoutConfigurationBuilder extends BaseAntdConfigurationBuilder<AntdLayoutConfiguration> {
 
-public class AntdButton extends BaseAntdUiElement<AntdButtonConfiguration> {
-
-    public AntdButton(AntdButtonConfiguration configuration, OperationUiContext ctx) {
-        super(configuration, ctx);
+    private AntdLayoutConfigurationBuilder(){
+        super(new AntdLayoutConfiguration());
     }
 
     @Override
-    public String getType() {
-        return "button";
+    public void header(OperationUiContext context, RunnableWithExceptionAndArgument<AntdHeaderConfigurationBuilder> configurator) {
+        super.header(context, configurator);
     }
 
     @Override
-    public JsonObject buildElement(OperationUiContext context) {
-        var result = super.buildElement(context);
-        result.addProperty("title", configuration.getTitle());
-        return result;
+    public void content(OperationUiContext context, RunnableWithExceptionAndArgument<AntdContentConfigurationBuilder> configurator) {
+        super.content(context, configurator);
     }
 
     @Override
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
-        if(actionId.equals("click")){
-            WebPeerUtils.wrapException(() ->configuration.getClickHandler().run(operationUiContext));
-            return;
-        }
-        super.executeAction(actionId, actionData, operationUiContext);
+    public void sider(OperationUiContext context, RunnableWithExceptionAndArgument<AntdSiderConfigurationBuilder> configurator) {
+        super.sider(context, configurator);
     }
+
+    public static AntdLayoutConfiguration createConfiguration(RunnableWithExceptionAndArgument<AntdLayoutConfigurationBuilder> configurator){
+        var builder = new AntdLayoutConfigurationBuilder();
+        return WebPeerUtils.wrapException(() ->{
+            configurator.run(builder);
+            return builder.config;
+        });
+    }
+
 }

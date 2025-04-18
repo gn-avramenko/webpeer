@@ -25,10 +25,10 @@ import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 
-public class AntdSider extends BaseAntdUiElement {
+public class AntdSider extends BaseAntdUiElement<AntdSiderConfiguration> {
 
-    public AntdSider(OperationUiContext ctx) {
-        super(ctx);
+    public AntdSider(AntdSiderConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
     }
 
 

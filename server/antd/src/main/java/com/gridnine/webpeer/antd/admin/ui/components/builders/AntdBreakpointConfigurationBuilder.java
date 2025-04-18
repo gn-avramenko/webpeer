@@ -19,43 +19,33 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.components.button;
+package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.core.ui.BaseUiElement;
-import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.antd.admin.ui.components.breakpoint.AntdBreakpointConfiguration;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+public class AntdBreakpointConfigurationBuilder extends BaseAntdConfigurationBuilder<AntdBreakpointConfiguration> {
 
-public class AntdButton extends BaseAntdUiElement<AntdButtonConfiguration> {
-
-    public AntdButton(AntdButtonConfiguration configuration, OperationUiContext ctx) {
-        super(configuration, ctx);
+    private AntdBreakpointConfigurationBuilder(JsonObject uiData){
+        super(new AntdBreakpointConfiguration(uiData));
     }
 
-    @Override
-    public String getType() {
-        return "button";
+    public void breakPoint(String name, int width){
+        config.getBreakPoints().put(name, width);
     }
 
-    @Override
-    public JsonObject buildElement(OperationUiContext context) {
-        var result = super.buildElement(context);
-        result.addProperty("title", configuration.getTitle());
-        return result;
+    public String currentBreakPoint(){
+        return config.getBreakPoint();
     }
 
-    @Override
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
-        if(actionId.equals("click")){
-            WebPeerUtils.wrapException(() ->configuration.getClickHandler().run(operationUiContext));
-            return;
-        }
-        super.executeAction(actionId, actionData, operationUiContext);
+    public static AntdBreakpointConfiguration createConfiguration(JsonObject uiData, RunnableWithExceptionAndArgument<AntdBreakpointConfigurationBuilder> configurator){
+        var builder = new AntdBreakpointConfigurationBuilder(uiData);
+        return WebPeerUtils.wrapException(() ->{
+            configurator.run(builder);
+            return builder.config;
+        });
     }
+
 }

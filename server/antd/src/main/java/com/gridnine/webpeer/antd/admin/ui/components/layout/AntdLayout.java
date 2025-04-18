@@ -24,10 +24,10 @@ package com.gridnine.webpeer.antd.admin.ui.components.layout;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 
-public class AntdLayout extends BaseAntdUiElement {
+public class AntdLayout extends BaseAntdUiElement<AntdLayoutConfiguration> {
 
-    public AntdLayout(OperationUiContext ctx) {
-        super(ctx);
+    public AntdLayout(AntdLayoutConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
     }
 
 

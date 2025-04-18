@@ -25,25 +25,25 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
 
-public class AntdDiv extends BaseAntdUiElement {
-
-    private String content;
+public class AntdDiv extends BaseAntdUiElement<AntdDivConfiguration> {
 
     private boolean hidden;
 
-    private RunnableWithExceptionAndArgument<OperationUiContext> clickHandler;
-
-    public AntdDiv(JsonObject uiData, OperationUiContext ctx) {
-        super(ctx);
-        hidden = uiData != null && uiData.has("hidden") && uiData.get("hidden").getAsBoolean();
+    public AntdDiv(AntdDivConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
+        hidden = config.isHidden();
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public AntdDiv(JsonObject uiData, Object config, OperationUiContext ctx) {
+        super(uiData, config, ctx);
+    }
+
+    @Override
+    protected void updateFromConfig() {
+        hidden = configuration.isHidden();
     }
 
     public boolean isHidden() {
@@ -55,16 +55,10 @@ public class AntdDiv extends BaseAntdUiElement {
         context.sendElementPropertyChange(getId(), "hidden", hidden);
     }
 
-    public void setClickHandler(RunnableWithExceptionAndArgument<OperationUiContext> clickHandler) {
-        this.clickHandler = clickHandler;
-    }
-
     @Override
     protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
         if("click".equals(actionId)) {
-            WebPeerUtils.wrapException(()->{
-                this.clickHandler.run(operationUiContext);
-            });
+            WebPeerUtils.wrapException(()-> this.configuration.getClickHandler().run(operationUiContext));
             return;
         }
         super.executeAction(actionId, actionData, operationUiContext);
@@ -78,9 +72,9 @@ public class AntdDiv extends BaseAntdUiElement {
     @Override
     public JsonObject buildElement(OperationUiContext context) {
         var result = super.buildElement(context);
-        result.addProperty("handleClick", clickHandler != null);
-        if(WebPeerUtils.isNotBlank(content)){
-            result.addProperty("content", content);
+        result.addProperty("handleClick", configuration.getClickHandler() != null);
+        if(WebPeerUtils.isNotBlank(configuration.getContent())){
+            result.addProperty("content", configuration.getContent());
             result.remove("children");
         }
         return result;

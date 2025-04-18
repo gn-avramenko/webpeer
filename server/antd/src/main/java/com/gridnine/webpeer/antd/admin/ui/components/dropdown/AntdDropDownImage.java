@@ -28,31 +28,16 @@ import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class AntdDropDownImage extends BaseAntdUiElement {
-    private List<ImageMenuItem> menu = new ArrayList<>();
+public class AntdDropDownImage extends BaseAntdUiElement<AntdDropDownImageConfiguration> {
     private String selectedItemId;
 
-    public AntdDropDownImage(OperationUiContext ctx) {
-        super(ctx);
+    public AntdDropDownImage(AntdDropDownImageConfiguration config, OperationUiContext ctx) {
+        super(config, ctx);
+        this.selectedItemId = config.getSelectedItemId();
     }
 
     public String getSelectedItemId() {
         return selectedItemId;
-    }
-
-    public void setSelectedItemId(String selectedItemId) {
-        this.selectedItemId = selectedItemId;
-    }
-
-    public List<ImageMenuItem> getMenu() {
-        return menu;
-    }
-
-    public void setMenu(List<ImageMenuItem> menu) {
-        this.menu = menu;
     }
 
     @Override
@@ -60,7 +45,7 @@ public class AntdDropDownImage extends BaseAntdUiElement {
         var result = super.buildElement(context);
         result.addProperty("selectedItemId", selectedItemId);
         var its = new JsonArray();
-        menu.forEach(it ->{
+        configuration.getMenu().forEach(it ->{
             var obj = new JsonObject();
             obj.addProperty("id", it.getId());
             obj.addProperty("image", String.format("/_resources/%s", it.getImage()));
@@ -82,7 +67,7 @@ public class AntdDropDownImage extends BaseAntdUiElement {
         if("si".equals(propertyName)){
             String itemId = propertyValue.getAsString();
             if(!itemId.equals(selectedItemId)){
-                menu.stream().filter(it -> it.getId().equals(itemId)).findFirst().ifPresent(it -> {
+                configuration.getMenu().stream().filter(it -> it.getId().equals(itemId)).findFirst().ifPresent(it -> {
                     WebPeerUtils.wrapException(()->{
                         it.getOnClick().run(operationUiContext);
                         selectedItemId = itemId;

@@ -24,39 +24,64 @@ package com.gridnine.webpeer.antd.admin.ui.components.common;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.BaseUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.core.ui.UiModel;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
 
-public abstract class BaseAntdUiElement extends BaseUiElement {
+public abstract class BaseAntdUiElement<T extends BaseAntdConfiguration> extends BaseUiElement {
 
-    private Map<String,Object> style = new HashMap<>();
+    protected T configuration;
 
-    public BaseAntdUiElement(OperationUiContext ctx) {
+    private boolean initialized = false;
+
+    public BaseAntdUiElement(T config, OperationUiContext ctx) {
         super(ctx);
+        configuration = config;
+        setTag(configuration.getTag());
+        if(configuration.getChildren() != null) {
+            configuration.getChildren().forEach(ch ->{
+                if(ch.getParent() == null){
+                    UiModel.addElement(ch, this);
+                }
+            });
+        }
+    }
+
+    public BaseAntdUiElement(JsonObject uiData, Object config, OperationUiContext ctx) {
+        super(ctx);
+        configuration = createConfiguration(uiData, config, ctx);
+        updateFromConfig();
+    }
+
+    protected void updateFromConfig(){
+
+    }
+
+    protected T createConfiguration(JsonObject uiData, Object config, OperationUiContext ctx) {
+        return null;
     }
 
     public abstract String getType();
 
-    public Map<String, Object> getStyle() {
-        return style;
-    }
-
-    public void setStyle(Map<String, Object> style) {
-        this.style = style;
-    }
-
     @Override
     public JsonObject buildElement(OperationUiContext context) {
+        initialized = true;
         var result = super.buildElement(context);
         if(getType() != null) {
             result.addProperty("type", getType());
         }
-        if(getStyle() != null && !getStyle().isEmpty()) {
-            result.add("style", WebPeerUtils.serialize(style));
+        if(configuration.getStyle() != null && !configuration.getStyle().isEmpty()) {
+            result.add("style", WebPeerUtils.serialize(configuration.getStyle()));
         }
         return result;
+    }
+
+    //прямая модификация возможна только в процессе инициализации дерева UI элементов
+    @Override
+    public List<BaseUiElement> getChildren() {
+        return initialized? Collections.unmodifiableList(super.getChildren()): super.getChildren();
     }
 }
 
