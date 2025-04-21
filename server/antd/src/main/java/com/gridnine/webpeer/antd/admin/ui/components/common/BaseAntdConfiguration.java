@@ -1,7 +1,5 @@
 package com.gridnine.webpeer.antd.admin.ui.components.common;
 
-import com.google.gson.JsonObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,9 +9,9 @@ public class BaseAntdConfiguration {
 
     private String tag;
 
-    private Map<String, Object> style;
+    private Map<String, Object> style = new HashMap<>();
 
-    private List<BaseAntdUiElement<?>> children;
+    private List<BaseAntdUiElement<?>> children = new ArrayList<>();
 
     public void setChildren(List<BaseAntdUiElement<?>> children) {
         this.children = children;

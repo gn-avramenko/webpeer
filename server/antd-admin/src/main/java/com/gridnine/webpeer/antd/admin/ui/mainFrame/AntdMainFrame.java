@@ -72,6 +72,7 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
             }
             String initPath = ctx.getParameter(OperationUiContext.PARAMS) != null ? ctx.getParameter(OperationUiContext.PARAMS).get("initPath").getAsString() : "/";
             theme = bp.theme(ctx, th -> {
+                th.theme(conf.getTheme());
                 th.layout(ctx, ml -> {
                     ml.tag("main-layout");
                     ml.style("height=100%;borderRadius=token:borderRadiusLG");
@@ -93,7 +94,12 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
                                 il.style("height=100%");
                                 il.sider(ctx, ins -> {
                                     ins.tag("sider");
-                                    ins.menu(ctx, m -> m.menuItems(conf.getMenuItems()));
+                                    ins.menu(ctx, m -> {
+                                                m.menuItems(conf.getMenuItems());
+                                                m.style("height=100%;overflowY=auto");
+
+                                            }
+                                    );
                                 });
                                 il.content(ctx, ic -> {
                                     ic.tag("inner-content");
@@ -114,7 +120,7 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
                         mh.div(null, ctx, d ->{
                             d.style("lineHeight=35px;padding=token:padding");
                             d.clickHandler(c ->{
-                                drawer.setOpen(false, c);
+                                drawer.setOpen(true, c);
                             });
                             d.icon(ctx, i -> i.icon(AntdIcons.MENU_FOLD_OUTLINED.name()));
                         });

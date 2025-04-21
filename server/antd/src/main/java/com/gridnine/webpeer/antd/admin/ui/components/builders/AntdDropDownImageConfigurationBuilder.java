@@ -19,35 +19,46 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.builder;
+package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
-import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownImage;
+import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownImageConfiguration;
 import com.gridnine.webpeer.antd.admin.ui.components.dropdown.ImageMenuItem;
+import com.gridnine.webpeer.antd.admin.ui.components.image.AntdImageConfiguration;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public class AntdDropDownImageBuilder {
+import java.util.ArrayList;
+import java.util.List;
 
-    private final AntdDropDownImage element;
+public class AntdDropDownImageConfigurationBuilder extends BaseAntdConfigurationBuilder<AntdDropDownImageConfiguration> {
 
-    public AntdDropDownImageBuilder(AntdDropDownImage image) {
-        this.element = image;
+    private AntdDropDownImageConfigurationBuilder(){
+        super(new AntdDropDownImageConfiguration());
     }
 
-    public void menuItem(String id, String image, String name, String width, String height, RunnableWithExceptionAndArgument<OperationUiContext> handler){
+    public void selectItem(String itemId) {
+        config.setSelectedItemId(itemId);
+    }
+
+    public void item(String id, String name, String image, String imageWidth, String imageHeight, RunnableWithExceptionAndArgument<OperationUiContext> onClick) {
         var item = new ImageMenuItem();
-        item.setId(id);
         item.setImage(image);
+        item.setId(id);
         item.setName(name);
-        item.setImageWidth(width);
-        item.setImageHeight(height);
-        item.setOnClick(handler);
-        element.getMenu().add(item);
+        item.setImageWidth(imageWidth);
+        item.setImageHeight(imageHeight);
+        item.setOnClick(onClick);
+        config.getMenu().add(item);
     }
 
-    public void selectItem(String id){
-        element.setSelectedItemId(id);
-    }
+    public static AntdDropDownImageConfiguration createConfiguration(RunnableWithExceptionAndArgument<AntdDropDownImageConfigurationBuilder> configurator){
+        var builder = new AntdDropDownImageConfigurationBuilder();
 
+        return WebPeerUtils.wrapException(() ->{
+            configurator.run(builder);
+            return builder.config;
+        });
+    }
 
 }

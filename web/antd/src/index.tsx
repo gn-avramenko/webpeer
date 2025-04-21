@@ -1,6 +1,6 @@
 import { createRoot, Root } from 'react-dom/client';
 import {
-  SunOutlined, MoonFilled, RightOutlined, MenuFoldOutlined,
+  SunOutlined, MoonFilled, RightOutlined, MenuFoldOutlined, FilterOutlined,
 } from '@ant-design/icons';
 import { antdWebpeerExt } from './ui/components/common.tsx';
 import { AntdDivElementFactory } from './ui/components/div.tsx';
@@ -43,6 +43,7 @@ antdWebpeerExt.icons.set('SUN_OUTLINED', () => <SunOutlined />);
 antdWebpeerExt.icons.set('MOON_FILLED', () => <MoonFilled />);
 antdWebpeerExt.icons.set('RightOutlined', () => <RightOutlined />);
 antdWebpeerExt.icons.set('MENU_FOLD_OUTLINED', () => <MenuFoldOutlined />);
+antdWebpeerExt.icons.set('FILTER_OUTLINED', () => <FilterOutlined />);
 
 antdWebpeerExt.lang = JSON.parse(window.localStorage.getItem('webpeer') || '{}').lang ?? 'en';
 

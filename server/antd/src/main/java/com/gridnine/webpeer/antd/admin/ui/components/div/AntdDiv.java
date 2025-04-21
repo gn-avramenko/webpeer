@@ -43,6 +43,7 @@ public class AntdDiv extends BaseAntdUiElement<AntdDivConfiguration> {
 
     @Override
     protected void updateFromConfig() {
+        super.updateFromConfig();
         hidden = configuration.isHidden();
     }
 

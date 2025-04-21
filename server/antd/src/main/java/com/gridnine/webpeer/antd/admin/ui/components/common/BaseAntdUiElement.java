@@ -39,14 +39,7 @@ public abstract class BaseAntdUiElement<T extends BaseAntdConfiguration> extends
     public BaseAntdUiElement(T config, OperationUiContext ctx) {
         super(ctx);
         configuration = config;
-        setTag(configuration.getTag());
-        if(configuration.getChildren() != null) {
-            configuration.getChildren().forEach(ch ->{
-                if(ch.getParent() == null){
-                    UiModel.addElement(ch, this);
-                }
-            });
-        }
+        updateFromConfig();
     }
 
     public BaseAntdUiElement(JsonObject uiData, Object config, OperationUiContext ctx) {
@@ -56,7 +49,14 @@ public abstract class BaseAntdUiElement<T extends BaseAntdConfiguration> extends
     }
 
     protected void updateFromConfig(){
-
+        setTag(configuration.getTag());
+        if(configuration.getChildren() != null) {
+            configuration.getChildren().forEach(ch ->{
+                if(ch.getParent() == null){
+                    UiModel.addElement(ch, this);
+                }
+            });
+        }
     }
 
     protected T createConfiguration(JsonObject uiData, Object config, OperationUiContext ctx) {
@@ -83,5 +83,7 @@ public abstract class BaseAntdUiElement<T extends BaseAntdConfiguration> extends
     public List<BaseUiElement> getChildren() {
         return initialized? Collections.unmodifiableList(super.getChildren()): super.getChildren();
     }
+
+
 }
 

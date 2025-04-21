@@ -42,6 +42,14 @@ public class AntdBreakpoint extends BaseAntdUiElement<AntdBreakpointConfiguratio
     }
 
     @Override
+    protected void updateFromConfig() {
+        if(configuration.getBreakPoint() == null){
+            configuration.getChildren().clear();
+        }
+        super.updateFromConfig();
+    }
+
+    @Override
     public JsonObject buildElement(OperationUiContext context) {
         var result =  super.buildElement(context);
         result.add("breakpoints", WebPeerUtils.serialize(configuration.getBreakPoints()));

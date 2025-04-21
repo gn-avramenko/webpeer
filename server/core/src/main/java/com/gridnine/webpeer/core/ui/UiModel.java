@@ -33,7 +33,7 @@ public class UiModel{
 
     public static void removeElement(BaseUiElement element) {
         if(element.getParent() != null){
-            element.getParent().getChildren().remove(element);
+            element.getParent().children.remove(element);
         }
         UiModel model = findModel(element);
         if(model == null){
@@ -47,7 +47,7 @@ public class UiModel{
             return;
         }
         element.setParent(parent);
-        parent.getChildren().add(element);
+        parent.children.add(element);
         UiModel model = findModel(element);
         if(model == null){
             return;
@@ -58,7 +58,7 @@ public class UiModel{
     private static void addElement(UiModel model, BaseUiElement element) {
         WebPeerUtils.wrapException(() ->{
             model.elements.put(element.getId(), element);
-            element.getChildren().forEach((ch) ->{
+            element.children.forEach((ch) ->{
                 addElement(model, ch);
             });
         });
@@ -69,7 +69,7 @@ public class UiModel{
         WebPeerUtils.wrapException(() ->{
             element.destroy();
             model.elements.remove(element.getId());
-            element.getChildren().forEach((ch) ->{
+            element.children.forEach((ch) ->{
                 removeElement(model, ch);
             });
         });

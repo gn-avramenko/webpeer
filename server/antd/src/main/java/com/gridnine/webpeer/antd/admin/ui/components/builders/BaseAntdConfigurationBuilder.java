@@ -26,7 +26,10 @@ import com.gridnine.webpeer.antd.admin.ui.components.common.AntdUtils;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdConfiguration;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
+import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownIcon;
+import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownImage;
 import com.gridnine.webpeer.antd.admin.ui.components.icon.AntdIcon;
+import com.gridnine.webpeer.antd.admin.ui.components.image.AntdImage;
 import com.gridnine.webpeer.antd.admin.ui.components.layout.*;
 import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenu;
 import com.gridnine.webpeer.antd.admin.ui.components.router.AntdRouter;
@@ -143,6 +146,27 @@ public class BaseAntdConfigurationBuilder<T extends BaseAntdConfiguration> {
         var textField = new AntdTextField(configuration, context);
         this.config.getChildren().add(textField);
         return textField;
+    }
+
+    public AntdImage image(OperationUiContext context,RunnableWithExceptionAndArgument<AntdImageConfigurationBuilder> configurator) {
+        var configuration = AntdImageConfigurationBuilder.createConfiguration(configurator);
+        var result = new AntdImage(configuration, context);
+        this.config.getChildren().add(result);
+        return result;
+    }
+
+    public AntdDropDownImage dropDownImage(OperationUiContext context, RunnableWithExceptionAndArgument<AntdDropDownImageConfigurationBuilder> configurator) {
+        var configuration = AntdDropDownImageConfigurationBuilder.createConfiguration(configurator);
+        var result = new AntdDropDownImage(configuration, context);
+        this.config.getChildren().add(result);
+        return result;
+    }
+
+    public AntdDropDownIcon dropDownIcon(OperationUiContext context, RunnableWithExceptionAndArgument<AntdDropDownIconConfigurationBuilder> configurator) {
+        var configuration = AntdDropDownIconConfigurationBuilder.createConfiguration(configurator);
+        var result = new AntdDropDownIcon(configuration, context);
+        this.config.getChildren().add(result);
+        return result;
     }
 
 }

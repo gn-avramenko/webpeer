@@ -19,10 +19,10 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.builder;
+package com.gridnine.webpeer.antd.admin.ui.components.menu;
 
-import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenuItem;
-import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrame;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 
 public class AntdMenuGroupBuilder {
     private final AntdMenuItem group;
@@ -31,10 +31,10 @@ public class AntdMenuGroupBuilder {
         this.group = item;
     }
 
-    public void item(String name, String link){
+    public void item(String name, RunnableWithExceptionAndArgument<OperationUiContext> handler){
         var item = new AntdMenuItem();
         item.setName(name);
-        item.setHandler((c) -> AntdMainFrame.lookup(c).navigate(link, c));
+        item.setHandler(handler);
         group.getChildren().add(item);
     }
 }

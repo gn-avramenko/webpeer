@@ -19,12 +19,12 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.builder;
+package com.gridnine.webpeer.antd.admin.ui.components.menu;
 
-import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenuItem;
+import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class AntdMenuBuilder {
     private final List<AntdMenuItem> groups;
@@ -34,12 +34,14 @@ public class AntdMenuBuilder {
     }
 
 
-    public void group(String name, String icon, Consumer<AntdMenuGroupBuilder> configurator){
+    public void group(String name, String icon, RunnableWithExceptionAndArgument<AntdMenuGroupBuilder> configurator){
         var group = new AntdMenuItem();
         group.setIcon(icon);
         group.setName(name);
         var groupBuilder = new AntdMenuGroupBuilder(group);
-        configurator.accept(groupBuilder);
+        WebPeerUtils.wrapException(() ->{
+            configurator.run(groupBuilder);
+        });
         groups.add(group);
     }
 }

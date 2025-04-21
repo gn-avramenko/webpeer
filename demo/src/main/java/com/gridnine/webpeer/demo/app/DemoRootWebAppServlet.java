@@ -26,6 +26,8 @@ import com.gridnine.webpeer.antd.admin.ui.builders.AntdMainFrameConfigurationBui
 import com.gridnine.webpeer.antd.admin.ui.components.AntdIcons;
 import com.gridnine.webpeer.antd.admin.ui.components.builders.AntdDivConfigurationBuilder;
 import com.gridnine.webpeer.antd.admin.ui.components.builders.AntdTextFieldConfigurationBuilder;
+import com.gridnine.webpeer.antd.admin.ui.components.common.AntdStyle;
+import com.gridnine.webpeer.antd.admin.ui.components.common.AntdUtils;
 import com.gridnine.webpeer.antd.admin.ui.components.textField.AntdTextField;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrame;
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
@@ -70,20 +72,25 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
             } else {
                 c.theme(mobile? Constants.LIGHT_MOBILE_THEME: Constants.LIGHT_DESKTOP_THEME);
             }
-            c.header(AntdDivConfigurationBuilder.createElement(operationUiContext, operationUiContext, d ->{
-                d.style("width=100%;display=flex;flexDirection=row;alignItems=center;lineHeight=20px;height=50px;padding=token:padding");
-                d.img("demo/logo.svg", null, "45px",AntdS.parseStyle("display=inline-block"));
+            c.header("padding=0;height=60px;display=flex;flexDirection=row;alignItems=center", AntdDivConfigurationBuilder.createElement(uiData, operationUiContext, d ->{
+                d.style("width=100%;display=flex;flexDirection=row;alignItems=center;lineHeight=20px;height=50px;padding=token:padding;paddingLeft=5px");
+                d.image(operationUiContext, i->{
+                    i.src("demo/logo.svg");
+                    i.height("45px");
+                    i.style("display=inline-block");
+                });
                 d.div(null, operationUiContext, title ->{
                     title.style("fontSize=token:fontSizeHeading2;fontWeight=token:fontWeightStrong;padding=token:padding");
                     title.content("ru".equals(lang)? "Веб аватар": "Web peer");
                 });
                 d.glue(operationUiContext);
-                d.dropdownImage(dd ->{
-                    dd.menuItem("en", "classpath/demo/en-flag.png", "english", "20px", null, (ctx)->{
+                d.dropDownImage(operationUiContext, dd ->{
+                    dd.style("padding=token:padding");
+                    dd.item("en", "english", "classpath/demo/en-flag.png", "20px", null, (ctx)->{
                         ctx.setLocalStorageParam("lang", "en");
                         ctx.resync();
                     });
-                    dd.menuItem("ru", "classpath/demo/ru-flag.png", "русский", "20px", null, (ctx)->{
+                    dd.item("ru", "русский", "classpath/demo/ru-flag.png", "20px", null, (ctx)->{
                         ctx.setLocalStorageParam("lang", "ru");
                         ctx.resync();
                     });
@@ -93,12 +100,13 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
                         dd.selectItem("ru");
                     }
                 });
-                d.dropdownIcon( dd ->{
-                    dd.menuItem("light", AntdIcons.SUN_OUTLINED.name(), "Light", (ctx)->{
+                d.dropDownIcon( operationUiContext, dd ->{
+                    dd.style("padding=token:padding");
+                    dd.item("light",  "Light",AntdIcons.SUN_OUTLINED.name(), (ctx)->{
                         ctx.setLocalStorageParam("theme", "light");
                         AntdMainFrame.lookup(ctx).setTheme(mobile? Constants.LIGHT_MOBILE_THEME: Constants.LIGHT_DESKTOP_THEME, ctx);
                     });
-                    dd.menuItem("dark", AntdIcons.MOON_FILLED.name(), "Dark", (ctx)->{
+                    dd.item("dark",  "Dark",AntdIcons.MOON_FILLED.name(), (ctx)->{
                         ctx.setLocalStorageParam("theme", "dark");
                         AntdMainFrame.lookup(ctx).setTheme(mobile? Constants.DARK_MOBILE_THEME: Constants.DARK_DESKTOP_THEME, ctx);
                     });
@@ -115,7 +123,10 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<AntdMainFrame> {
                     var fn = n;
                     menu.group(String.format("%s %s","ru".equals(lang)? "Группа": "Group", n), AntdIcons.SUN_OUTLINED.name(), g->{
                         for(var m =1; m<10;m++){
-                            g.item(String.format("%s %s - %s","ru".equals(lang)? "Элемент": "Item", fn, m), String.format("/view-%s-%s", fn, m));
+                            var fm = m;
+                            g.item(String.format("%s %s - %s","ru".equals(lang)? "Элемент": "Item", fn, m), (ctx) ->{
+                                AntdMainFrame.lookup(ctx).navigate(String.format("/view-%s-%s", fn, fm), ctx);
+                            });
                         }
                     });
                 }

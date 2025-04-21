@@ -37,7 +37,7 @@ public abstract class BaseUiElement {
 
     private BaseUiElement parent;
 
-    private final List<BaseUiElement> children = new ArrayList<>();
+    final List<BaseUiElement> children = new ArrayList<>();
 
     public long getId() {
         return id;

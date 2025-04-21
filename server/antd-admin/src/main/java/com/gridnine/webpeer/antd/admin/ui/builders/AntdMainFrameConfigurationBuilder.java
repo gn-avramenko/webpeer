@@ -1,15 +1,14 @@
 package com.gridnine.webpeer.antd.admin.ui.builders;
 
 import com.google.gson.JsonObject;
+import com.gridnine.webpeer.antd.admin.ui.components.common.AntdUtils;
+import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenuBuilder;
 import com.gridnine.webpeer.antd.admin.ui.components.common.AntdStyle;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenuItem;
 import com.gridnine.webpeer.antd.admin.ui.mainFrame.AntdMainFrameConfiguration;
 import com.gridnine.webpeer.antd.admin.ui.components.router.AntdViewProvider;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
-
-import java.util.List;
 
 public class AntdMainFrameConfigurationBuilder {
 
@@ -19,9 +18,9 @@ public class AntdMainFrameConfigurationBuilder {
         configuration.setDesktopWidth(desktopWidth);
     }
 
-    public void header(BaseAntdUiElement<?> header, AntdStyle... headerStyles){
+    public void header(String style, BaseAntdUiElement<?> header){
         configuration.setHeader(header);
-        configuration.setHeaderStyle(headerStyles);
+        configuration.setHeaderStyle(AntdUtils.parseStyle(style));
     }
 
     public void theme(JsonObject obj){
@@ -32,8 +31,11 @@ public class AntdMainFrameConfigurationBuilder {
         configuration.setViewProvider(provider);
     }
 
-    public void menu(List<AntdMenuItem> menuItems){
-        configuration.setMenuItems(menuItems);
+    public void menu(RunnableWithExceptionAndArgument<AntdMenuBuilder> configurator){
+        var builder = new AntdMenuBuilder(configuration.getMenuItems());
+        WebPeerUtils.wrapException(()->{
+            configurator.run(builder);
+        });
     }
 
 

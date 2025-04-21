@@ -19,31 +19,37 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.builder;
+package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
-import com.gridnine.webpeer.antd.admin.ui.components.dropdown.AntdDropDownIcon;
-import com.gridnine.webpeer.antd.admin.ui.components.dropdown.IconMenuItem;
-import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.antd.admin.ui.components.image.AntdImageConfiguration;
+import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdContentConfiguration;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public class AntdDropDownIconBuilder {
+public class AntdImageConfigurationBuilder extends BaseAntdConfigurationBuilder<AntdImageConfiguration> {
 
-    private final AntdDropDownIcon element;
-
-    public AntdDropDownIconBuilder(AntdDropDownIcon icon) {
-        this.element = icon;
+    private AntdImageConfigurationBuilder(){
+        super(new AntdImageConfiguration());
     }
 
-    public void menuItem(String id, String icon, String name,  RunnableWithExceptionAndArgument<OperationUiContext> handler){
-        var item = new IconMenuItem();
-        item.setId(id);
-        item.setIcon(icon);
-        item.setName(name);
-        item.setOnClick(handler);
-        element.getMenu().add(item);
+    public void src(final String src) {
+        config.setSrc(src);
     }
 
-    public void selectItem(String id){
-        element.setSelectedItemId(id);
+    public void height(final String height) {
+        config.setHeight(height);
     }
+
+    public void width(final String width) {
+        config.setWidth(width);
+    }
+
+    public static AntdImageConfiguration createConfiguration(RunnableWithExceptionAndArgument<AntdImageConfigurationBuilder> configurator){
+        var builder = new AntdImageConfigurationBuilder();
+        return WebPeerUtils.wrapException(() ->{
+            configurator.run(builder);
+            return builder.config;
+        });
+    }
+
 }
