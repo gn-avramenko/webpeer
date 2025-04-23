@@ -19,15 +19,27 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.entitiesList;
+package com.gridnine.webpeer.antd.admin.ui.components.table;
 
-import com.google.gson.JsonElement;
-import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableData;
-import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableSort;
+import com.google.gson.JsonArray;
 
-import java.util.List;
-import java.util.Map;
+public class AntdTableData {
+    private boolean hasMore;
+    private JsonArray data;
 
-public interface AntdEntitiesListDataProvider {
-    AntdTableData getData(List<String> fields, int limit, AntdTableSort sort, String searchText, Map<String, JsonElement> filters);
+    public boolean isHasMore() {
+        return hasMore;
+    }
+
+    public void setHasMore(boolean hasMore) {
+        this.hasMore = hasMore;
+    }
+
+    public JsonArray getData() {
+        return data;
+    }
+
+    public void setData(JsonArray data) {
+        this.data = data;
+    }
 }

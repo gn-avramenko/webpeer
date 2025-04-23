@@ -2,13 +2,10 @@ package com.gridnine.webpeer.antd.admin.ui.components.numberField;
 
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdConfiguration;
-import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenuItem;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndTwoArguments;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AntdNumberFieldConfiguration extends BaseAntdConfiguration {
 

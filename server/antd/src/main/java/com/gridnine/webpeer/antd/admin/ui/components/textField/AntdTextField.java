@@ -37,6 +37,10 @@ public class AntdTextField extends BaseAntdUiElement<AntdTextFieldConfiguration>
         this.value = config.getInitValue();
     }
 
+    public String getValue() {
+        return value;
+    }
+
     @Override
     public JsonObject buildElement(OperationUiContext context) {
         var result = super.buildElement(context);

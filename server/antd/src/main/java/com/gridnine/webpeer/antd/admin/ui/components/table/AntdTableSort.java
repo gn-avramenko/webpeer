@@ -19,15 +19,25 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.entitiesList;
+package com.gridnine.webpeer.antd.admin.ui.components.table;
 
-import com.google.gson.JsonElement;
-import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableData;
-import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableSort;
+public class AntdTableSort {
+    private String propertyName;
+    private boolean descending;
 
-import java.util.List;
-import java.util.Map;
+    public String getPropertyName() {
+        return propertyName;
+    }
 
-public interface AntdEntitiesListDataProvider {
-    AntdTableData getData(List<String> fields, int limit, AntdTableSort sort, String searchText, Map<String, JsonElement> filters);
+    public void setPropertyName(String propertyName) {
+        this.propertyName = propertyName;
+    }
+
+    public boolean isDescending() {
+        return descending;
+    }
+
+    public void setDescending(boolean descending) {
+        this.descending = descending;
+    }
 }

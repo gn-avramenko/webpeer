@@ -29,8 +29,12 @@ import org.springframework.context.annotation.Configuration;
 public class DemoAppConfiguration {
 
     @Bean
+    public DemoRootWebAppServlet demoRootWebAppServlet() {
+        return new DemoRootWebAppServlet();
+    }
+    @Bean
     public ServletRegistrationBean<DemoRootWebAppServlet> demoRootWebAppServletServletRegistrationBean(){
-        return new ServletRegistrationBean<>(new DemoRootWebAppServlet(), "/*");
+        return new ServletRegistrationBean<>(demoRootWebAppServlet(), "/*");
     }
 
     @Bean
@@ -38,4 +42,8 @@ public class DemoAppConfiguration {
         return new WsContextListener();
     }
 
+    @Bean
+    public DemoDataSource demoDataSource(){
+        return new DemoDataSource();
+    }
 }

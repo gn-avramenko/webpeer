@@ -19,15 +19,9 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.antd.admin.ui.entitiesList;
+package com.gridnine.webpeer.antd.admin.ui.components.table;
 
-import com.google.gson.JsonElement;
-import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableData;
-import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableSort;
-
-import java.util.List;
-import java.util.Map;
-
-public interface AntdEntitiesListDataProvider {
-    AntdTableData getData(List<String> fields, int limit, AntdTableSort sort, String searchText, Map<String, JsonElement> filters);
+public enum AntdTableColumnAlignment {
+    LEFT,
+    RIGHT
 }

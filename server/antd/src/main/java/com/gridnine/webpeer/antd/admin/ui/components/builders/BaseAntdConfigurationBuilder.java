@@ -32,6 +32,7 @@ import com.gridnine.webpeer.antd.admin.ui.components.icon.AntdIcon;
 import com.gridnine.webpeer.antd.admin.ui.components.image.AntdImage;
 import com.gridnine.webpeer.antd.admin.ui.components.layout.*;
 import com.gridnine.webpeer.antd.admin.ui.components.menu.AntdMenu;
+import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTable;
 import com.gridnine.webpeer.antd.admin.ui.components.router.AntdRouter;
 import com.gridnine.webpeer.antd.admin.ui.components.textField.AntdTextField;
 import com.gridnine.webpeer.antd.admin.ui.components.theme.AntdTheme;
@@ -151,6 +152,13 @@ public class BaseAntdConfigurationBuilder<T extends BaseAntdConfiguration> {
     public AntdImage image(OperationUiContext context,RunnableWithExceptionAndArgument<AntdImageConfigurationBuilder> configurator) {
         var configuration = AntdImageConfigurationBuilder.createConfiguration(configurator);
         var result = new AntdImage(configuration, context);
+        this.config.getChildren().add(result);
+        return result;
+    }
+
+    public AntdTable table(OperationUiContext context, RunnableWithExceptionAndArgument<AntdTableConfigurationBuilder> configurator) {
+        var configuration = AntdTableConfigurationBuilder.createConfiguration(configurator);
+        var result = new AntdTable(configuration, context);
         this.config.getChildren().add(result);
         return result;
     }
