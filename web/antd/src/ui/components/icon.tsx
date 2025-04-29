@@ -1,5 +1,5 @@
 import React from 'react';
-import { AntdUiElementFactory, antdWebpeerExt, BaseAntdUiElement } from '@/ui/components/common.tsx';
+import { AntdUiElementFactory, antdWebpeerExt, BaseAntdUiElement } from '@/ui/components/common';
 
 class AntdIconElement extends BaseAntdUiElement {
     private icon: string;

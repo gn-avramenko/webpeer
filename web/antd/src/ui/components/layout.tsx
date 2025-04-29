@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Layout, theme } from 'antd';
-import { AntdUiElementFactory, buildStyle, BaseAntdUiElement } from '@/ui/components/common.tsx';
+import { AntdUiElementFactory, buildStyle, BaseAntdUiElement } from '@/ui/components/common';
 
 type AntdLayoutInternal = {
     id: string

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { theme } from 'antd';
 import { Content } from 'antd/es/layout/layout';
-import { AntdUiElementFactory, BaseAntdUiElement, buildStyle } from '@/ui/components/common.tsx';
+import { AntdUiElementFactory, BaseAntdUiElement, buildStyle } from '@/ui/components/common';
 
 type AntdContentInternal = {
     id: string

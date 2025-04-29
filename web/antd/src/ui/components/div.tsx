@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { theme } from 'antd';
-import { AntdUiElementFactory, buildStyle, BaseAntdUiElement } from '@/ui/components/common.tsx';
-import { isBlank } from '../../../../core/src/utils/utils.ts';
+import { isBlank } from 'webpeer-core';
+import { AntdUiElementFactory, buildStyle, BaseAntdUiElement } from '@/ui/components/common';
 
 type AntdDivInternal = {
     id: string

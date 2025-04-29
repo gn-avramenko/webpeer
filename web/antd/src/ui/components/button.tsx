@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Button, theme } from 'antd';
 import { useEffect, useState } from 'react';
-import { AntdUiElementFactory, BaseAntdUiElement, buildStyle } from '@/ui/components/common.tsx';
+import { AntdUiElementFactory, BaseAntdUiElement, buildStyle } from '@/ui/components/common';
 
 interface ButtonComponentInternal {
     onClick: ()=>void

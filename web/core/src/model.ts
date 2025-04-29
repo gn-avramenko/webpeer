@@ -1,4 +1,5 @@
-import {api} from "../index.ts";
+import {api} from "./index";
+
 
 export abstract class BaseUiElement{
     id: string = ""

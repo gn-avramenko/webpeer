@@ -1,14 +1,14 @@
 import React, { ReactElement } from 'react';
-import * as webpeerCore from '../../../../core/src/index.ts';
-import { BaseUiElement } from '../../../../core/src/model/model.ts';
-import { generateUUID } from '../../../../core/src/utils/utils.ts';
+import {
+  webpeerExt, BaseUiElement, WebPeerExtension, generateUUID,
+} from 'webpeer-core';
 
-export type AntdWebpeerExtension = webpeerCore.WebPeerExtension &{
+export type AntdWebpeerExtension = WebPeerExtension &{
    elementHandlersFactories: Map<string, AntdUiElementFactory>
    icons: Map<string, () => ReactElement>;
    lang?: string
 }
-export const antdWebpeerExt = webpeerCore.webpeerExt as AntdWebpeerExtension;
+export const antdWebpeerExt = webpeerExt as AntdWebpeerExtension;
 antdWebpeerExt.elementHandlersFactories = new Map();
 antdWebpeerExt.icons = new Map();
 

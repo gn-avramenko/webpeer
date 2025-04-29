@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Table, theme } from 'antd';
-import { api } from '../../../../core/src/index.ts';
+import { api } from 'webpeer-core';
 import {
   AntdUiElementFactory, BaseAntdUiElement, buildStyle, onVisible,
-} from '@/ui/components/common.tsx';
+} from '@/ui/components/common';
 
 type ColumnType = 'STANDARD'| 'CUSTOM'
 type ColumnAlignment = 'LEFT' | 'RIGHT'

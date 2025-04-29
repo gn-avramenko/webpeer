@@ -1,5 +1,5 @@
-import {generateUUID} from "../utils/utils.ts";
-import {Middleware, Context} from "../remoting/api.ts";
+import {generateUUID} from "./utils";
+import {Middleware, Context} from "./api";
 
 export type PreloaderHandler = {
   showPreloader: ()=>void

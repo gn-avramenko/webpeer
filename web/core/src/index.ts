@@ -1,6 +1,6 @@
-import {API, Middleware} from "./remoting/api.ts";
-import {generateUUID} from "./utils/utils.ts";
-import {BaseUiElement, UiModel} from "./model/model.ts";
+import {API, Middleware} from "./api";
+import {generateUUID} from "./utils";
+import {BaseUiElement, UiModel} from "./model";
 
 export interface UiHandler{
     drawUi(model:any):void
@@ -21,6 +21,11 @@ export const api = new API({
     webSocketUrl: webpeerExt.parameters.webSocketUrl,
     middleware: webpeerExt.middleware,
 })
+
+export * from './model';
+export  * from './utils'
+export  * from './preloader'
+export  * from './api'
 
 async function init(){
     await api.sendCommand({cmd: 'init', data: {

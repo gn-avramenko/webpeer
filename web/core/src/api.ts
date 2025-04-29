@@ -1,5 +1,5 @@
-import { isNull} from "../utils/utils.ts";
-import {uiModel, webpeerExt} from "../index.ts";
+import { isNull} from "./utils";
+import {uiModel, webpeerExt} from "./index";
 
 export type Context = {
     request?: any,
