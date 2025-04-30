@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Drawer } from 'antd';
 import { DrawerStyles } from 'antd/es/drawer/DrawerPanel';
-import { AntdUiElementFactory, antdWebpeerExt, BaseAntdUiElement } from '@/ui/components/common';
+import { AntdUiElementFactory, antdWebpeerExt, BaseAntdUiElement } from './common';
 
 type AntdDrawerInternal = {
     id: string

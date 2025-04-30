@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import Input from 'antd/lib/input/Input';
 import debounce from 'debounce';
-import { AntdUiElementFactory, BaseAntdUiElement } from '@/ui/components/common';
+import { AntdUiElementFactory, BaseAntdUiElement } from './common';
 
 interface TextFieldComponentInternal {
     setValueSetter: (setter: (value: string | null) => void) => void;

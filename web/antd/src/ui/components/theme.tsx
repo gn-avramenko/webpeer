@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ConfigProvider, theme } from 'antd';
-import { AntdUiElementFactory, BaseAntdUiElement } from '@/ui/components/common';
+import { AntdUiElementFactory, BaseAntdUiElement } from './common';
 
 type AntdThemeInternal = {
     id: string

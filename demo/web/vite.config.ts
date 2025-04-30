@@ -38,7 +38,9 @@ const defineConfig = ({ mode, command }: ConfigEnv): UserConfig => {
     },
     resolve: {
       alias: {
-        '@': resolve(__dirname, './src'), // Базовый алиас для папки src
+        'webpeer-core': resolve(__dirname, '../../web/core/src/index'), // Базовый алиас для папки src
+        'webpeer-antd': resolve(__dirname, '../../web/antd/src/index'), // Базовый алиас для папки src
+        'webpeer-antd-admin': resolve(__dirname, '../../web/antd-admin/src/index'), // Базовый алиас для папки src
       },
     },
   };

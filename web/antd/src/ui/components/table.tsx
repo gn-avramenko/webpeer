@@ -3,7 +3,7 @@ import { Table, theme } from 'antd';
 import { api } from 'webpeer-core';
 import {
   AntdUiElementFactory, BaseAntdUiElement, buildStyle, onVisible,
-} from '@/ui/components/common';
+} from './common';
 
 type ColumnType = 'STANDARD'| 'CUSTOM'
 type ColumnAlignment = 'LEFT' | 'RIGHT'

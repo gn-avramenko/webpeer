@@ -12,22 +12,32 @@ const defineConfig = ({ mode, command }: ConfigEnv): UserConfig => {
     ],
     build: {
       lib: {
-        entry: resolve('src', 'index.tsx'),
-        name: 'webpeer-antd',
+        entry: resolve('src', 'index.ts'),
+        name: 'webpeer-antd-admin',
         formats: ['es'], // Форматы ES Modules
         fileName: (format) => 'index.js',
       },
+      // Leave minification up to applications.
       minify: false,
       sourcemap: true,
-      // Reduce bloat from legacy polyfills.
-      target: 'esnext',
+      rollupOptions: {
+        // Автоматически исключаем все зависимости из package.json
+        external: [
+          ...Object.keys(dependencies || {}),
+          ...Object.keys(peerDependencies || {}),
+        ],
+      },
     },
     resolve: {
       alias: {
-        '@': resolve(__dirname, './src'), // Базовый алиас для папки src
         'webpeer-core': resolve(__dirname, '../core/src/index'), // Базовый алиас для папки src
+        'webpeer-antd': resolve(__dirname, '../antd/src/index'), // Базовый алиас для папки src
       },
     },
+    sourcemap: true,
+    // Reduce bloat from legacy polyfills.
+    target: 'esnext',
+
   };
   // @ts-ignore
   return config;

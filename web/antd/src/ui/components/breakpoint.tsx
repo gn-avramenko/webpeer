@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import useBreakpoint from 'use-breakpoint';
 import { api } from 'webpeer-core';
-import { AntdUiElementFactory, BaseAntdUiElement } from '@/ui/components/common';
+import { AntdUiElementFactory, BaseAntdUiElement } from './common';
 
 type AntdBreakpointInternal = {
     id: string

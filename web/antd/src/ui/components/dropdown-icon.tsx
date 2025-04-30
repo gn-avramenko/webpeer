@@ -3,7 +3,7 @@ import { Dropdown, MenuProps, theme } from 'antd';
 import { api } from 'webpeer-core';
 import {
   AntdUiElementFactory, antdWebpeerExt, BaseAntdUiElement, buildStyle,
-} from '@/ui/components/common';
+} from './common';
 
 type AntdMenuItem = {
     id: string,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { theme } from 'antd';
 import Sider from 'antd/es/layout/Sider';
-import { AntdUiElementFactory, BaseAntdUiElement, buildStyle } from '@/ui/components/common';
+import { AntdUiElementFactory, BaseAntdUiElement, buildStyle } from './common';
 
 type AntdSiderInternal = {
     id: string

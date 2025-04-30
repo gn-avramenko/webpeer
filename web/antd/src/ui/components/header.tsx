@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { theme } from 'antd';
 import { Header } from 'antd/es/layout/layout';
-import { AntdUiElementFactory, buildStyle, BaseAntdUiElement } from '@/ui/components/common';
+import { AntdUiElementFactory, buildStyle, BaseAntdUiElement } from './common';
 
 type AntdHeaderInternal = {
     id: string

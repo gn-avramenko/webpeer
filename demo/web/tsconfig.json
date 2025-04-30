@@ -29,7 +29,9 @@
 
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "webpeer-core": ["../../web/core/src/index"],
+      "webpeer-antd": ["../../web/antd/src/index"],
+      "webpeer-antd-admin": ["../../web/antd-admin/src/index"]
     }
   },
   "include": ["src"],

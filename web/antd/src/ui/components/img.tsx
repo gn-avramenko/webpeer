@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { theme } from 'antd';
 import { generateUUID } from 'webpeer-core';
-import { AntdUiElementFactory, BaseAntdUiElement, buildStyle } from '@/ui/components/common';
+import { AntdUiElementFactory, BaseAntdUiElement, buildStyle } from './common';
 
 type AntdImgInternal = {
     id: string

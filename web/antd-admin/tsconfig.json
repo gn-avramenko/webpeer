@@ -20,7 +20,9 @@
     "strict": true  ,
     "baseUrl": ".",
       "paths": {
-        "webpeer-core": ["../core/src/index"]
+        "@/*": ["../antd/src/*"],
+        "webpeer-core": ["../core/src/index"],
+        "webpeer-antd": ["../antd/src/index"]
       }
   },
   "include": ["src/**/*.ts","src/**/*.tsx"],           // Какие файлы компилировать

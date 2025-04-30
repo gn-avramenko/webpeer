@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from 'webpeer-core';
-import { AntdUiElementFactory, BaseAntdUiElement } from '@/ui/components/common';
+import { AntdUiElementFactory, BaseAntdUiElement } from './common';
 
 type AntdRouterInternal = {
     id: string

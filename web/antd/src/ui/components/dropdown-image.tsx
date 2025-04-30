@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Dropdown, MenuProps, theme } from 'antd';
 import { api, generateUUID } from 'webpeer-core';
-import { AntdUiElementFactory, BaseAntdUiElement, buildStyle } from '@/ui/components/common';
+import { AntdUiElementFactory, BaseAntdUiElement, buildStyle } from './common';
 
 type AntdMenuItem = {
     id: string,

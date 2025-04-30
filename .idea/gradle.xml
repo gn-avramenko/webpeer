@@ -19,6 +19,7 @@
             <option value="$PROJECT_DIR$/server/core" />
             <option value="$PROJECT_DIR$/web" />
             <option value="$PROJECT_DIR$/web/antd" />
+            <option value="$PROJECT_DIR$/web/antd-admin" />
             <option value="$PROJECT_DIR$/web/core" />
           </set>
         </option>

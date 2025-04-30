@@ -3,24 +3,24 @@ import {
   SunOutlined, MoonFilled, RightOutlined, MenuFoldOutlined, FilterOutlined,
 } from '@ant-design/icons';
 import { BaseUiElement, uiModel } from 'webpeer-core';
-import { antdWebpeerExt } from '@/ui/components/common';
-import { AntdDivElementFactory } from '@/ui/components/div';
-import { AntdImgElementFactory } from '@/ui/components/img';
-import { AntdTextFieldElementFactory } from '@/ui/components/text-field';
-import { AntdDropdownIconElementFactory } from '@/ui/components/dropdown-icon';
-import { AntdDropdownImageElementFactory } from '@/ui/components/dropdown-image';
-import { AntdButtonElementFactory } from '@/ui/components/button';
-import { AntdBreakpointElementFactory } from '@/ui/components/breakpoint';
-import { AntdLayoutElementFactory } from '@/ui/components/layout';
-import { AntdContentElementFactory } from '@/ui/components/content';
-import { AntdDrawerElementFactory } from '@/ui/components/drawer';
-import { AntdHeaderElementFactory } from '@/ui/components/header';
-import { AntdSiderElementFactory } from '@/ui/components/sider';
-import { AntdMenuElementFactory } from '@/ui/components/menu';
-import { AntdThemeElementFactory } from '@/ui/components/theme';
-import { AntdRouterElementFactory } from '@/ui/components/router';
-import { AntdIconElementFactory } from '@/ui/components/icon';
-import { AntdTableElementFactory } from '@/ui/components/table';
+import { antdWebpeerExt } from './ui/components/common';
+import { AntdDivElementFactory } from './ui/components/div';
+import { AntdImgElementFactory } from './ui/components/img';
+import { AntdTextFieldElementFactory } from './ui/components/text-field';
+import { AntdDropdownIconElementFactory } from './ui/components/dropdown-icon';
+import { AntdDropdownImageElementFactory } from './ui/components/dropdown-image';
+import { AntdButtonElementFactory } from './ui/components/button';
+import { AntdBreakpointElementFactory } from './ui/components/breakpoint';
+import { AntdLayoutElementFactory } from './ui/components/layout';
+import { AntdContentElementFactory } from './ui/components/content';
+import { AntdDrawerElementFactory } from './ui/components/drawer';
+import { AntdHeaderElementFactory } from './ui/components/header';
+import { AntdSiderElementFactory } from './ui/components/sider';
+import { AntdMenuElementFactory } from './ui/components/menu';
+import { AntdThemeElementFactory } from './ui/components/theme';
+import { AntdRouterElementFactory } from './ui/components/router';
+import { AntdIconElementFactory } from './ui/components/icon';
+import { AntdTableElementFactory } from './ui/components/table';
 
 antdWebpeerExt.elementHandlersFactories.set('div', new AntdDivElementFactory());
 antdWebpeerExt.elementHandlersFactories.set('img', new AntdImgElementFactory());
@@ -63,3 +63,5 @@ antdWebpeerExt.uiHandler = {
     return antdWebpeerExt.elementHandlersFactories.get(model.type)!.createElement(model);
   },
 };
+
+console.log('hello from antd');
