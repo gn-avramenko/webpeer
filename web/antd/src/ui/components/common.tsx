@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import {
-  webpeerExt, BaseUiElement, WebPeerExtension, generateUUID,
+  webpeerExt, BaseUiElement, WebPeerExtension,
 } from 'webpeer-core';
 
 export type AntdWebpeerExtension = WebPeerExtension & {

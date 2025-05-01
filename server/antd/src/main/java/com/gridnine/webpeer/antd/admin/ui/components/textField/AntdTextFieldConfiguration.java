@@ -23,7 +23,7 @@ public class AntdTextFieldConfiguration extends BaseAntdConfiguration {
 
     private RunnableWithExceptionAndTwoArguments<String, OperationUiContext> valueChangedHandler;
 
-    private String initValue;
+    private final String initValue;
 
     public AntdTextFieldConfiguration(JsonObject uiData) {
         this.initValue = uiData != null && uiData.has("value")? uiData.get("value").getAsString(): null;

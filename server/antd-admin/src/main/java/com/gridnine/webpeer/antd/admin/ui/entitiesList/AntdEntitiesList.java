@@ -29,9 +29,6 @@ import com.gridnine.webpeer.antd.admin.ui.components.common.AntdUtils;
 import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
 import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDivConfiguration;
 import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdDrawer;
-import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableColumnAlignment;
-import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableColumnDescription;
-import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableColumnType;
 import com.gridnine.webpeer.antd.admin.ui.components.textField.AntdTextField;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 

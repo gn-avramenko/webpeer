@@ -22,7 +22,6 @@
 package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
 import com.google.gson.JsonObject;
-import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdLayoutConfiguration;
 import com.gridnine.webpeer.antd.admin.ui.components.textField.AntdTextFieldConfiguration;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;

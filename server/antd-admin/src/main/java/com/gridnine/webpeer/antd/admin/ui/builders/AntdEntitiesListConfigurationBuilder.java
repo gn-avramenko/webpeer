@@ -5,7 +5,6 @@ import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.antd.admin.ui.components.table.*;
 import com.gridnine.webpeer.antd.admin.ui.entitiesList.AntEntitiesListConfiguration;
 import com.gridnine.webpeer.antd.admin.ui.entitiesList.AntdEntitiesListDataProvider;
-import com.gridnine.webpeer.core.ui.BaseUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.CallableWithExceptionAndTwoArguments;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;

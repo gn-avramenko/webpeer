@@ -24,7 +24,6 @@ package com.gridnine.webpeer.antd.admin.ui.components.table;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.utils.CallableWithExceptionAndArgument;
 import com.gridnine.webpeer.core.utils.CallableWithExceptionAndTwoArguments;
 
 public class AntdTableColumnDescription {

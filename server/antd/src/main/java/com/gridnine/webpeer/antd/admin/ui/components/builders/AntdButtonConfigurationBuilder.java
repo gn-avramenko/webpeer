@@ -24,8 +24,6 @@ package com.gridnine.webpeer.antd.admin.ui.components.builders;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.button.AntdButton;
 import com.gridnine.webpeer.antd.admin.ui.components.button.AntdButtonConfiguration;
-import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
-import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDivConfiguration;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;

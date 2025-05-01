@@ -21,10 +21,7 @@
 
 package com.gridnine.webpeer.antd.admin.ui.components.table;
 
-import com.google.gson.JsonElement;
-
 import java.util.List;
-import java.util.Map;
 
 public interface AntdTableDataProvider {
     AntdTableData getData(List<String> fields, int limit, AntdTableSort sort) throws Exception;

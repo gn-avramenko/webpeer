@@ -24,13 +24,8 @@ package com.gridnine.webpeer.antd.admin.ui.components.button;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.core.ui.BaseUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class AntdButton extends BaseAntdUiElement<AntdButtonConfiguration> {
 

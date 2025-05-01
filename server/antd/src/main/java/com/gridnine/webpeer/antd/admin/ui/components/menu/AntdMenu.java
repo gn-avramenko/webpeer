@@ -24,14 +24,9 @@ package com.gridnine.webpeer.antd.admin.ui.components.menu;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
-import com.gridnine.webpeer.antd.admin.ui.components.image.AntdImageConfiguration;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AntdMenu extends BaseAntdUiElement<AntdMenuConfiguration> {
 
