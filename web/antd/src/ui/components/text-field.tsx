@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import Input from 'antd/lib/input/Input';
 import debounce from 'debounce';
-import { AntdUiElementFactory, BaseAntdUiElement } from './common';
+import { AntdUiElementFactory, antdWebpeerExt, BaseAntdUiElement } from './common';
 
 interface TextFieldComponentInternal {
     setValueSetter: (setter: (value: string | null) => void) => void;
@@ -12,7 +12,6 @@ interface TextFieldComponentInternal {
     id: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function TextFieldComponent(props: { component: TextFieldComponentInternal }): React.ReactNode {
   const [value, setValue] = useState<string | null>(null);
   const [readonly, setReadonly] = useState<boolean>(false);
@@ -49,6 +48,8 @@ export class AntdTextField extends BaseAntdUiElement implements TextFieldCompone
       return React.createElement(TextFieldComponent, { component: this, key: this.id });
     }
 
+    private clientChangeHandlerId?: string
+
     private debounceTime:number = 0;
 
     constructor(model:any) {
@@ -56,8 +57,15 @@ export class AntdTextField extends BaseAntdUiElement implements TextFieldCompone
       this.deferred = model.deferred ?? false;
       this.debounceTime = model.debounceTime ?? 0;
       this.value = model.value;
+      this.clientChangeHandlerId = model.clientChangeHandlerId;
       const valueChanged = (value: string|null) => {
         super.sendPropertyChange('value', value, this.deferred);
+        if (this.clientChangeHandlerId) {
+            antdWebpeerExt.handlers.get(this.clientChangeHandlerId)!({
+              elm: this,
+              value,
+            });
+        }
       };
       this.reportValueChanged = this.debounceTime > 0 ? debounce(valueChanged, this.debounceTime) : valueChanged;
     }

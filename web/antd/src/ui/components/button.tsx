@@ -11,7 +11,6 @@ interface ButtonComponentInternal {
     onAfterInitialized: () => void
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ButtonComponent(props: { component: ButtonComponentInternal }): React.ReactNode {
   const [style, setStyle] = useState({} as any);
   props.component.setStyleSetter(setStyle);

@@ -22,6 +22,7 @@
 package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
 import com.google.gson.JsonObject;
+import com.gridnine.webpeer.antd.admin.ui.components.button.AntdButton;
 import com.gridnine.webpeer.antd.admin.ui.components.common.AntdUtils;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdConfiguration;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
@@ -81,6 +82,10 @@ public class BaseAntdConfigurationBuilder<T extends BaseAntdConfiguration> {
         config.getStyle().putAll(style);
     }
 
+    public void className(String className){
+        config.setClassName(className);
+    }
+
     public void style(String propertyName, Object propertyValue){
         config.getStyle().put(propertyName, propertyValue);
     }
@@ -122,8 +127,6 @@ public class BaseAntdConfigurationBuilder<T extends BaseAntdConfiguration> {
         this.config.getChildren().add(router);
         return router;
     }
-
-
 
     public void tag(String tag){
         config.setTag(tag);
@@ -175,6 +178,12 @@ public class BaseAntdConfigurationBuilder<T extends BaseAntdConfiguration> {
         var result = new AntdDropDownIcon(configuration, context);
         this.config.getChildren().add(result);
         return result;
+    }
+
+    public void button(OperationUiContext context, RunnableWithExceptionAndArgument<AntdButtonConfigurationBuilder> configurator){
+        var configuration = AntdButtonConfigurationBuilder.createConfiguration(configurator);
+        var layout = new AntdButton(configuration, context);
+        this.config.getChildren().add(layout);
     }
 
 }

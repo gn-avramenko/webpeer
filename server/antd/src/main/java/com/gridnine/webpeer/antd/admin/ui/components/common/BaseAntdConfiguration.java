@@ -13,6 +13,16 @@ public class BaseAntdConfiguration {
 
     private List<BaseAntdUiElement<?>> children = new ArrayList<>();
 
+    private String className;
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
     public void setChildren(List<BaseAntdUiElement<?>> children) {
         this.children = children;
     }

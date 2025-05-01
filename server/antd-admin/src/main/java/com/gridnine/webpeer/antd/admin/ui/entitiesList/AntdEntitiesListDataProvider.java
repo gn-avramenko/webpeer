@@ -29,5 +29,5 @@ import java.util.List;
 import java.util.Map;
 
 public interface AntdEntitiesListDataProvider {
-    AntdTableData getData(List<String> fields, int limit, AntdTableSort sort, String searchText, Map<String, JsonElement> filters);
+    AntdTableData getData(List<String> fields, int limit, AntdTableSort sort, String searchText, Map<String, JsonElement> filters) throws Exception;
 }

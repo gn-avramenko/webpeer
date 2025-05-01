@@ -3,21 +3,25 @@ import {
   webpeerExt, BaseUiElement, WebPeerExtension, generateUUID,
 } from 'webpeer-core';
 
-export type AntdWebpeerExtension = WebPeerExtension &{
-   elementHandlersFactories: Map<string, AntdUiElementFactory>
-   icons: Map<string, () => ReactElement>;
-   lang?: string
+export type AntdWebpeerExtension = WebPeerExtension & {
+    elementHandlersFactories: Map<string, AntdUiElementFactory>
+    icons: Map<string, () => ReactElement>;
+    handlers: Map<string, (ctx: any) => void>;
+    lang?: string
 }
 export const antdWebpeerExt = webpeerExt as AntdWebpeerExtension;
 antdWebpeerExt.elementHandlersFactories = new Map();
 antdWebpeerExt.icons = new Map();
+antdWebpeerExt.handlers = new Map();
 
 export abstract class BaseAntdUiElement extends BaseUiElement {
-   abstract createReactElement(): React.ReactElement
+    abstract createReactElement(): React.ReactElement
 
-   protected childrenSetter?: (children: BaseAntdUiElement[]) => void
+    className?:string;
 
-   children: BaseAntdUiElement[] = []
+    protected childrenSetter?: (children: BaseAntdUiElement[]) => void
+
+    children: BaseAntdUiElement[] = []
 
     setChildrenSetter = (setter: (children: BaseAntdUiElement[]) => void) => {
       this.childrenSetter = setter;
@@ -27,58 +31,45 @@ export abstract class BaseAntdUiElement extends BaseUiElement {
       this.childrenSetter?.([...this.children]);
     }
 
-    constructor(model:any) {
+    constructor(model: any) {
       super(model);
-      (model.children || []).forEach((ch:any) => {
+      this.className = model.className;
+      (model.children || []).forEach((ch: any) => {
         const elm = antdWebpeerExt.elementHandlersFactories.get(ch.type)!.createElement(ch);
         elm.parent = this;
         this.children.push(elm);
       });
     }
 
-    findByTag(tag: string) {
-      return this.children?.find((it) => it.tag === tag) as BaseAntdUiElement | undefined;
+    findChildByTag(tag: string): BaseAntdUiElement | undefined {
+      if (this.tag === tag) {
+        return this;
+      }
+      for (const child of (this.children || [])) {
+        const res = child.findChildByTag(tag);
+        if (res) {
+          return res;
+        }
+      }
+      return undefined;
+    }
+
+    findParentByTag(tag: string): BaseAntdUiElement | undefined {
+      if (this.tag === tag) {
+        return this;
+      }
+      if (!this.parent) {
+        return undefined;
+      }
+      return (this.parent as BaseAntdUiElement).findParentByTag(tag);
     }
 }
 
 export interface AntdUiElementFactory {
-   createElement(model: any):BaseAntdUiElement
+    createElement(model: any): BaseAntdUiElement
 }
 
-export const emptyAntdUiElement:BaseAntdUiElement = {
-  async executeAction(): Promise<void> {
-    return Promise.resolve(undefined);
-  },
-  findByTag(): BaseAntdUiElement | undefined {
-    return undefined;
-  },
-  id: '0',
-  children: [],
-  createReactElement(): React.ReactElement {
-    return <div key={generateUUID()} />;
-  },
-
-  async sendPropertyChange() {
-    // noops
-  },
-  executeCommand(): void {
-    // noops
-  },
-  updatePropertyValue(): void {
-    // noops
-  },
-  serialize(): {} {
-    return {};
-  },
-  onChildrenChanged() { // noops
-  },
-
-  setChildrenSetter() {
-
-  },
-};
-
-export const buildStyle = (style:any, token:any) => {
+export const buildStyle = (style: any, token: any) => {
   const result = { ...(style || {}) };
   Object.keys(result).forEach((prop) => {
     let value = style[prop];
@@ -92,7 +83,7 @@ export const buildStyle = (style:any, token:any) => {
   return result;
 };
 
-export function onVisible(element:any, callback:any) {
+export function onVisible(element: any, callback: any) {
   new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (entry.intersectionRatio > 0) {

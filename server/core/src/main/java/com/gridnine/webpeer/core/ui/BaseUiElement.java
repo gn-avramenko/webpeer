@@ -84,7 +84,7 @@ public abstract class BaseUiElement {
         }
     }
 
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
+    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) throws Exception {
         throw new UnsupportedOperationException();
     }
 

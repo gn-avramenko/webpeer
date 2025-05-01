@@ -47,6 +47,9 @@ public class AntdDivConfigurationBuilder extends BaseAntdConfigurationBuilder<An
         config.setHidden(hidden);
     }
 
+    public void clientClickHandlerId(String id){
+        config.setClientClickHandlerId(id);
+    }
     public static AntdDivConfiguration createConfiguration(JsonObject uiData, RunnableWithExceptionAndArgument<AntdDivConfigurationBuilder> configurator){
         var builder = new AntdDivConfigurationBuilder(uiData);
         return WebPeerUtils.wrapException(() ->{

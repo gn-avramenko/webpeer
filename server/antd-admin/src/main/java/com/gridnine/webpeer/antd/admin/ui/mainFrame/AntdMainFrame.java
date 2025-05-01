@@ -96,7 +96,7 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
                                     ins.tag("sider");
                                     ins.menu(ctx, m -> {
                                                 m.menuItems(conf.getMenuItems());
-                                                m.style("height=100%;overflowY=auto");
+                                                m.style("height=100%;overflowY=auto;scrollbarColor=token:scrollbarColor");
 
                                             }
                                     );
@@ -119,9 +119,10 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
                         mh.style("display","flex");
                         mh.div(null, ctx, d ->{
                             d.style("lineHeight=35px;padding=token:padding");
-                            d.clickHandler(c ->{
-                                drawer.setOpen(true, c);
-                            });
+//                            d.clickHandler(c ->{
+//                                drawer.setOpen(true, c);
+//                            });
+                            d.clientClickHandlerId("main-frame-open-drawer");
                             d.icon(ctx, i -> i.icon(AntdIcons.MENU_FOLD_OUTLINED.name()));
                         });
                         if(conf.getHeader() != null){
@@ -132,8 +133,11 @@ public class AntdMainFrame extends AntdBreakpoint implements RootUiElement {
                         mc.tag("main-content");
                         mc.style("height=100%");
                         drawer = mc.drawer(ctx, drawer->{
-                            setTag("drawer");
-                            drawer.menu(ctx, m -> m.menuItems(conf.getMenuItems()));
+                            drawer.tag("main-frame-drawer");
+                            drawer.menu(ctx, m -> {
+                                m.style("height=100%;overflowY=auto;scrollbarColor=token:scrollbarColor");
+                                m.menuItems(conf.getMenuItems());
+                            });
                         });
                         mc.layout(ctx, il -> {
                             il.tag("inner-layout");

@@ -43,6 +43,10 @@ public class AntdTextFieldConfigurationBuilder extends BaseAntdConfigurationBuil
         config.setDeferred(deferred);
     }
 
+    public void clientChangeHandlerId(String id){
+        config.setClientChangeHandlerId(id);
+    }
+
     public void valueChangedHandler(RunnableWithExceptionAndTwoArguments<String, OperationUiContext> valueChangedHandler) {
         config.setValueChangedHandler(valueChangedHandler);
     }

@@ -38,11 +38,15 @@ public class AntdDrawer extends BaseAntdUiElement<AntdDrawerConfiguration> {
 
     @Override
     public JsonObject buildElement(OperationUiContext context) {
-        var result =  super.buildElement(context);
+        var result = super.buildElement(context);
         result.addProperty("closeIcon", configuration.getCloseIcon());
         result.addProperty("placement", configuration.getPlacement());
         result.addProperty("closable", true);
         result.addProperty("open", configuration.isOpen());
+        result.addProperty("title", configuration.getTitle());
+        if(configuration.getGetContainer() != null){
+            result.add("getContainer", configuration.getGetContainer());
+        }
         var styles = new JsonObject();
         styles.add("body", configuration.getBodyStyle());
         styles.add("header", configuration.getHeaderStyle());
@@ -51,8 +55,17 @@ public class AntdDrawer extends BaseAntdUiElement<AntdDrawerConfiguration> {
     }
 
     @Override
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
-        if("close".equals(actionId)) {
+    protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext) {
+        if ("open".equals(propertyName)) {
+            open = propertyValue.getAsBoolean();
+            return;
+        }
+        super.updatePropertyValue(propertyName, propertyValue, operationUiContext);
+    }
+
+    @Override
+    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) throws Exception {
+        if ("close".equals(actionId)) {
             open = false;
             operationUiContext.sendElementPropertyChange(getId(), "open", open);
             return;
@@ -61,7 +74,7 @@ public class AntdDrawer extends BaseAntdUiElement<AntdDrawerConfiguration> {
     }
 
     public void setOpen(boolean open, OperationUiContext operationUiContext) {
-        if(this.open != open) {
+        if (this.open != open) {
             this.open = open;
             operationUiContext.sendElementPropertyChange(getId(), "open", open);
         }

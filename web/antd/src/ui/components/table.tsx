@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, theme } from 'antd';
-import { api } from 'webpeer-core';
+import { api, generateUUID, uiModel } from 'webpeer-core';
 import {
   AntdUiElementFactory, BaseAntdUiElement, buildStyle, onVisible,
 } from './common';
@@ -95,7 +95,13 @@ function AntdTable(props: { component: AntdTableInternal }): React.ReactElement 
           sorter: c.sortable,
           sortOrder: sort.propertyName === c.id ? (sort.desc ? 'descend' : 'ascend') : undefined,
           width: c.width,
-          render: (value) => value,
+          render: (value) => {
+            if (c.type === 'CUSTOM') {
+              const node = uiModel.findNode(value) as BaseAntdUiElement;
+              return node.createReactElement();
+            }
+            return value;
+          },
         }))}
         onScroll={() => {
           const elms = document.getElementsByClassName('the-last-row');
@@ -134,7 +140,7 @@ function AntdTable(props: { component: AntdTableInternal }): React.ReactElement 
   );
 }
 
-class AntdTableElement extends BaseAntdUiElement implements AntdTableInternal {
+export class AntdTableElement extends BaseAntdUiElement implements AntdTableInternal {
     private style: any = {}
 
     private styleSetter?: (style: any) => void
@@ -178,6 +184,8 @@ class AntdTableElement extends BaseAntdUiElement implements AntdTableInternal {
 
     private loadingSetter: (loading:boolean) => void = () => {}
 
+    private requestId?:string;
+
     private columns:ColumnDescription[] = []
 
     private data: any[] = []
@@ -198,11 +206,25 @@ class AntdTableElement extends BaseAntdUiElement implements AntdTableInternal {
       this.sort = model.sort;
     }
 
-    loadMore = () => api.sendAction(this.id, 'increaseLimit', undefined);
+    loadMore() {
+      this.requestId = generateUUID();
+      return api.sendAction(this.id, 'increaseLimit', this.requestId);
+    }
 
-    init = () => api.sendAction(this.id, 'init', undefined);
+    init() {
+      this.requestId = generateUUID();
+      return api.sendAction(this.id, 'init', this.requestId);
+    }
 
-    changeSort = (sort: Sorting) => api.sendAction(this.id, 'changeSort', sort)
+    refreshData() {
+      this.loadingSetter(true);
+      this.init();
+    }
+
+    changeSort(sort: Sorting) {
+      this.requestId = generateUUID();
+      return api.sendAction(this.id, 'changeSort', { ...sort, requestId: this.requestId });
+    }
 
     setStyleSetter = (setter: (style: any) => void) => {
       this.styleSetter = setter;
@@ -210,6 +232,9 @@ class AntdTableElement extends BaseAntdUiElement implements AntdTableInternal {
 
     updatePropertyValue(propertyName: string, propertyValue: any) {
       if (propertyName === 'data') {
+        if (this.requestId !== propertyValue.requestId) {
+          return;
+        }
         this.data = propertyValue.data;
         this.hasMore = propertyValue.hasMore;
         this.dataSetter(this.data);

@@ -51,7 +51,7 @@ public class AntdButton extends BaseAntdUiElement<AntdButtonConfiguration> {
     }
 
     @Override
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
+    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) throws Exception {
         if(actionId.equals("click")){
             WebPeerUtils.wrapException(() ->configuration.getClickHandler().run(operationUiContext));
             return;

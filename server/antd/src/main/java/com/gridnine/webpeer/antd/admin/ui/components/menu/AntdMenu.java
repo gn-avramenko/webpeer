@@ -69,7 +69,7 @@ public class AntdMenu extends BaseAntdUiElement<AntdMenuConfiguration> {
     }
 
     @Override
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
+    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) throws Exception {
         if("click".equals(actionId)) {
             var itemId = actionData.getAsString();
             String[] items = itemId.split("-");

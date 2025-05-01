@@ -21,6 +21,12 @@
 
 package com.gridnine.webpeer.antd.admin.ui.components.table;
 
+import com.google.gson.JsonObject;
+import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.core.utils.CallableWithExceptionAndArgument;
+import com.gridnine.webpeer.core.utils.CallableWithExceptionAndTwoArguments;
+
 public class AntdTableColumnDescription {
     private String id;
     private AntdTableColumnType type;
@@ -28,6 +34,15 @@ public class AntdTableColumnDescription {
     private String name;
     private boolean sortable;
     private Integer width;
+    private CallableWithExceptionAndTwoArguments<JsonObject, OperationUiContext, BaseAntdUiElement<?>> customRenderer;
+
+    public void setCustomRenderer(CallableWithExceptionAndTwoArguments<JsonObject, OperationUiContext, BaseAntdUiElement<?>> customRenderer) {
+        this.customRenderer = customRenderer;
+    }
+
+    public CallableWithExceptionAndTwoArguments<JsonObject, OperationUiContext, BaseAntdUiElement<?>> getCustomRenderer() {
+        return customRenderer;
+    }
 
     public String getId() {
         return id;

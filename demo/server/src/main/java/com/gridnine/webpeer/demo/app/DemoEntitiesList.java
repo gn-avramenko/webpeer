@@ -23,6 +23,8 @@ package com.gridnine.webpeer.demo.app;
 
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.builders.AntdEntitiesListConfigurationBuilder;
+import com.gridnine.webpeer.antd.admin.ui.components.AntdIcons;
+import com.gridnine.webpeer.antd.admin.ui.components.builders.AntdDivConfigurationBuilder;
 import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableColumnAlignment;
 import com.gridnine.webpeer.antd.admin.ui.entitiesList.AntdEntitiesList;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
@@ -36,13 +38,18 @@ public class DemoEntitiesList extends AntdEntitiesList {
             b.standardColumn("dateProperty", "ru".equals(language)? "Дата": "Date property", true, AntdTableColumnAlignment.LEFT, null);
             b.standardColumn("enumProperty", "ru".equals(language)? "Перечисление": "Enum property", true, AntdTableColumnAlignment.LEFT, null);
             b.standardColumn("entityRefProperty","ru".equals(language)? "Сущность": "Entity property", true, AntdTableColumnAlignment.LEFT, null);
+            b.customColumn("link", "ru".equals(language)? "Детали": "Details", AntdTableColumnAlignment.LEFT, 80, (data, ctx) ->{
+                return AntdDivConfigurationBuilder.createElement(null, ctx, db->{
+                    db.icon(ctx, i->i.icon(AntdIcons.RIGHT_CIRCLE_OUTLINED.name()));
+                    db.style("cursor=pointer");
+                    db.clickHandler((c)->{
+                        System.out.println(data.get("id"));
+                    });
+                });
+            });
             b.initSort("stringProperty", false);
             b.dataProvider(((fields, limit, sort, searchText, filters) -> {
-                try {
-                    Thread.sleep(1000L);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                Thread.sleep(1000L);
                 return dataSource.getData(language, limit, sort, searchText, filters);
             }));
         }), uidData, context);

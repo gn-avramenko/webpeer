@@ -47,6 +47,7 @@ public class AntdTextField extends BaseAntdUiElement<AntdTextFieldConfiguration>
         result.addProperty("value", value);
         result.addProperty("debounceTime", configuration.getDebounceTime());
         result.addProperty("deferred", configuration.isDeferred());
+        result.addProperty("clientChangeHandlerId", configuration.getClientChangeHandlerId());
         return result;
     }
 

@@ -36,6 +36,9 @@ public class Constants {
             var darkDesktopAlgorithm = new JsonArray();
             darkDesktopAlgorithm.add("darkAlgorithm");
             DARK_DESKTOP_THEME.add("algorithm", darkDesktopAlgorithm);
+            var token = new JsonObject();
+            token.addProperty("scrollbarColor", "rgba(255, 255, 255, 0.25) rgba(253, 253, 253, 0.12)");
+            DARK_DESKTOP_THEME.add("token", token);
         }
         {
 
@@ -46,7 +49,9 @@ public class Constants {
             layout.addProperty( "siderBg", "rgb(255,255,255)");
             layout.addProperty( "lightTriggerColor", "rgb(255,255,255)");
             layout.addProperty( "triggerBg", "rgb(255,255,255)");
+
             LIGHT_DESKTOP_THEME.add("components", components);
+            LIGHT_DESKTOP_THEME.addProperty("scrollbarColor","rgba(0, 0, 0, 0.25) rgba(6, 6, 6, 0.12)");
             {
                 var desktopAlgorithm = new JsonArray();
                 desktopAlgorithm.add("defaultAlgorithm");

@@ -28,9 +28,14 @@ import com.gridnine.webpeer.antd.admin.ui.components.builders.AntdDivConfigurati
 import com.gridnine.webpeer.antd.admin.ui.components.common.AntdUtils;
 import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDiv;
 import com.gridnine.webpeer.antd.admin.ui.components.div.AntdDivConfiguration;
+import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdDrawer;
+import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableColumnAlignment;
+import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableColumnDescription;
+import com.gridnine.webpeer.antd.admin.ui.components.table.AntdTableColumnType;
 import com.gridnine.webpeer.antd.admin.ui.components.textField.AntdTextField;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,14 +45,20 @@ public class AntdEntitiesList extends AntdDiv {
 
     private Map<String, EntitiesListFilter> filtersValues = new HashMap<>();
 
+
+    private AntdDrawer drawer;
+
     @Override
     protected AntdDivConfiguration createConfiguration(JsonObject uiData, Object config, OperationUiContext ctx) {
         AntEntitiesListConfiguration conf = (AntEntitiesListConfiguration) config;
         return AntdDivConfigurationBuilder.createConfiguration(uiData,  el ->{
-            el.style("display=flex;flexDirection=column;width=100%;height=100%");
+            el.style("position=relative;display=flex;flexDirection=column;width=100%;height=100%");
+            el.tag("entities-list");
+            el.className("entities-list");
             el.div(uiData, ctx, h ->{
                 h.style("width=100%;flexGrow=0");
                 h.div(null, ctx, hd ->{
+
                     hd.style("flexGrow=0;display=flex;flexDirection=row;width=100%;height=100%;alignItems=center");
                     hd.div(null, ctx, t -> {
                                 t.content(conf.getTitle());
@@ -60,16 +71,13 @@ public class AntdEntitiesList extends AntdDiv {
                         searchField = tf.textField((JsonObject) AntdUtils.findUiDataByTag(uiData,"search-field"), ctx, f ->{
                             f.tag("search-field");
                             f.debounceTime(300);
-                            f.valueChangedHandler((value, ctx1) ->{
-                                System.out.println(value);
-                            });
+                            f.deferred(true);
+                            f.clientChangeHandlerId("entities-list-search-field-change-handler");
                         } );
                     });
                     hd.div(null, ctx, id ->{
                         id.style("flexGrow=0;paddingRight=token:padding");
-                        id.clickHandler((c) ->{
-                            System.out.println("test");
-                        });
+                        id.clientClickHandlerId("entities-list-filters-open-handler");
                         id.icon(ctx, i ->{
                             i.icon(AntdIcons.FILTER_OUTLINED.name());
                         });
@@ -78,9 +86,39 @@ public class AntdEntitiesList extends AntdDiv {
             });
             el.div(uiData, ctx, cd ->{
                 cd.style("flexGrow=1");
+                drawer = cd.drawer(ctx, db ->{
+                    db.tag("entities-list-drawer");
+                    db.placement("right");
+                    db.title("Filters");
+                    db.noContainer();
+                    db.footer(AntdDivConfigurationBuilder.createElement(null, ctx, (fb)->{
+                        fb.style("width=100%;display=flex;flexDirection=row");
+                        fb.glue(ctx);
+                        fb.div(null, ctx, ok->{
+                            ok.style("padding=5px;flexGrow=0");
+                            ok.button(ctx, button->{
+                                button.title("Apply");
+                                button.clickHandler(c->{
+                                    drawer.setOpen(false, c);
+                                });
+                            });
+                        });
+                        fb.div(null, ctx, clear->{
+                            clear.style("padding=5px;flexGrow=0");
+                            clear.button(ctx, button->{
+                                button.title("Clear");
+                                button.clickHandler(c->{
+                                    drawer.setOpen(false, c);
+                                });
+                            });
+                        });
+                    }));
+                });
                 cd.table(ctx, table->{
+                    table.tag("entities-list-table");
                     table.style("width=100%;height=100%");
-                    table.columns(conf.getColumns());
+                    var columns = new ArrayList<>(conf.getColumns());
+                    table.columns(columns);
                     table.initSort(conf.getInitSort());
                     table.dataProvider((fields, limit, sort) -> {
                                 var filters = new HashMap<String, JsonElement>();

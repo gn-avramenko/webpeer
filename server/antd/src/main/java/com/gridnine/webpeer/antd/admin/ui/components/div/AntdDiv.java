@@ -57,7 +57,7 @@ public class AntdDiv extends BaseAntdUiElement<AntdDivConfiguration> {
     }
 
     @Override
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
+    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) throws Exception {
         if("click".equals(actionId)) {
             WebPeerUtils.wrapException(()-> this.configuration.getClickHandler().run(operationUiContext));
             return;
@@ -73,7 +73,11 @@ public class AntdDiv extends BaseAntdUiElement<AntdDivConfiguration> {
     @Override
     public JsonObject buildElement(OperationUiContext context) {
         var result = super.buildElement(context);
-        result.addProperty("handleClick", configuration.getClickHandler() != null);
+        if(configuration.getClientClickHandlerId() != null){
+            result.addProperty("clientClickHandlerId", configuration.getClientClickHandlerId());
+        } else {
+            result.addProperty("handleClick", configuration.getClickHandler() != null);
+        }
         if(WebPeerUtils.isNotBlank(configuration.getContent())){
             result.addProperty("content", configuration.getContent());
             result.remove("children");

@@ -1,6 +1,6 @@
 import { createRoot, Root } from 'react-dom/client';
 import {
-  SunOutlined, MoonFilled, RightOutlined, MenuFoldOutlined, FilterOutlined,
+  SunOutlined, MoonFilled, RightOutlined, MenuFoldOutlined, FilterOutlined, RightCircleOutlined,
 } from '@ant-design/icons';
 import { BaseUiElement, uiModel } from 'webpeer-core';
 import { antdWebpeerExt } from './ui/components/common';
@@ -45,9 +45,16 @@ antdWebpeerExt.icons.set('MOON_FILLED', () => <MoonFilled />);
 antdWebpeerExt.icons.set('RightOutlined', () => <RightOutlined />);
 antdWebpeerExt.icons.set('MENU_FOLD_OUTLINED', () => <MenuFoldOutlined />);
 antdWebpeerExt.icons.set('FILTER_OUTLINED', () => <FilterOutlined />);
+antdWebpeerExt.icons.set('RIGHT_CIRCLE_OUTLINED', () => <RightCircleOutlined />);
+
 
 antdWebpeerExt.lang = JSON.parse(window.localStorage.getItem('webpeer') || '{}').lang ?? 'en';
 
+export { antdWebpeerExt } from './ui/components/common';
+export { AntdDivElement } from './ui/components/div';
+export { AntdDrawerElement } from './ui/components/drawer';
+export { AntdTextField } from './ui/components/text-field';
+export { AntdTableElement } from './ui/components/table';
 let root: Root|null = null;
 
 antdWebpeerExt.uiHandler = {
@@ -63,5 +70,3 @@ antdWebpeerExt.uiHandler = {
     return antdWebpeerExt.elementHandlersFactories.get(model.type)!.createElement(model);
   },
 };
-
-console.log('hello from antd');

@@ -1,5 +1,6 @@
 package com.gridnine.webpeer.antd.admin.ui.components.layout;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.antd.admin.ui.components.AntdIcons;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdConfiguration;
@@ -18,6 +19,8 @@ public class AntdDrawerConfiguration extends BaseAntdConfiguration {
 
     private boolean open;
 
+    private JsonElement getContainer;
+
     private String title;
 
     private String placement = "left";
@@ -27,6 +30,14 @@ public class AntdDrawerConfiguration extends BaseAntdConfiguration {
     private JsonObject bodyStyle = new JsonObject();
 
     private JsonObject headerStyle = new JsonObject();
+
+    public void setGetContainer(JsonElement getContainer) {
+        this.getContainer = getContainer;
+    }
+
+    public JsonElement getGetContainer() {
+        return getContainer;
+    }
 
     public void setFooter(BaseAntdUiElement<?> footer) {
         footer.setTag("footer");

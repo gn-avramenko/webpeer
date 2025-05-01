@@ -35,5 +35,3 @@ async function init(){
 }
 
 document.addEventListener("DOMContentLoaded", init);
-
-console.log('hello from core 1')

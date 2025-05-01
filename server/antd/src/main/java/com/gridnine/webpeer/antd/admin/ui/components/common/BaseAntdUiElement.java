@@ -75,6 +75,9 @@ public abstract class BaseAntdUiElement<T extends BaseAntdConfiguration> extends
         if(configuration.getStyle() != null && !configuration.getStyle().isEmpty()) {
             result.add("style", WebPeerUtils.serialize(configuration.getStyle()));
         }
+        if(configuration.getClassName() != null) {
+            result.addProperty("className", configuration.getClassName());
+        }
         return result;
     }
 

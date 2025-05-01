@@ -1,4 +1,5 @@
 import 'webpeer-core';
 import 'webpeer-antd';
-
-console.log('hello from antd admin');
+import './mainFrame/openDrawerHandler';
+import './entitiesList/searchTextHandler';
+import './entitiesList/openDrawerHandler';

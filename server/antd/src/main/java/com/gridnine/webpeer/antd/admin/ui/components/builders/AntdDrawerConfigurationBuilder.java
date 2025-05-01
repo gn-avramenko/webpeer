@@ -21,7 +21,9 @@
 
 package com.gridnine.webpeer.antd.admin.ui.components.builders;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.gridnine.webpeer.antd.admin.ui.components.AntdIcons;
 import com.gridnine.webpeer.antd.admin.ui.components.common.BaseAntdUiElement;
 import com.gridnine.webpeer.antd.admin.ui.components.layout.AntdDrawerConfiguration;
@@ -58,6 +60,9 @@ public class AntdDrawerConfigurationBuilder extends BaseAntdConfigurationBuilder
         config.setFooter(footer);
     }
 
+    public void noContainer(){
+        config.setGetContainer(new JsonPrimitive(false));
+    }
     public void body(BaseAntdUiElement<?> body) {
         config.setBody(body);
     }

@@ -13,6 +13,16 @@ public class AntdDivConfiguration extends BaseAntdConfiguration {
 
     private RunnableWithExceptionAndArgument<OperationUiContext> clickHandler;
 
+    private String clientClickHandlerId;
+
+    public void setClientClickHandlerId(String clientClickHandlerId) {
+        this.clientClickHandlerId = clientClickHandlerId;
+    }
+
+    public String getClientClickHandlerId() {
+        return clientClickHandlerId;
+    }
+
     public void setClickHandler(RunnableWithExceptionAndArgument<OperationUiContext> clickHandler) {
         this.clickHandler = clickHandler;
     }

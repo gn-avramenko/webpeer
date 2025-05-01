@@ -43,6 +43,9 @@ export class Configuration {
     headers?: HTTPHeaders //header params we want to use on every request
 }
 
+const trace = (...args: any)=>{
+    // console.log(args)
+}
 
 export type Json = any;
 export type HTTPBody = Json | FormData | URLSearchParams;
@@ -146,9 +149,12 @@ export class API {
     }
 
     private async processQueue() {
+        trace("processing queue", this.queue.length)
         if (this.processingQueue) {
+            trace("already processing")
             return;
         }
+        this.processingQueue = true
         const items = [...this.queue]
         for (const item of items) {
             if (!this.queue.length) {
@@ -159,10 +165,12 @@ export class API {
                     request: item.payload,
                     context: new Map()
                 } as Context
+                trace("requesting with middleware")
                 const res = await this.requestWithMiddleware(req, 0, item.initOverrides)
                 const commands = (res.response || []) as any[]
                 let skip = false;
                 commands.forEach((cmd:any) =>{
+                    trace("processing command", cmd)
                     if(skip){
                         return;
                     }
@@ -238,13 +246,15 @@ export class API {
                 }
             } finally {
                 const idx = this.queue.indexOf(item)
+                trace("splicing queue", idx)
                 if (idx !== -1) {
                     this.queue.splice(idx, 1)
                 }
             }
         }
+        this.processingQueue = false
         if (this.queue.length) {
-            this.processingQueue = false
+            trace("restarting process, " , this.queue.length)
             await this.processQueue()
         }
     }

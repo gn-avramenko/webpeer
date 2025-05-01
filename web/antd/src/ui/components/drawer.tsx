@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Drawer } from 'antd';
 import { DrawerStyles } from 'antd/es/drawer/DrawerPanel';
+import { api } from 'webpeer-core';
 import { AntdUiElementFactory, antdWebpeerExt, BaseAntdUiElement } from './common';
 
 type AntdDrawerInternal = {
@@ -10,6 +11,8 @@ type AntdDrawerInternal = {
     setPlacementSetter: (setter: (placement: string) => void) => void
     setStylesSetter: (setter: (styles: DrawerStyles) => void) => void
     setOpenSetter: (setter: (open: boolean) => void) => void
+    getContainer?:any
+    title?:string
     onClose: () => void
     onAfterInitialized: () => void
 
@@ -33,18 +36,21 @@ function AntdDrawer(props: { component: AntdDrawerInternal }): React.ReactElemen
     <Drawer
       closeIcon={icon && antdWebpeerExt.icons.get(icon)?.()}
       placement={placement as any}
+      getContainer={props.component.getContainer}
       closable
       open={open}
+      title={props.component.title}
+      footer={children.find((it) => it.tag === 'footer')?.createReactElement()}
       onClose={() => props.component.onClose()}
       key={props.component.id}
       styles={styles}
     >
-      {children.map((ch) => ch.createReactElement())}
+      {children.filter((it) => it.tag !== 'footer').map((ch) => ch.createReactElement())}
     </Drawer>
   );
 }
 
-class AntdDrawerElement extends BaseAntdUiElement implements AntdDrawerInternal {
+export class AntdDrawerElement extends BaseAntdUiElement implements AntdDrawerInternal {
     private openSetter?: (open: boolean) => void
 
     private open: boolean = false;
@@ -54,6 +60,10 @@ class AntdDrawerElement extends BaseAntdUiElement implements AntdDrawerInternal 
     private placement: string = 'left'
 
     private styles: DrawerStyles = {}
+
+    getContainer?:any;
+
+    title?:string;
 
     private iconSetter?: (icon: string|null) => void
 
@@ -67,6 +77,8 @@ class AntdDrawerElement extends BaseAntdUiElement implements AntdDrawerInternal 
       this.icon = model.icon;
       this.placement = model.placement;
       this.styles = model.styles;
+      this.getContainer = model.getContainer;
+      this.title = model.title;
     }
 
     setIconSetter = (setter: (icon: string | null) => void) => {
@@ -85,8 +97,14 @@ class AntdDrawerElement extends BaseAntdUiElement implements AntdDrawerInternal 
       this.openSetter = setter;
     }
 
+    setOpen(open: boolean, deferred:boolean) {
+      this.open = open;
+        this.openSetter!(this.open);
+        api.sendPropertyChanged(this.id, 'open', open, deferred);
+    }
+
     onClose = () => {
-      super.executeAction('close');
+      this.setOpen(false, true);
     };
 
     serialize = () => {

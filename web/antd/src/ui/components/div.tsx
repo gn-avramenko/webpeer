@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { theme } from 'antd';
 import { isBlank } from 'webpeer-core';
-import { AntdUiElementFactory, buildStyle, BaseAntdUiElement } from './common';
+import {
+  AntdUiElementFactory, buildStyle, BaseAntdUiElement, antdWebpeerExt,
+} from './common';
 
 type AntdDivInternal = {
     id: string
@@ -9,6 +11,7 @@ type AntdDivInternal = {
     setChildrenSetter: (setter: (children: BaseAntdUiElement[]) => void) => void
     onClickHandler?: ()=>void
     onAfterInitialized: () => void
+    className?:string;
     setStyleSetter: (setter: (style: any) => void) => void
 }
 
@@ -28,6 +31,7 @@ function AntdDiv(props: { component: AntdDivInternal }): React.ReactElement {
     return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
       <div
+        className={props.component.className}
         onClick={() => {
           props.component.onClickHandler?.();
         }}
@@ -38,13 +42,16 @@ function AntdDiv(props: { component: AntdDivInternal }): React.ReactElement {
       </div>
     );
   }
+  // eslint-disable-next-line react/no-danger
   return <div key={props.component.id} style={buildStyle(style, token)} dangerouslySetInnerHTML={{ __html: content!! }} />;
 }
 
-class AntdDivElement extends BaseAntdUiElement implements AntdDivInternal {
+export class AntdDivElement extends BaseAntdUiElement implements AntdDivInternal {
     private contentSetter?: (content: string | undefined | null) => void
 
     private styleSetter?: (style: any) => void
+
+    private clientClickHandlerId?: string
 
     private style: any = {}
 
@@ -57,9 +64,16 @@ class AntdDivElement extends BaseAntdUiElement implements AntdDivInternal {
       this.id = model.id;
       this.style = model.style || {};
       this.content = model.content;
+      this.clientClickHandlerId = model.clientClickHandlerId;
       if (model.handleClick) {
         this.onClickHandler = () => {
           super.executeAction('click');
+        };
+      } else if (this.clientClickHandlerId) {
+        this.onClickHandler = () => {
+              antdWebpeerExt.handlers.get(this.clientClickHandlerId!)!({
+                elm: this,
+              });
         };
       }
     }

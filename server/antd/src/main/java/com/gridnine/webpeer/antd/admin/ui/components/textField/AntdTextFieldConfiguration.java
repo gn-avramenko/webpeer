@@ -11,6 +11,16 @@ public class AntdTextFieldConfiguration extends BaseAntdConfiguration {
 
     private boolean deferred;
 
+    private String clientChangeHandlerId;
+
+    public String getClientChangeHandlerId() {
+        return clientChangeHandlerId;
+    }
+
+    public void setClientChangeHandlerId(String clientChangeHandlerId) {
+        this.clientChangeHandlerId = clientChangeHandlerId;
+    }
+
     private RunnableWithExceptionAndTwoArguments<String, OperationUiContext> valueChangedHandler;
 
     private String initValue;
