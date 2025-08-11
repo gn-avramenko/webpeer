@@ -1,33 +1,38 @@
-import {API, Middleware, SubscriptionHandler} from "./remoting/api.ts";
-import {generateUUID} from "./utils/utils.ts";
-import {UiElement, UiModel} from "./model/model.ts";
+import { api } from './api';
 
-export interface UiHandler{
-    drawUi(model:any):void
-    createElement(model:any):UiElement
+export type { UiElement } from './model';
+export { BaseUiElement } from './model';
+
+export type {
+    Middleware,
+    HTTPBody,
+    HTTPHeaders,
+    HTTPMethod,
+    HTTPRequestInit,
+    InitOverrideFunction,
+} from './api';
+
+export type { UiHandler, WebPeerExtension } from './config';
+export { webpeerExt } from './config';
+
+export type { PreloaderHandler, PreloaderParams } from './preloader';
+export { PreloaderMiddleware } from './preloader';
+export { isNull, generateUUID } from './utils';
+
+async function init() {
+    await api.sendCommandAsync(
+        'root',
+        'init',
+        {
+            ls: JSON.parse(window.localStorage.getItem('webpeer') || '{}'),
+            params: {
+                windowWidth: window.innerWidth,
+                windowHeight: window.innerHeight,
+                ...((window as any).webPeer?.parameters || {}),
+            },
+        },
+        false
+    );
 }
-export type WebPeerExtension = {
-    parameters: any
-    middleware?: Middleware[]
-    uiHandler: UiHandler
-    subscriptionHandler?:SubscriptionHandler
-}
-export const webpeerExt = (window as any).webPeer as WebPeerExtension
 
-export const uiModel = new UiModel()
-
-export const api = new API({
-    clientId: generateUUID(),
-    restPath: webpeerExt.parameters.restPath,
-    webSocketUrl: webpeerExt.parameters.webSocketUrl,
-    middleware: webpeerExt.middleware,
-    subscriptionHandler: webpeerExt.subscriptionHandler
-})
-
-async function init(){
-    await api.sendCommand({cmd: 'init', data: {
-        ls: JSON.parse(window.localStorage.getItem("webpeer") || "{}"),
-        params: {windowWidth: window.innerWidth, ...(window as any).webPeer}}})
-}
-
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener('DOMContentLoaded', init);

@@ -39,20 +39,9 @@ public class GlobalUiContext {
     public final static TypedParameter<AtomicLong> ELEMENT_INDEX_PROVIDER = new TypedParameter<>("element-index-provider");
     public final static TypedParameter<AtomicInteger> VERSION_PROVIDER = new TypedParameter<>("version-provider");
     public final static TypedParameter<Session> WS_SESSION = new TypedParameter<>("ws-session");
-    public final static TypedParameter<UiModel> UI_MODEL = new TypedParameter<>("ui-model") ;
+    public final static TypedParameter<Map<Long, BaseUiElement>> UI_ELEMENTS = new TypedParameter<>("ui-elements") ;
     public final static Map<String, Map<String, Map<String, Object>>> context = new ConcurrentHashMap<>();
 
-    private final static ThreadLocal<OperationContext> operationContext = new ThreadLocal<>();
-    public static void setOperationContext(String path, String clientId) {
-        operationContext.set(new OperationContext(path, clientId));
-    }
-    public static void clearOperationContext() {
-        operationContext.remove();
-    }
-    public static<T> void setParameter(TypedParameter<T> param, T value) {
-        var ctx = operationContext.get();
-        setParameter(ctx.path, ctx.clientId, param, value);
-    }
     public static<T> void setParameter(String path, String clientId, TypedParameter<T> param, T value) {
         var pathData = context.get(path);
         if(pathData == null) {
@@ -71,32 +60,15 @@ public class GlobalUiContext {
         clientData.put(param.name, value);
     }
 
-    public static<T> T getParameter(TypedParameter<T> param) {
-        var operation = operationContext.get();
-        var data = context.get(operation.path);
-        if(data == null){
-            return null;
-        }
-        var clientData = data.get(operation.clientId);
-        //noinspection unchecked
-        return clientData == null? null: (T) clientData.get(param.name);
-    }
-
-    public static Map<String, Object> getClientData(String path, String client) {
+    public static<T> T getParameter(String path, String clientId, TypedParameter<T> param) {
         var data = context.get(path);
         if(data == null){
             return null;
         }
-        return data.get(client);
+        var clientData =  data.get(clientId);
+        //noinspection unchecked
+        return clientData == null? null: (T) clientData.get(param.name);
     }
 
-    static class OperationContext{
-        public final String clientId;
-        public final String path;
 
-         OperationContext(String path, String clientId) {
-            this.clientId = clientId;
-            this.path = path;
-        }
-    }
 }

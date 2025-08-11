@@ -22,6 +22,5 @@
 package com.gridnine.webpeer.core.ui;
 
 
-public interface UiRootElement extends UiElement{
-    UiModel getModel();
+public interface UiRootElement{
 }
