@@ -56,7 +56,6 @@ class DemoRootElement extends BaseDemoUiElement implements DemoRootElementIntern
 
     findChild = (tag: string) => this.findByTag(tag)!;
 
-
     createReactElement(): React.ReactElement {
         return React.createElement(DemoRoot, { component: this, key: this.id });
     }
