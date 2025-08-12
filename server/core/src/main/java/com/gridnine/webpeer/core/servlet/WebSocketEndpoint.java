@@ -30,6 +30,9 @@ import jakarta.websocket.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 public class WebSocketEndpoint {
 
     private final Logger log = LoggerFactory.getLogger(WebSocketEndpoint.class);
@@ -44,7 +47,7 @@ public class WebSocketEndpoint {
             if(values[0].equals("clientId")){
                 clientId = values[1];
             } else if (values[0].equals("path")) {
-                path = values[1];
+                path = URLEncoder.encode(values[1], StandardCharsets.UTF_8);
             }
         }
         if(path == null){

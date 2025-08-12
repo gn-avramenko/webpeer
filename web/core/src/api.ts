@@ -1,6 +1,6 @@
 import { generateUUID, isNull } from './utils';
 import { webpeerExt } from './config';
-import { UiElement } from './model';
+import { BaseUiElement } from './model';
 
 export type Context = {
     request?: any;
@@ -69,9 +69,9 @@ export type InitOverrideFunction = (
 ) => Promise<RequestInit>;
 
 class UiElementsRegistry {
-    private readonly elements: Map<string, UiElement> = new Map();
+    private readonly elements: Map<string, BaseUiElement> = new Map();
 
-    private rootElement?: UiElement;
+    private rootElement?: BaseUiElement;
 
     getRootElement() {
         return this.rootElement;
@@ -81,7 +81,7 @@ class UiElementsRegistry {
         return this.elements.get(id);
     }
 
-    private disposeAndDeleteId(node: UiElement) {
+    private disposeAndDeleteId(node: BaseUiElement) {
         node.dispose();
         this.elements.delete(node.id);
         node.children?.forEach((ch) => this.disposeAndDeleteId(ch));
@@ -97,13 +97,13 @@ class UiElementsRegistry {
         this.disposeAndDeleteId(node);
     }
 
-    private registerAndInitNode(node: UiElement) {
+    private registerAndInitNode(node: BaseUiElement) {
         node.init();
         this.elements.set(node.id, node);
         node.children?.forEach((ch) => this.registerAndInitNode(ch));
     }
 
-    addNode(node: UiElement, parentId?: string, insertAfterId?: string) {
+    addNode(node: BaseUiElement, parentId?: string, insertAfterId?: string) {
         if (!parentId) {
             this.rootElement = node;
             this.registerAndInitNode(node);
@@ -175,6 +175,15 @@ export class API {
         return context.response;
     }
 
+    destroy() {
+        navigator.sendBeacon(
+            `${this.configuration.restPath}?action=destroy`,
+            JSON.stringify({
+                clientId: this.configuration.clientId,
+            })
+        );
+    }
+
     async sendCommandAsync(
         elementId: string,
         commandId: string,
@@ -182,24 +191,31 @@ export class API {
         deferred?: boolean,
         initOverrides?: RequestInit | InitOverrideFunction
     ) {
-        const cmd = {
-            cmd: 'ec',
-            id: elementId,
-            data: {
-                cmd: commandId,
-                data: commandData,
-            },
-        };
+        const cmd =
+            commandId === 'init'
+                ? {
+                      cmd: 'init',
+                      data: commandData,
+                  }
+                : {
+                      cmd: 'ec',
+                      id: elementId,
+                      data: {
+                          cmd: commandId,
+                          data: commandData,
+                      },
+                  };
         if (deferred) {
             if (commandId === 'pc') {
                 const existingCommand = this.deferredCommands.find(
                     (it) =>
                         it.cmd === 'ec' &&
-                        it.data.commandId === 'pc' &&
-                        it.data.data.pn == cmd.data.data.pn
+                        it.id === elementId &&
+                        it.data.cmd === 'pc' &&
+                        it.data.data.pn == cmd.data?.data?.pn
                 );
                 if (existingCommand) {
-                    existingCommand.data.data.pv = cmd.data.data.pv;
+                    existingCommand.data.data.pv = cmd.data?.data?.pv;
                     return;
                 }
             }
@@ -224,10 +240,24 @@ export class API {
     private processCommands = (commands: any[]) => {
         if (commands.find((it) => it.cmd === 'resync')) {
             const queueItem = {
-                payload: {
-                    command: 'resync',
-                    model: this.uiElementsRegistry.getRootElement()!.serialize(),
-                },
+                payload: [
+                    {
+                        cmd: 'init',
+                        data: {
+                            uiData: this.uiElementsRegistry
+                                .getRootElement()!
+                                .serialize(),
+                            ls: JSON.parse(
+                                window.localStorage.getItem('webpeer') || '{}'
+                            ),
+                            params: {
+                                windowWidth: window.innerWidth,
+                                windowHeight: window.innerHeight,
+                                ...((window as any).webPeer?.parameters || {}),
+                            },
+                        },
+                    },
+                ],
                 reject: () => {
                     this.queue.forEach((it) => {
                         if (it !== queueItem && it.reject) {
@@ -251,6 +281,7 @@ export class API {
             if (cmd.cmd === 'ac') {
                 const data = cmd.data;
                 const node = webpeerExt.uiHandler.createElement(data);
+                node.init();
                 this.uiElementsRegistry.addNode(node, cmd.id, cmd.insertAfterId);
             }
             if (cmd.cmd === 'uls') {
@@ -274,6 +305,7 @@ export class API {
         if (this.processingQueue) {
             return;
         }
+        this.processingQueue = true;
         const items = [...this.queue];
         for (const item of items) {
             if (!this.queue.length) {
@@ -294,9 +326,11 @@ export class API {
                     if (item.resolve) {
                         item.resolve(res.response);
                     }
-                    webpeerExt.uiHandler.drawUi(
+                    const rootElm = webpeerExt.uiHandler.createElement(
                         commands.find((it) => it.cmd === 'init').data
                     );
+                    this.uiElementsRegistry.addNode(rootElm);
+                    webpeerExt.uiHandler.drawUi(rootElm);
                     break;
                 }
                 this.processCommands(commands);
@@ -319,6 +353,7 @@ export class API {
             this.processingQueue = false;
             await this.processQueue();
         }
+        this.processingQueue = false;
     }
 
     async openWebSocket(initiatorId: string) {
@@ -340,7 +375,9 @@ export class API {
         }
         if (!this.socket) {
             await new Promise<void>((resolve, reject) => {
-                this.socket = new WebSocket(this.configuration.webSocketUrl!!);
+                this.socket = new WebSocket(
+                    `${this.configuration.webSocketUrl}?clientId=${this.configuration.clientId}&path=${this.configuration.restPath}`
+                );
                 this.socket.onopen = () => {
                     resolve();
                     this.awaitingWS.forEach((it) => it.resolve(null));
@@ -352,8 +389,8 @@ export class API {
                 };
                 this.socket.onmessage = (event) => {
                     const content = event.data as string;
-                    const commands = JSON.parse(content);
-                    this.processCommands(commands);
+                    const command = JSON.parse(content);
+                    this.processCommands([command]);
                 };
                 this.socket.onerror = (error) => {
                     if (this.connecting) {

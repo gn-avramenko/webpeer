@@ -57,7 +57,11 @@ public class GlobalUiContext {
             }
             clientData= pathData.computeIfAbsent(clientId, k -> new ConcurrentHashMap<>());
         }
-        clientData.put(param.name, value);
+        if(value == null){
+            clientData.remove(param.name);
+        } else {
+            clientData.put(param.name, value);
+        }
     }
 
     public static<T> T getParameter(String path, String clientId, TypedParameter<T> param) {

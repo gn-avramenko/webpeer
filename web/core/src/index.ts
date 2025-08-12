@@ -1,6 +1,5 @@
 import { api } from './api';
 
-export type { UiElement } from './model';
 export { BaseUiElement } from './model';
 
 export type {
@@ -34,5 +33,7 @@ async function init() {
         false
     );
 }
-
+window.addEventListener('unload', function () {
+    api.destroy();
+});
 document.addEventListener('DOMContentLoaded', init);

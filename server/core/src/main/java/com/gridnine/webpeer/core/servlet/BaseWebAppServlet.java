@@ -130,14 +130,22 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & UiRootElement>
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             String pathInfo = req.getPathInfo();
+            var pi = URLEncoder.encode(pathInfo, StandardCharsets.UTF_8);
             if (pathInfo.startsWith("/_ui")) {
+                if("action=destroy".equals(req.getQueryString())){
+                    JsonObject destroyData;
+                    try (var is = req.getInputStream()) {
+                        destroyData = new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonObject.class);
+                    }
+                    GlobalUiContext.context.get(pi).remove(destroyData.get("clientId").getAsString());
+                    return;
+                }
                 List<JsonObject> requestCommands;
                 try (var is = req.getInputStream()) {
                     //noinspection unchecked,rawtypes
                     requestCommands = (List) new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonArray.class).asList();
                 }
                 String clientId = req.getHeader("x-client-id");
-                var pi = URLEncoder.encode(pathInfo, StandardCharsets.UTF_8);
                 GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.LAST_UPDATED, Instant.now());
                 var uiElements = GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.UI_ELEMENTS);
                 if (uiElements == null) {

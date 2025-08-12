@@ -1,32 +1,32 @@
 import { api } from './api';
 
+export abstract class BaseUiElement {
+    id: string = '';
 
-export interface UiElement {
-    id: string;
-    parent?: UiElement;
-    children?: UiElement[];
-    serialize: () => any;
-    processCommandFromServer: (data: any) => void;
-    redraw: () => void;
-    init: () => void;
-    dispose: () => void;
     tag?: string;
-}
 
-export abstract class BaseUiElement implements UiElement {
-    parent?: UiElement | undefined;
+    parent?: BaseUiElement | undefined;
+
+    protected constructor(model: any) {
+        this.id = model.id;
+        this.tag = model.tag;
+    }
     init() {
         //noops
     }
     dispose() {
         //noops
     }
-    tag?: string | undefined;
-    abstract id: string;
-    abstract serialize: () => any;
-    abstract redraw: () => any;
+    serialize(): any {
+        return {
+            id: this.id,
+            tag: this.tag,
+            children: this.children?.map((it) => it.serialize()),
+        };
+    }
+    abstract redraw(): void;
 
-    children: UiElement[] | undefined = undefined;
+    children: BaseUiElement[] | undefined = undefined;
 
     async sendPropertyChange(
         propertyName: string,
@@ -44,8 +44,24 @@ export abstract class BaseUiElement implements UiElement {
         );
     }
 
+    async openWebSocket() {
+        await api.openWebSocket(this.id);
+    }
+
+    async closeWebSocket() {
+        await api.closeWebSocket(this.id);
+    }
+
     async sendCommandAsync(commandId: string, commandData?: any) {
-        await api.sendCommandAsync(this.id, commandId, commandData, false);
+        await api.sendCommandAsync(
+            this.id,
+            'ac',
+            {
+                id: commandId,
+                data: commandData,
+            },
+            false
+        );
     }
 
     async makeRequest(commandId: string, commandData?: any) {
@@ -57,6 +73,13 @@ export abstract class BaseUiElement implements UiElement {
             const propertyName = data.data.pn;
             const propertyValue = data.data.pv;
             this.updatePropertyValue(propertyName, propertyValue);
+            return;
+        }
+        if ('ac' === data.cmd) {
+            const commandId = data.data.commandId;
+            const commandData = data.data.commandData;
+            this.executeCommand(commandId, commandData);
+            return;
         }
     }
     updatePropertyValue(propertyName: string, propertyValue: any) {
@@ -64,6 +87,8 @@ export abstract class BaseUiElement implements UiElement {
             `unsupported operation exception: property name = ${propertyName} property value = ${propertyValue}`
         );
     }
+
+    executeCommand(commandId: string, commandData: any) {
+        throw new Error(`unsupported operation exception: command id = ${commandId}`);
+    }
 }
-
-

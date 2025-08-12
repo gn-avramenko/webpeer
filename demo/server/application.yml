@@ -1,0 +1,10 @@
+server:
+  port: 8080
+spring:
+  web:
+    resources:
+      static-locations: static
+logging:
+  level:
+    root: INFO
+    com.gridnine: DEBUG
