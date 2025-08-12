@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class DemoDataSource {
-    private final List<Message> messages = Collections.synchronizedList(new ArrayList<>());
+    private final List<DemoMessage> messages = Collections.synchronizedList(new ArrayList<>());
 
     private final List<Runnable> changeListeners = Collections.synchronizedList(new ArrayList<>());
 
@@ -38,11 +38,11 @@ public class DemoDataSource {
     public void removeChangeListener(Runnable listener) {
         changeListeners.remove(listener);
     }
-    public List<Message> getMessages() {
+    public List<DemoMessage> getMessages() {
         return messages;
     }
 
-    public void addMessage(Message message){
+    public void addMessage(DemoMessage message){
         messages.add(message);
         changeListeners.forEach(Runnable::run);
     }

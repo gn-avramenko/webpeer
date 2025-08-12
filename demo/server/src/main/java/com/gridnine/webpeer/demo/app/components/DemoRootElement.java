@@ -25,7 +25,7 @@ import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.ui.UiRootElement;
 import com.gridnine.webpeer.demo.app.data.DemoDataSource;
-import com.gridnine.webpeer.demo.app.data.Message;
+import com.gridnine.webpeer.demo.app.data.DemoMessage;
 
 public class DemoRootElement extends BaseDemoUiElement<DemoRootElementConfiguration> implements UiRootElement {
 
@@ -67,7 +67,7 @@ public class DemoRootElement extends BaseDemoUiElement<DemoRootElementConfigurat
                 var text = messageTextField.getValue();
                 var user = userTextField.getValue();
                 if(text != null && user != null) {
-                    var message = new Message(user, text);
+                    var message = new DemoMessage(user, text);
                     demoDataSource.addMessage(message);
                     messageTextField.setValue(null, context);
                 }

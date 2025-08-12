@@ -21,5 +21,5 @@
 
 package com.gridnine.webpeer.demo.app.data;
 
-public record Message(String user, String message) {
+public record DemoMessage(String user, String message) {
 }
