@@ -22,7 +22,6 @@
 package com.gridnine.webpeer.demo.app.components;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
 import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndTwoArguments;
 
@@ -32,7 +31,7 @@ public class DemoTextFieldConfiguration extends BaseDemoElementConfiguration {
 
     private RunnableWithExceptionAndTwoArguments<String, OperationUiContext> valueChangedHandler;
 
-    private String initValue;
+    private final String initValue;
 
     public DemoTextFieldConfiguration(JsonElement uiData) {
         this.initValue = uiData != null && uiData.getAsJsonObject().has("value")? uiData.getAsJsonObject().get("value").getAsString(): null;

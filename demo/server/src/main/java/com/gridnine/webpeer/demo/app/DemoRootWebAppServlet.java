@@ -25,11 +25,9 @@ import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
 import com.gridnine.webpeer.core.servlet.WebAppModule;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.demo.app.components.DemoMessagesArea;
 import com.gridnine.webpeer.demo.app.components.DemoRootElement;
 import com.gridnine.webpeer.demo.app.data.DemoDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.AliasFor;
 
 import java.net.URL;
 import java.util.List;
