@@ -201,14 +201,10 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     var command = new JsonObject();
                     command.addProperty("cmd", "load-module");
                     var scripts = new JsonArray();
-                    module.scripts.forEach(it -> {
-                        scripts.add(it.name);
-                    });
+                    module.scripts.forEach(it -> scripts.add(it.name));
                     command.add("scripts", scripts);
                     var css = new JsonArray();
-                    module.css.forEach(it -> {
-                        css.add(it.name);
-                    });
+                    module.css.forEach(it -> css.add(it.name));
                     command.add("css", css);
                     operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
                     return;
@@ -262,7 +258,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
     }
 
     protected String findAdditionalModuleByElementType(String elementType) {
-        throw new IllegalStateException("ther are no additional modules");
+        throw new IllegalStateException("there are no additional modules");
     }
 
     protected abstract URL getFaviconUrl();

@@ -25,7 +25,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.utils.WebPeerUtils;
 import com.gridnine.webpeer.demo.app.data.DemoDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

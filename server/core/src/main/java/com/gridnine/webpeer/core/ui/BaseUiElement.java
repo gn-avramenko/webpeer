@@ -109,9 +109,7 @@ public abstract class BaseUiElement {
         if (!this.children.isEmpty()) {
             var children = new JsonArray();
             result.add("children", children);
-            getUnmodifiableListOfChildren().forEach(ch -> {
-                WebPeerUtils.wrapException(() -> children.add(ch.buildState(context)));
-            });
+            getUnmodifiableListOfChildren().forEach(ch -> WebPeerUtils.wrapException(() -> children.add(ch.buildState(context))));
         }
         return result;
     }
@@ -152,9 +150,7 @@ public abstract class BaseUiElement {
             if(idx > 0){
                 command.addProperty("insertAfterId", idx-2);
             }
-            WebPeerUtils.wrapException(() -> {
-                command.add("data", child.buildState(ctx));
-            });
+            WebPeerUtils.wrapException(() -> command.add("data", child.buildState(ctx)));
             ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
         }
         addElements(child);
