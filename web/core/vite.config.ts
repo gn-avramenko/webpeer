@@ -16,8 +16,7 @@ const defineConfig = ({ mode, command }: ConfigEnv): UserConfig => {
             sourcemap: true,
             // Reduce bloat from legacy polyfills.
             target: 'esnext',
-            // Leave minification up to applications.
-            minify: false,
+            minify: true, // или 'esbuild' (быстрее, но менее эффективно)
         },
     };
 };

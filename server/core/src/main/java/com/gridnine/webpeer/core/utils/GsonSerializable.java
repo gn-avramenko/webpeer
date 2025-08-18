@@ -19,8 +19,10 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.core.ui;
+package com.gridnine.webpeer.core.utils;
 
+import com.google.gson.JsonElement;
 
-public interface UiRootElement{
+public interface GsonSerializable {
+    JsonElement serialize() throws Exception;
 }

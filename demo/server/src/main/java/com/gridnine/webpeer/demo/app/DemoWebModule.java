@@ -19,35 +19,15 @@
  * SOFTWARE.
  */
 
-package com.gridnine.webpeer.demo.app.components;
+package com.gridnine.webpeer.demo.app;
 
-import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
+import com.gridnine.webpeer.core.servlet.WebAppModule;
 
-public class DemoButtonConfiguration extends BaseDemoElementConfiguration {
+import java.io.IOException;
+import java.net.URISyntaxException;
 
-    private String title;
-
-    private RunnableWithExceptionAndArgument<OperationUiContext> clickHandler;
-
-    public void setTitle(String title) {
-        this.title = title;
+public class DemoWebModule extends WebAppModule {
+    public DemoWebModule() throws IOException, URISyntaxException {
+        super("demo", "demo", DemoWebModule.class.getClassLoader());
     }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setClickHandler(RunnableWithExceptionAndArgument<OperationUiContext> clickHandler) {
-        this.clickHandler = clickHandler;
-    }
-
-    public RunnableWithExceptionAndArgument<OperationUiContext> getClickHandler() {
-        return clickHandler;
-    }
-
-    public DemoButtonConfiguration() {
-
-    }
-
 }

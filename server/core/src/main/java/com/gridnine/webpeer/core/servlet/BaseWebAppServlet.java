@@ -46,8 +46,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
-public abstract class BaseWebAppServlet<T extends BaseUiElement & UiRootElement> extends HttpServlet {
+public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpServlet {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -103,13 +104,13 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & UiRootElement>
                     return;
                 }
                 String resourceName = pathInfo.substring(pathInfo.lastIndexOf("/") + 1);
-                HtmlLinkWrapper linkWrapper = getModules().stream().flatMap(it -> it.links.stream())
+                HtmlLinkWrapper linkWrapper = getAllModules().stream().flatMap(it -> it.css.stream())
                         .filter(it -> it.name.equals(resourceName)).findFirst().orElse(null);
                 if (linkWrapper != null) {
                     writeResource(linkWrapper.url, resp);
                     return;
                 }
-                HtmlScriptWrapper scriptWrapper = getModules().stream().flatMap(it -> it.scripts.stream())
+                HtmlScriptWrapper scriptWrapper = getAllModules().stream().flatMap(it -> it.scripts.stream())
                         .filter(it -> it.name.equals(resourceName) || resourceName.equals(it.jsMapName)).findFirst().orElse(null);
                 if (scriptWrapper != null) {
                     writeResource(resourceName.equals(scriptWrapper.name) ? scriptWrapper.url : scriptWrapper.jsMapUrl, resp);
@@ -124,20 +125,39 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & UiRootElement>
         }
     }
 
-    protected abstract T createRootElement(JsonObject uiData, OperationUiContext operationUiContext) throws Exception;
+    protected abstract T createRootElement(OperationUiContext operationUiContext) throws Exception;
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        OperationUiContext operationUiContext = new OperationUiContext();
+        operationUiContext.setParameter(OperationUiContext.RESPONSE_COMMANDS, new JsonArray());
+        String pathInfo = req.getPathInfo();
+        var statusCode = HttpServletResponse.SC_OK;
+        var pi = URLEncoder.encode(pathInfo, StandardCharsets.UTF_8);
+        var clientId = "";
+        Throwable error = null;
         try {
-            String pathInfo = req.getPathInfo();
-            var pi = URLEncoder.encode(pathInfo, StandardCharsets.UTF_8);
             if (pathInfo.startsWith("/_ui")) {
-                if("action=destroy".equals(req.getQueryString())){
+                if ("action=destroy".equals(req.getQueryString())) {
                     JsonObject destroyData;
                     try (var is = req.getInputStream()) {
                         destroyData = new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonObject.class);
                     }
-                    GlobalUiContext.context.get(pi).remove(destroyData.get("clientId").getAsString());
+                    var piv = GlobalUiContext.context.get(pi);
+                    if (piv != null) {
+                        clientId = WebPeerUtils.getString(destroyData, "clientId");
+                        var uiElements = GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.UI_ELEMENTS);
+                        if (uiElements != null) {
+                            uiElements.values().forEach(it -> {
+                                try {
+                                    it.destroy();
+                                } catch (Throwable e) {
+                                    logger.error("unable to destroy element", e);
+                                }
+                            });
+                        }
+                        piv.remove(clientId);
+                    }
                     return;
                 }
                 List<JsonObject> requestCommands;
@@ -145,7 +165,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & UiRootElement>
                     //noinspection unchecked,rawtypes
                     requestCommands = (List) new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonArray.class).asList();
                 }
-                String clientId = req.getHeader("x-client-id");
+                clientId = req.getHeader("x-client-id");
                 GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.LAST_UPDATED, Instant.now());
                 var uiElements = GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.UI_ELEMENTS);
                 if (uiElements == null) {
@@ -154,26 +174,44 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & UiRootElement>
                     GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.ELEMENT_INDEX_PROVIDER, new AtomicLong(-1));
                     GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.VERSION_PROVIDER, new AtomicInteger(-1));
                 }
-                OperationUiContext operationUiContext = new OperationUiContext();
                 operationUiContext.setParameter(OperationUiContext.PATH, pi);
                 operationUiContext.setParameter(OperationUiContext.CLIENT_ID, clientId);
-                operationUiContext.setParameter(OperationUiContext.RESPONSE_COMMANDS, new JsonArray());
                 operationUiContext.setParameter(OperationUiContext.REQUEST, req);
+                operationUiContext.setParameter(OperationUiContext.RESPONSE, resp);
                 operationUiContext.setParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER, GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.ELEMENT_INDEX_PROVIDER));
-                if (requestCommands.get(0).get("cmd").getAsString().equals("init")) {
+                var firstCommand = requestCommands.get(0);
+                if ("init".equals(WebPeerUtils.getString(firstCommand, "cmd")) && WebPeerUtils.isBlank(WebPeerUtils.getString(firstCommand, "id"))) {
                     var data = requestCommands.get(0).get("data").getAsJsonObject();
-                    if (data.has("ls")) {
-                        operationUiContext.setParameter(OperationUiContext.LOCAL_STORAGE_DATA, data.get("ls").getAsJsonObject());
+                    operationUiContext.setParameter(OperationUiContext.LOCAL_STORAGE_DATA, WebPeerUtils.getObject(data, "ls"));
+                    operationUiContext.setParameter(OperationUiContext.PARAMS, WebPeerUtils.getObject(data, "params"));
+                    var state = WebPeerUtils.getObject(data, "state");
+                    var rootElement = createRootElement(operationUiContext);
+                    if (state != null) {
+                        rootElement.restoreFromState(state, operationUiContext);
                     }
-                    if (data.has("params")) {
-                        operationUiContext.setParameter(OperationUiContext.PARAMS, data.get("params").getAsJsonObject());
-                    }
-                    var uiData = data.has("uiData") ? data.get("uiData").getAsJsonObject() : null;
-                    var rootElement = createRootElement(uiData, operationUiContext);
                     var command = new JsonObject();
                     command.addProperty("cmd", "init");
-                    command.add("data", rootElement.buildElement(operationUiContext));
+                    command.add("data", rootElement.buildState(operationUiContext));
                     operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
+                    return;
+                } else if ("get-module-for-type".equals(WebPeerUtils.getString(firstCommand, "cmd"))) {
+                    var elementType = WebPeerUtils.getString(firstCommand, "elementType");
+                    var moduleId = findAdditionalModuleByElementType(elementType);
+                    var module = getAllModules().stream().filter(it -> moduleId.equals(it.moduleId)).findFirst().get();
+                    var command = new JsonObject();
+                    command.addProperty("cmd", "load-module");
+                    var scripts = new JsonArray();
+                    module.scripts.forEach(it -> {
+                        scripts.add(it.name);
+                    });
+                    command.add("scripts", scripts);
+                    var css = new JsonArray();
+                    module.css.forEach(it -> {
+                        css.add(it.name);
+                    });
+                    command.add("css", css);
+                    operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
+                    return;
                 } else {
                     long xVersion = Long.parseLong(req.getHeader("x-version"));
                     if (Objects.requireNonNull(GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.VERSION_PROVIDER)).get() != xVersion) {
@@ -183,32 +221,49 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & UiRootElement>
                     } else {
                         var fUiElements = uiElements;
                         requestCommands.forEach(cmdData -> WebPeerUtils.wrapException(() -> {
-                            var rc = WebPeerUtils.getString(cmdData, "cmd");
-                            if ("ec".equals(rc)) {
-                                var elementId = Long.parseLong(Objects.requireNonNull(WebPeerUtils.getString(cmdData, "id")));
-                                fUiElements.get(elementId).executeCommand(cmdData.get("data").getAsJsonObject(), operationUiContext);
-                            }
+                            var elementId = Long.parseLong(Objects.requireNonNull(WebPeerUtils.getString(cmdData, "id")));
+                            var commandId = Objects.requireNonNull(WebPeerUtils.getString(cmdData, "cmd"));
+                            fUiElements.get(elementId).processCommand(operationUiContext, commandId, WebPeerUtils.getElement(cmdData, "data"));
                         }));
                     }
                 }
                 resp.setHeader("x-version", String.valueOf(Objects.requireNonNull(GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.VERSION_PROVIDER)).incrementAndGet()));
-                resp.setHeader("Content-Type", "application/json");
-                try (var os = resp.getOutputStream()) {
-                    var jw = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
-                    new Gson().toJson(operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS), jw);
-                    jw.flush();
-                }
-                resp.setStatus(HttpServletResponse.SC_OK);
                 return;
             }
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
         } catch (Throwable e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            throw new ServletException(e);
+            logger.error("unable to handle request", e);
+            statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+            error = e;
+        } finally {
+            resp.setStatus(statusCode);
+            resp.setHeader("Content-Type", "application/json");
+            var result = new JsonObject();
+            var commands = operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS);
+            result.add("commands", commands);
+            if (error != null) {
+                var exc = new JsonObject();
+                WebPeerUtils.addProperty(exc, "message", error.getMessage());
+                WebPeerUtils.addProperty(exc, "stacktrace", WebPeerUtils.getExceptionStackTrace(error));
+                result.add("error", exc);
+            }
+            try (var os = resp.getOutputStream()) {
+                var jw = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
+                new Gson().toJson(result, jw);
+                jw.flush();
+            }
         }
     }
 
-    protected abstract List<WebAppModule> getModules() throws Exception;
+    protected abstract List<WebAppModule> getAllModules() throws Exception;
+
+    protected List<String> getBootstrapModulesIds() throws Exception {
+        return getAllModules().stream().map(it -> it.moduleId).collect(Collectors.toList());
+    }
+
+    protected String findAdditionalModuleByElementType(String elementType) {
+        throw new IllegalStateException("ther are no additional modules");
+    }
 
     protected abstract URL getFaviconUrl();
 
@@ -216,6 +271,8 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & UiRootElement>
         resp.setStatus(HttpServletResponse.SC_OK);
         if (url.toString().endsWith(".svg")) {
             resp.setHeader("Content-Type", "image/svg+xml");
+        } else if (url.toString().endsWith(".js")) {
+            resp.setHeader("Content-Type", "text/javascript");
         }
         try (var is = url.openStream()) {
             try (var os = resp.getOutputStream()) {
@@ -229,16 +286,16 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement & UiRootElement>
     protected void doGetIndexHtml(HttpServletResponse resp) throws Exception {
         String content = getContent(getIndexHtmlUrl());
         content = content.replace("${title}", getTitle());
-        String scripts = getModules().stream().flatMap(it -> it.scripts.stream())
-                .map(it -> String.format("<script type=\"text/javascript\" src=\"_resources/%s\"></script>\n", it.name)).reduce("", (a, b) -> a + b);
-        String links = getModules().stream().flatMap(it -> it.links.stream())
-                .map(it -> String.format("<link rel=\"%s\" type=\"%s\" src=\"_resources/%s\"></link>\n", it.rel, it.type, it.name)).reduce("", (a, b) -> a + b);
+        String scripts = getAllModules().stream().flatMap(it -> it.scripts.stream())
+                .map(it -> String.format("<script type=\"module\" src=\"_resources/%s\"></script>\n", it.name)).reduce("", (a, b) -> a + b);
+        String links = getAllModules().stream().flatMap(it -> it.css.stream())
+                .map(it -> String.format("<link rel=\"%s\" type=\"%s\" href=\"_resources/%s\"></link>\n", it.rel, it.type, it.name)).reduce("", (a, b) -> a + b);
         String parameters = getWebAppParameters().entrySet().stream()
                 .map(it -> String.format("%s: \"%s\",\n", it.getKey(), it.getValue())).reduce("", (a, b) -> a + b);
         content = content.replace("${favicon}", getFaviconUrl() == null ? "" : "<link rel=\"icon\" type=\"image/x-icon\" href=\"/fav.ico\">");
         content = content.replace("${links}", links);
         content = content.replace("${scripts}", scripts);
-        content = content.replace("${parameters}", String.format("<script>\nwindow.webPeer = {parameters: {\n%s\n}\n}\n</script>", parameters));
+        content = content.replace("${parameters}", String.format("<script>\nwindow.webPeer = {parameters: {\n%s\n},\ninitPath: window.location.pathname}\n</script>", parameters));
         writeStringContent(content, resp);
     }
 

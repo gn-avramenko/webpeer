@@ -59,7 +59,7 @@ public class WebSocketEndpoint {
         session.getUserProperties().put("clientId", clientId);
         session.getUserProperties().put("path", path);
         GlobalUiContext.setParameter(path, clientId, GlobalUiContext.WS_SESSION, session);
-        log.debug("created ws session with path={} cientId={} sessionId={}", path, clientId, session.getId());
+        log.debug("created ws session with path={} clientId={} sessionId={}", path, clientId, session.getId());
     }
 
     @OnClose
@@ -67,6 +67,6 @@ public class WebSocketEndpoint {
         String clientId = (String) session.getUserProperties().get("clientId");
         String path = (String) session.getUserProperties().get("path");
         GlobalUiContext.setParameter(path, clientId, GlobalUiContext.WS_SESSION, null);
-        log.debug("closed ws session with path={} cientId={} sessionId={} reason = {}", path, clientId, session.getId(), reason);
+        log.debug("closed ws session with path={} clientId={} sessionId={} reason = {}", path, clientId, session.getId(), reason);
     }
 }

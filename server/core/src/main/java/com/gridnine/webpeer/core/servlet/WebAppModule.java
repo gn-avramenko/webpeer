@@ -21,14 +21,93 @@
 
 package com.gridnine.webpeer.core.servlet;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 public class WebAppModule {
+    public final String moduleId;
     public final List<HtmlScriptWrapper> scripts;
-    public final List<HtmlLinkWrapper> links;
+    public final List<HtmlLinkWrapper> css;
 
-    public WebAppModule(List<HtmlScriptWrapper> scripts, List<HtmlLinkWrapper> links) {
+
+    private static List<String> getResourcesFromJar(URL jarUrl, String path) throws IOException, URISyntaxException {
+        var resourceNames = new ArrayList<String>();
+
+        try (var fileSystem = FileSystems.newFileSystem(jarUrl.toURI(), Collections.emptyMap())) {
+            var jarPath = fileSystem.getPath(path);
+
+            try (var walk = Files.walk(jarPath, 1)) {
+                walk.filter(Files::isRegularFile)
+                        .forEach(file -> {
+                            String fileName = file.getFileName().toString();
+                            resourceNames.add(path + "/" + fileName);
+                        });
+            }
+        }
+
+        return resourceNames;
+    }
+
+    private static List<String> getResourcesFromFile(URL fileUrl, String baseUrl) throws URISyntaxException {
+        List<String> resourceNames = new ArrayList<>();
+        File dir = new File(fileUrl.toURI());
+
+        if (dir.exists() && dir.isDirectory()) {
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        resourceNames.add(String.format("%s/%s", baseUrl, file.getName()));
+                    }
+                }
+            }
+        }
+
+        return resourceNames;
+    }
+
+
+    public WebAppModule(String moduleId, List<HtmlScriptWrapper> scripts, List<HtmlLinkWrapper> css) {
+        this.moduleId = moduleId;
         this.scripts = scripts;
-        this.links = links;
+        this.css = css;
+    }
+
+    public WebAppModule(String moduleId, String baseUrl, ClassLoader classLoader) throws IOException, URISyntaxException {
+        this.moduleId = moduleId;
+        var scripts = new ArrayList<HtmlScriptWrapper>();
+        var css = new ArrayList<HtmlLinkWrapper>();
+        var url = classLoader.getResource(baseUrl);
+        List<String> urls;
+        if (url.getProtocol().equals("jar")) {
+            urls = getResourcesFromJar(url, baseUrl);
+        } else {
+            urls = getResourcesFromFile(url, baseUrl);
+        }
+        for (var resource: urls) {
+            if(resource.lastIndexOf(".") < resource.lastIndexOf("/")) {
+                continue;
+            }
+            String baseName = resource.substring(resource.lastIndexOf('/')+1, resource.lastIndexOf("."));
+            if(resource.endsWith(".js")){
+                String jsMapPath = resource+".map";
+                var jsMap  = classLoader.getResource(jsMapPath);
+                scripts.add(new HtmlScriptWrapper(baseName+".js", classLoader.getResource(resource), jsMap == null? null: baseName+".js.map", jsMap));
+            }
+            if(resource.endsWith(".css")){
+                css.add(new HtmlLinkWrapper(baseName+".css", classLoader.getResource(resource), "stylesheet", "text/css"));
+            }
+        }
+        this.scripts = scripts;
+        this.css = css;
     }
 }

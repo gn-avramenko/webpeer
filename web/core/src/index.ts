@@ -29,6 +29,7 @@ async function init() {
                 windowHeight: window.innerHeight,
                 ...((window as any).webPeer?.parameters || {}),
             },
+            state: JSON.parse(window.localStorage.getItem('webpeer-state') || '{}'),
         },
         false
     );

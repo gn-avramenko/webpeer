@@ -25,42 +25,82 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.BaseUiElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public abstract class BaseDemoUiElement<T extends BaseDemoElementConfiguration> extends BaseUiElement {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-    protected T configuration;
+public abstract class BaseDemoUiElement extends BaseUiElement {
 
-    public BaseDemoUiElement(JsonObject uiData, OperationUiContext ctx) {
-        super(ctx);
-        configuration = createConfiguration(uiData, ctx);
-        updateFromConfig();
+    private final Map<String, Object> initParams = new HashMap<>();
+
+    private final Map<String, Object> state = new HashMap<>();
+
+    private boolean initialized;
+
+    public BaseDemoUiElement(String type, String tag, String[] initParams, String[] stateParams, OperationUiContext ctx) {
+        super(type, tag, ctx);
+        Arrays.stream(initParams).forEach(s -> this.initParams.put(s,null));
+        Arrays.stream(stateParams).forEach(s -> this.state.put(s,null));
     }
 
-    public BaseDemoUiElement(T configuration, OperationUiContext ctx) {
-        super(ctx);
-        this.configuration = configuration;
-        updateFromConfig();
+    protected void setInitParam(String key, Object value) {
+        initParams.put(key, value);
     }
-
-    protected void updateFromConfig(){
-        setTag(configuration == null? null: configuration.getTag());
-    }
-
-    protected T createConfiguration(JsonElement uiData, OperationUiContext ctx) {
-        return null;
-    }
-
-    public abstract String getType();
 
     @Override
-    public JsonObject buildElement(OperationUiContext context) {
-        var result  = super.buildElement(context);
-        result.addProperty("type", getType());
+    public void processCommand(OperationUiContext ctx, String commandId, JsonElement data) throws Exception {
+        if(commandId.equals("pc")) {
+            var obj =data.getAsJsonObject();
+            var pn = WebPeerUtils.getString(obj, "pn");
+            var pv = WebPeerUtils.getDynamic(obj, "pv");
+            state.put(pn, WebPeerUtils.getValue(pv));
+            return;
+        }
+        super.processCommand(ctx, commandId, data);
+    }
+
+    protected void setProperty(String propertyName, Object value, OperationUiContext context) {
+        state.put(propertyName, value);
+        if(initialized){
+            var data = new JsonObject();
+            WebPeerUtils.addProperty(data, "pn", propertyName);
+            WebPeerUtils.addProperty(data, "pv", value);
+            sendCommand(context, "pc", data);
+        }
+    }
+
+    protected<T> T getProperty(String propertyName, Class<T> type) {
+        //noinspection unchecked
+        return (T) state.get(propertyName);
+    }
+
+    @Override
+    public void restoreFromState(JsonElement state, OperationUiContext ctx) {
+        if(state == null){
+            return;
+        }
+        var obj = state.getAsJsonObject();
+        new ArrayList<>(this.state.keySet()).forEach(key -> this.state.put(key,WebPeerUtils.getValue(obj.get(key))));
+    }
+
+    @Override
+    public JsonObject buildState(OperationUiContext context) {
+        var result =  super.buildState(context);
+        for(Map.Entry<String, Object> entry : initParams.entrySet()){
+            WebPeerUtils.addProperty(result, entry.getKey(), entry.getValue());
+        }
+        for(Map.Entry<String, Object> entry : state.entrySet()){
+            WebPeerUtils.addProperty(result, entry.getKey(), entry.getValue());
+        }
+        initialized = true;
         return result;
     }
 
-    public JsonElement findUiChildData(JsonElement uiData, String tag){
-        if(uiData == null || !uiData.isJsonObject()){
+    protected JsonElement findStateOfChild(JsonElement uiData, String tag){
+        if(uiData == null || !uiData.isJsonObject() || uiData.getAsJsonObject().getAsJsonObject().isEmpty()){
             return null;
         }
         return uiData.getAsJsonObject().getAsJsonArray("children").asList().stream().filter(it ->

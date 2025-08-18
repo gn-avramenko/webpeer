@@ -23,9 +23,6 @@
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
-  "peerDependencies": {
-    "react": ">=17"
-  },
   "prettier": {
     "trailingComma": "es5",
     "tabWidth": 4,
@@ -53,9 +50,7 @@
     "typescript": "^5.9.2",
     "vite": "^6.3.3",
     "vite-dts": "^1.0.4",
-    "vite-plugin-dts": "^4.5.0"
-  },
-  "optionalDependencies": {
+    "vite-plugin-dts": "^4.5.0",
     "@rollup/rollup-linux-x64-gnu": "^4.9.6"
   },
   "homepage": "https://gridnine.com/",

@@ -21,48 +21,20 @@
 
 package com.gridnine.webpeer.demo.app.components;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public class DemoTextField extends BaseDemoUiElement<DemoTextFieldConfiguration> {
-    private String value;
+public class DemoTextField extends BaseDemoUiElement {
 
-    public DemoTextField(DemoTextFieldConfiguration config, OperationUiContext ctx) {
-        super(config, ctx);
-        this.value = config.getInitValue();
+    public DemoTextField(String tag, OperationUiContext ctx) {
+        super("text-field", tag,new String[0], new String[]{"value"}, ctx);
     }
 
     public String getValue() {
-        return value;
-    }
-
-    @Override
-    public JsonObject buildElement(OperationUiContext context) {
-        var result = super.buildElement(context);
-        result.addProperty("value", value);
-        result.addProperty("deferred", configuration.isDeferred());
-        return result;
-    }
-
-    @Override
-    protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext) {
-        if("value".equals(propertyName)){
-            this.value = propertyValue.getAsString();
-            if(configuration.getValueChangedHandler() != null){
-                WebPeerUtils.wrapException(() -> configuration.getValueChangedHandler().run(this.value, operationUiContext));
-            }
-        }
+        return super.getProperty("value", String.class);
     }
 
     public void setValue(String value, OperationUiContext context){
-        this.value = value;
-        sendElementPropertyChange(context,"value", value);
+       setProperty("value", value, context);
     }
 
-    @Override
-    public String getType() {
-        return "text-field";
-    }
 }

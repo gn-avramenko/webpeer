@@ -21,7 +21,6 @@
 
 package com.gridnine.webpeer.demo.app;
 
-import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.servlet.BaseWebAppServlet;
 import com.gridnine.webpeer.core.servlet.WebAppModule;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
@@ -39,13 +38,13 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<DemoRootElement> {
     private DemoDataSource demoDataSource;
 
     @Override
-    protected DemoRootElement createRootElement(JsonObject uiData, OperationUiContext operationUiContext) throws Exception {
-        return new DemoRootElement(uiData, demoDataSource, operationUiContext);
+    protected DemoRootElement createRootElement(OperationUiContext operationUiContext) throws Exception {
+        return new DemoRootElement(demoDataSource, operationUiContext);
     }
 
     @Override
-    protected List<WebAppModule> getModules() throws Exception {
-        return List.of();
+    protected List<WebAppModule> getAllModules() throws Exception {
+        return List.of(new DemoWebModule());
     }
 
     @Override
@@ -55,7 +54,7 @@ public class DemoRootWebAppServlet extends BaseWebAppServlet<DemoRootElement> {
 
     @Override
     protected Map<String, String> getWebAppParameters() {
-        return Map.of();
+        return Map.of( "restPath", "/_ui", "webSocketUrl", "/websocket");
     }
 
     @Override

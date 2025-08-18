@@ -25,18 +25,9 @@ const defineConfig = ({ mode, command }: ConfigEnv): UserConfig => {
             },
         },
         build: {
+            sourcemap: true,
+            target: 'esnext',
             rollupOptions: {
-                output: {
-                    entryFileNames: 'assets/[name].[hash].js',
-                    chunkFileNames: 'assets/[name].[hash].js',
-                    assetFileNames: 'assets/[name].[hash][extname]',
-                    manualChunks: (id: string) => {
-                        if (true) {
-                            return 'vendor';
-                        }
-                        return 'vendor';
-                    },
-                },
                 input: {
                     app: './index.html', // default
                 },

@@ -24,32 +24,27 @@ package com.gridnine.webpeer.demo.app.components;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.core.utils.RunnableWithException;
+import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndArgument;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 
-public class DemoButton extends BaseDemoUiElement<DemoButtonConfiguration> {
+public class DemoButton extends BaseDemoUiElement {
 
-    public DemoButton(DemoButtonConfiguration configuration, OperationUiContext ctx) {
-        super(configuration, ctx);
+    private final RunnableWithExceptionAndArgument<OperationUiContext> handler;
+
+    public DemoButton(String tag, OperationUiContext ctx, String title, RunnableWithExceptionAndArgument<OperationUiContext> handler) {
+        super("button", tag, new String[]{"title"}, new String[0],  ctx);
+        setInitParam("title", title);
+        this.handler = handler;
     }
 
     @Override
-    public String getType() {
-        return "button";
-    }
-
-    @Override
-    public JsonObject buildElement(OperationUiContext context) {
-        var result = super.buildElement(context);
-        result.addProperty("title", configuration.getTitle());
-        return result;
-    }
-
-    @Override
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
-        if(actionId.equals("click")){
-            WebPeerUtils.wrapException(() ->configuration.getClickHandler().run(operationUiContext));
+    public void processCommand(OperationUiContext ctx, String commandId, JsonElement data) throws Exception {
+        if("click".equals(commandId)){
+            this.handler.run(ctx);
             return;
         }
-        super.executeAction(actionId, actionData, operationUiContext);
+        super.processCommand( ctx, commandId, data);
     }
+
 }

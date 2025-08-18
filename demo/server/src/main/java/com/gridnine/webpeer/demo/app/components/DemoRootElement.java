@@ -21,65 +21,41 @@
  
 package com.gridnine.webpeer.demo.app.components;
 
-import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
-import com.gridnine.webpeer.core.ui.UiRootElement;
 import com.gridnine.webpeer.demo.app.data.DemoDataSource;
 import com.gridnine.webpeer.demo.app.data.DemoMessage;
 
-public class DemoRootElement extends BaseDemoUiElement<DemoRootElementConfiguration> implements UiRootElement {
+public class DemoRootElement extends BaseDemoUiElement {
 
     private final DemoTextField userTextField;
 
-    private final DemoMessagesArea demoMessagesArea;
-
     private final DemoTextField messageTextField;
 
-    private final DemoButton sendButton;
-
-    public DemoRootElement(JsonObject uiData, DemoDataSource demoDataSource, OperationUiContext ctx) {
-        super(uiData, ctx);
-        {
-            var userNameConfig = new DemoTextFieldConfiguration(uiData == null? null: findUiChildData(uiData, "user"));
-            userNameConfig.setDeferred(true);
-            userNameConfig.setTag("user");
-            userTextField = new DemoTextField(userNameConfig, ctx);
-            addChild(ctx, userTextField, 0);
-        }
-        {
-            var demoMessagesAreaConfig = new DemoMessagesAreaConfiguration();
-            demoMessagesAreaConfig.setTag("messages");
-            demoMessagesArea = new DemoMessagesArea(demoDataSource,  demoMessagesAreaConfig, ctx);
-            addChild(ctx, demoMessagesArea, 0);
-        }
-        {
-            var messageConfig = new DemoTextFieldConfiguration(uiData == null? null: findUiChildData(uiData, "message"));
-            messageConfig.setDeferred(true);
-            messageConfig.setTag("message");
-            messageTextField = new DemoTextField(messageConfig, ctx);
-            addChild(ctx, messageTextField, 0);
-        }
-        {
-            var sendButtonConfig = new DemoButtonConfiguration();
-            sendButtonConfig.setTitle("Send");
-            sendButtonConfig.setTag("send-button");
-            sendButtonConfig.setClickHandler((context) ->{
-                var text = messageTextField.getValue();
-                var user = userTextField.getValue();
-                if(text != null && user != null) {
-                    var message = new DemoMessage(user, text);
-                    demoDataSource.addMessage(message);
-                    messageTextField.setValue(null, context);
-                }
-            });
-            sendButton = new DemoButton(sendButtonConfig, ctx);
-            addChild(ctx, sendButton, 0);
-        }
-
+    public DemoRootElement(DemoDataSource demoDataSource, OperationUiContext ctx) {
+        super("root", "root", new String[0], new String[0], ctx);
+        userTextField = new DemoTextField( "user", ctx);
+        addChild(ctx, userTextField, 0);
+        DemoMessagesArea demoMessagesArea = new DemoMessagesArea("messages", demoDataSource,  ctx);
+        addChild(ctx, demoMessagesArea, 0);
+        messageTextField = new DemoTextField("message", ctx);
+        addChild(ctx, messageTextField, 0);
+        DemoButton sendButton = new DemoButton("send", ctx, "Send", (context) ->{
+            var text = messageTextField.getValue();
+            var user = userTextField.getValue();
+            if(text != null && user != null) {
+                var message = new DemoMessage(user, text);
+                demoDataSource.addMessage(message);
+                messageTextField.setValue(null, context);
+            }
+        });
+        addChild(ctx, sendButton, 0);
     }
 
     @Override
-    public String getType() {
-        return "root";
+    public void restoreFromState(JsonElement state, OperationUiContext ctx) {
+        userTextField.restoreFromState(findStateOfChild(state, "user"), ctx);
+        messageTextField.restoreFromState(findStateOfChild(state, "message"), ctx);
+        super.restoreFromState(state, ctx);
     }
 }

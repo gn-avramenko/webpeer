@@ -25,25 +25,32 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.core.utils.WebPeerUtils;
 import com.gridnine.webpeer.demo.app.data.DemoDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class DemoMessagesArea extends BaseDemoUiElement<DemoMessagesAreaConfiguration> {
+public class DemoMessagesArea extends BaseDemoUiElement {
 
     private final DemoDataSource dataSource;
 
+    private final Logger logger = LoggerFactory.getLogger(DemoMessagesArea.class);
+
     private final Runnable messageListener = () -> {
         try {
-            sendCommandAsync("refresh-messages", null);
+            notify("refresh-messages", null);
         } catch (Throwable ex) {
-            //noop
+            logger.error("unable to refresh messages", ex);
         }
     };
 
-    public DemoMessagesArea(DemoDataSource dataSource, DemoMessagesAreaConfiguration config, OperationUiContext ctx) {
-        super(config, ctx);
+    public DemoMessagesArea(String tag, DemoDataSource dataSource,  OperationUiContext ctx) {
+        super("demo-messages", tag, new String[0], new String[]{"messages"},ctx);
         this.dataSource = dataSource;
         this.dataSource.addChangeListener(messageListener);
+        setProperty("messages", getMessages(), ctx);
     }
+
 
     @Override
     public void destroy() {
@@ -51,19 +58,12 @@ public class DemoMessagesArea extends BaseDemoUiElement<DemoMessagesAreaConfigur
     }
 
     @Override
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
-        if("refresh-messages".equals(actionId)){
-            sendElementPropertyChange(operationUiContext, "messages", getMessages());
+    public void processCommand(OperationUiContext ctx, String commandId, JsonElement data) throws Exception {
+        if("refresh-messages".equals(commandId)){
+            setProperty("messages", getMessages(), ctx);
             return;
         }
-        super.executeAction(actionId, actionData, operationUiContext);
-    }
-
-    @Override
-    public JsonObject buildElement(OperationUiContext context) {
-        var result = super.buildElement(context);
-        result.add("messages", getMessages());
-        return result;
+        super.processCommand(ctx, commandId, data);
     }
 
     private JsonArray getMessages() {
@@ -75,11 +75,6 @@ public class DemoMessagesArea extends BaseDemoUiElement<DemoMessagesAreaConfigur
             result.add(item);
         });
         return result;
-    }
-
-    @Override
-    public String getType() {
-        return "demo-messages";
     }
 
 }

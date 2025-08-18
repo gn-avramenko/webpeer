@@ -95,6 +95,7 @@ class UiElementsRegistry {
         const idx = node.parent.children!.indexOf(node);
         node.parent.children!.splice(idx, 1);
         this.disposeAndDeleteId(node);
+        node.redraw();
     }
 
     private registerAndInitNode(node: BaseUiElement) {
@@ -157,24 +158,6 @@ export class API {
         this.sortMiddleware();
     }
 
-    async makeRequest(
-        elementId: string,
-        commandId: string,
-        commandData?: any,
-        initOverrides?: RequestInit | InitOverrideFunction
-    ) {
-        let context = {
-            request: {
-                elementId,
-                commandId,
-                data: commandData,
-            },
-            context: new Map(),
-        } as Context;
-        context = await this.requestWithMiddleware(context, 0, initOverrides);
-        return context.response;
-    }
-
     destroy() {
         navigator.sendBeacon(
             `${this.configuration.restPath}?action=destroy`,
@@ -198,24 +181,20 @@ export class API {
                       data: commandData,
                   }
                 : {
-                      cmd: 'ec',
+                      cmd: commandId,
                       id: elementId,
-                      data: {
-                          cmd: commandId,
-                          data: commandData,
-                      },
+                      data: commandData,
                   };
         if (deferred) {
             if (commandId === 'pc') {
                 const existingCommand = this.deferredCommands.find(
                     (it) =>
-                        it.cmd === 'ec' &&
                         it.id === elementId &&
-                        it.data.cmd === 'pc' &&
-                        it.data.data.pn == cmd.data?.data?.pn
+                        it.cmd === 'pc' &&
+                        it.data.pn == cmd.data?.pn
                 );
                 if (existingCommand) {
-                    existingCommand.data.data.pv = cmd.data?.data?.pv;
+                    existingCommand.data.pv = cmd.data.pv;
                     return;
                 }
             }
@@ -237,69 +216,121 @@ export class API {
         return await prom;
     }
 
-    private processCommands = (commands: any[]) => {
+    private async processCommands(commands: any[]) {
         if (commands.find((it) => it.cmd === 'resync')) {
-            const queueItem = {
-                payload: [
-                    {
-                        cmd: 'init',
-                        data: {
-                            uiData: this.uiElementsRegistry
-                                .getRootElement()!
-                                .serialize(),
-                            ls: JSON.parse(
-                                window.localStorage.getItem('webpeer') || '{}'
-                            ),
-                            params: {
-                                windowWidth: window.innerWidth,
-                                windowHeight: window.innerHeight,
-                                ...((window as any).webPeer?.parameters || {}),
-                            },
-                        },
-                    },
-                ],
-                reject: () => {
-                    this.queue.forEach((it) => {
-                        if (it !== queueItem && it.reject) {
-                            it.reject('Unable to connect to server');
-                        }
-                    });
-                    this.queue = [];
-                },
-            };
-            this.queue = [queueItem, ...this.queue];
+            window.localStorage.setItem(
+                'webpeer-state',
+                JSON.stringify(this.uiElementsRegistry.getRootElement()!.getState())
+            );
+            webpeerExt.uiHandler.handleServerUpdate();
             return;
         }
-        commands.forEach((cmd: any) => {
-            if (cmd.cmd === 'ec') {
-                const node = this.uiElementsRegistry.findNode(cmd.id)!;
-                node.processCommandFromServer(cmd.data);
+        for (const cmd of commands) {
+            const node = this.uiElementsRegistry.findNode(cmd.id)!;
+            if (cmd.cmd === 'ac') {
+                const model = cmd.data;
+                await this.doLoadAdditionalModules(model);
+                this.uiElementsRegistry.addNode(model, cmd.id, cmd.data.insertAfterId);
+                continue;
             }
             if (cmd.cmd === 'rc') {
-                this.uiElementsRegistry.removeNode(cmd.id);
+                this.uiElementsRegistry.removeNode(cmd.data.nodeId);
+                continue;
             }
-            if (cmd.cmd === 'ac') {
-                const data = cmd.data;
-                const node = webpeerExt.uiHandler.createElement(data);
-                node.init();
-                this.uiElementsRegistry.addNode(node, cmd.id, cmd.insertAfterId);
-            }
-            if (cmd.cmd === 'uls') {
-                const paramName = cmd.data.pn;
-                const paramValue = cmd.data.pv;
-                const data = JSON.parse(window.localStorage.getItem('webpeer') || '{}');
-                if (paramValue !== undefined) {
-                    data[paramName] = paramValue;
-                } else {
-                    delete data[paramName];
-                }
-                window.localStorage.setItem('webpeer', JSON.stringify(data));
-            }
-            if (cmd.cmd === 'reload') {
-                window.location.reload();
-            }
+            node.processCommandFromServer(cmd.cmd, cmd.data);
+        }
+    }
+    private async loadCss(url: string) {
+        return new Promise((resolve, reject) => {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = url;
+
+            link.onload = function () {
+                resolve(null);
+            };
+
+            link.onerror = function () {
+                reject();
+            };
+
+            document.head.appendChild(link);
         });
-    };
+    }
+
+    private async loadScript(url: string) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = url;
+            script.type = 'text/javascript';
+
+            script.onload = function () {
+                resolve(null);
+            };
+
+            script.onerror = function () {
+                reject();
+            };
+
+            document.head.appendChild(script);
+        });
+    }
+
+    private async doLoadAdditionalModules(model: any) {
+        const newTypes = [] as string[];
+        this.collectNewTypes(newTypes, model);
+        if (!newTypes.length) {
+            return;
+        }
+        const newType = newTypes[0];
+        const req = {
+            request: {
+                cmd: 'get-module-for-type',
+                elementType: newType,
+            },
+            context: new Map(),
+        } as Context;
+        const res = await this.requestWithMiddleware(req, 0);
+        const command = res.response.commands[0];
+        if (command.cmd !== 'load-module') {
+            throw new Error(`unable to load module for type ${newType}`);
+        }
+        const scripts = command.scripts ?? ([] as string[]);
+        for (const resource of scripts) {
+            await this.loadScript(
+                `${this.configuration.restPath}/_resources/${resource}`
+            );
+        }
+        const css = command.css ?? ([] as string[]);
+        for (const resource of css) {
+            await this.loadCss(`${this.configuration.restPath}/_resources/${resource}`);
+        }
+        await this.doLoadAdditionalModules(model);
+    }
+
+    private collectNewTypes(newTypes: string[], model: any) {
+        const type = model.type as any;
+        webpeerExt.elementTypes = webpeerExt.elementTypes || [];
+        if (
+            webpeerExt.elementTypes.indexOf(type) === -1 &&
+            newTypes.indexOf(type) === -1
+        ) {
+            newTypes.push(type);
+        }
+        (model.children || []).forEach((ch: any) => this.collectNewTypes(newTypes, ch));
+    }
+
+    private async doInit(model: any, queItem?: QueueItem, response?: any) {
+        await this.doLoadAdditionalModules(model);
+        if (queItem && queItem.resolve) {
+            queItem.resolve(response);
+        }
+        const rootElm = webpeerExt.uiHandler.createElement(model);
+        this.uiElementsRegistry.addNode(rootElm);
+        window.localStorage.removeItem('webpeer-state');
+        webpeerExt.uiHandler.drawUi(rootElm);
+    }
 
     private async processQueue() {
         if (this.processingQueue) {
@@ -321,19 +352,13 @@ export class API {
                     0,
                     item.initOverrides
                 );
-                const commands = (res.response || []) as any[];
+                const commands = (res.response?.commands || []) as any[];
                 if (commands.find((it) => it.cmd === 'init')) {
-                    if (item.resolve) {
-                        item.resolve(res.response);
-                    }
-                    const rootElm = webpeerExt.uiHandler.createElement(
-                        commands.find((it) => it.cmd === 'init').data
-                    );
-                    this.uiElementsRegistry.addNode(rootElm);
-                    webpeerExt.uiHandler.drawUi(rootElm);
+                    const model = commands.find((it) => it.cmd === 'init').data;
+                    await this.doInit(model, item, res.response);
                     break;
                 }
-                this.processCommands(commands);
+                await this.processCommands(commands);
                 if (item.resolve) {
                     item.resolve(res.response);
                 }

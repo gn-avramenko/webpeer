@@ -24,17 +24,22 @@ package com.gridnine.webpeer.core.ui;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.gridnine.webpeer.core.utils.WebPeerException;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public abstract class BaseUiElement {
 
-    private String tag;
-
     private final long id;
 
+    private final String tag;
+
     private BaseUiElement parent;
+
+    private final String type;
 
     private final List<BaseUiElement> children = new ArrayList<>();
 
@@ -44,10 +49,22 @@ public abstract class BaseUiElement {
 
     private boolean initialized = false;
 
-    public BaseUiElement(OperationUiContext ctx) {
+    private final Logger logger = LoggerFactory.getLogger(BaseUiElement.class);
+
+    public BaseUiElement(String type, String tag, OperationUiContext ctx) {
         this.path = ctx.getParameter(OperationUiContext.PATH);
         this.clientId = ctx.getParameter(OperationUiContext.CLIENT_ID);
+        this.type = type;
         this.id = Objects.requireNonNull(GlobalUiContext.getParameter( path, clientId, GlobalUiContext.ELEMENT_INDEX_PROVIDER)).incrementAndGet();
+        this.tag = tag;
+    }
+
+    public void restoreFromState(JsonElement state, OperationUiContext ctx){
+      // noops
+    }
+
+    public BaseUiElement getParent() {
+        return parent;
     }
 
     public void destroy() throws Exception{
@@ -58,106 +75,18 @@ public abstract class BaseUiElement {
         return id;
     }
 
-    public void setParent(BaseUiElement parent) {
-        this.parent = parent;
-    }
-
-    public BaseUiElement getParent() {
-        return parent;
-    }
-
-    public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
-        var cmd = command.get("cmd").getAsString();
-        if ("pc".equals(cmd)) {
-            var data = command.get("data").getAsJsonObject();
-            var propertyName = data.get("pn").getAsString();
-            var propertyValue = data.has("pv") ? data.get("pv") : null;
-            updatePropertyValue(propertyName, propertyValue, operationUiContext);
-        }
-        if ("ac".equals(cmd)) {
-            var data = command.get("data").getAsJsonObject();
-            var actionId = data.get("id").getAsString();
-            var actionData = data.has("data") ? data.get("data") : null;
-            executeAction(actionId, actionData, operationUiContext);
-        }
-    }
-
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
-
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext) {
-        throw new UnsupportedOperationException();
-    }
-
     public List<BaseUiElement> getUnmodifiableListOfChildren() {
         return Collections.unmodifiableList(children);
     }
 
-    public void sendElementPropertyChange(OperationUiContext ctx, String property, Object value){
+    public void sendCommand(OperationUiContext ctx, String commandId, Object value){
         var command = new JsonObject();
-        command.addProperty("cmd", "ec");
         command.addProperty("id", String.valueOf(getId()));
-        var data = new JsonObject();
-        data.addProperty("cmd", "pc");
-        var commandData = new JsonObject();
-        data.add("data", commandData);
-        commandData.addProperty("pn", property);
-        if(value != null){
-            if(value instanceof String){
-                commandData.addProperty("pv", (String) value);
-            } else if (value instanceof Number){
-                commandData.addProperty("pv", (Number) value);
-            } else if (value instanceof Boolean){
-                commandData.addProperty("pv", (Boolean) value);
-            } else if (value instanceof JsonElement){
-                commandData.add("pv", (JsonElement) value);
-            }
-        }
-        command.add("data", data);
+        command.addProperty("cmd", commandId);
+        WebPeerUtils.addProperty(command, "data", value);
         ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
     }
 
-
-    public void setLocalStorageParam(OperationUiContext ctx,String param, Object value){
-        var command = new JsonObject();
-        command.addProperty("cmd", "uls");
-        var data = new JsonObject();
-        command.add("data", data);
-        data.addProperty("pn", param);
-        if(value instanceof String){
-            data.addProperty("pv", (String) value);
-        } else if (value instanceof Number){
-            data.addProperty("pv", (Number) value);
-        } else if (value instanceof Boolean) {
-            data.addProperty("pv", (Boolean) value);
-        } else if (value instanceof JsonElement) {
-            data.add("pv", (JsonElement) value);
-        }
-        ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
-    }
-
-    public void reload(OperationUiContext ctx){
-        var command = new JsonObject();
-        command.addProperty("cmd", "reload");
-        ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
-    }
-
-    public String getStringLocalStorageParam(OperationUiContext ctx, String paramName){
-        var data = ctx.getParameter(OperationUiContext.LOCAL_STORAGE_DATA);
-        if(data == null){
-            return null;
-        }
-        return data.has(paramName)? data.get(paramName).getAsString(): null;
-    }
 
     public void removeChild(OperationUiContext ctx, BaseUiElement child) {
         if(initialized) {
@@ -169,58 +98,52 @@ public abstract class BaseUiElement {
         removeElements(this, child);
     }
 
-    public JsonObject buildElement(OperationUiContext context) {
+    public JsonObject buildState(OperationUiContext context) {
         var result = new JsonObject();
         initialized = true;
         result.addProperty("id", String.valueOf(getId()));
         if (tag != null) {
             result.addProperty("tag", tag);
         }
+        result.addProperty("type", type);
         if (!this.children.isEmpty()) {
             var children = new JsonArray();
             result.add("children", children);
             getUnmodifiableListOfChildren().forEach(ch -> {
-                WebPeerUtils.wrapException(() -> children.add(ch.buildElement(context)));
+                WebPeerUtils.wrapException(() -> children.add(ch.buildState(context)));
             });
         }
         return result;
-    }
-
-    public BaseUiElement findChildByTag(String tag){
-        return  children.stream().filter(it -> tag.equals(it.tag)).findFirst().orElse(null);
     }
 
     private void removeElements(BaseUiElement thisElement, BaseUiElement childElement) {
         thisElement.getUnmodifiableListOfChildren().remove(childElement);
         Map<Long, BaseUiElement> elements = Objects.requireNonNull(GlobalUiContext.getParameter(path, clientId, GlobalUiContext.UI_ELEMENTS));
         elements.remove(childElement.getId());
+        try{
+            childElement.destroy();
+        } catch (Throwable e) {
+            logger.error("unable to destroy child", e);
+        }
         WebPeerUtils.wrapException(childElement::destroy);
         childElement.getUnmodifiableListOfChildren().forEach(ch -> BaseUiElement.this.removeElements(childElement, ch));
     }
 
-    public void sendCommandAsync(String commandId, JsonElement commandData){
+    public void notify(String notificationId, JsonElement data){
         var session = GlobalUiContext.getParameter(path, clientId, GlobalUiContext.WS_SESSION);
         if(session == null){
             throw new IllegalStateException("no session found");
         }
         var payload = new JsonObject();
-        payload.addProperty("cmd", "ec");
         payload.addProperty("id", String.valueOf(getId()));
-        var command = new JsonObject();
-        command.addProperty("cmd", "ac");
-        payload.add("data", command);
-        var cd = new JsonObject();
-        command.add("data", cd);
-        cd.addProperty("commandId", commandId);
-        if(commandData != null){
-            cd.add("commandData", commandData);
-        }
+        payload.addProperty("cmd", notificationId);
+        WebPeerUtils.addProperty(payload, "data", data);
         var content = payload.toString();
         session.getAsyncRemote().sendText(content);
     }
 
     public void addChild(OperationUiContext ctx, BaseUiElement child, int idx) {
-        child.setParent(this);
+        child.parent = this;
         children.add(idx, child);
         if(initialized) {
             var command = new JsonObject();
@@ -230,7 +153,7 @@ public abstract class BaseUiElement {
                 command.addProperty("insertAfterId", idx-2);
             }
             WebPeerUtils.wrapException(() -> {
-                command.add("data", child.buildElement(ctx));
+                command.add("data", child.buildState(ctx));
             });
             ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
         }
@@ -241,6 +164,10 @@ public abstract class BaseUiElement {
         Map<Long, BaseUiElement> elements = Objects.requireNonNull(GlobalUiContext.getParameter(path, clientId, GlobalUiContext.UI_ELEMENTS));
         elements.put(childElement.getId(), childElement);
         childElement.getUnmodifiableListOfChildren().forEach(BaseUiElement.this::addElements);
+    }
+
+    public void processCommand(OperationUiContext ctx, String commandId, JsonElement data) throws Exception{
+        throw new WebPeerException("not implemented");
     }
 
 }

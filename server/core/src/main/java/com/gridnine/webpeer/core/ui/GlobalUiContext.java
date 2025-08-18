@@ -22,8 +22,6 @@
 package com.gridnine.webpeer.core.ui;
 
 import com.gridnine.webpeer.core.utils.TypedParameter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.websocket.Session;
 
 import java.time.Instant;
@@ -33,8 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GlobalUiContext {
-    public final static TypedParameter<HttpServletRequest> REQUEST = new TypedParameter<>("request") ;
-    public final static TypedParameter<HttpServletResponse> RESPONSE = new TypedParameter<>("response");
     public final static TypedParameter<Instant> LAST_UPDATED = new TypedParameter<>("last-updated");
     public final static TypedParameter<AtomicLong> ELEMENT_INDEX_PROVIDER = new TypedParameter<>("element-index-provider");
     public final static TypedParameter<AtomicInteger> VERSION_PROVIDER = new TypedParameter<>("version-provider");
