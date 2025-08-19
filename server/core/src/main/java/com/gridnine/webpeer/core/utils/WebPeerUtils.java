@@ -24,16 +24,14 @@ package com.gridnine.webpeer.core.utils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.gridnine.webpeer.core.ui.GsonSerializable;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -54,8 +52,14 @@ public class WebPeerUtils {
             throw new Error(e);
         }
     }
-
-    private static JsonElement getElement(JsonObject json, String key) {
+    public static JsonObject getObject(JsonObject json, String key) {
+        var elm = getElement(json, key);
+        return elm == null? null: elm.getAsJsonObject();
+    }
+    public static JsonElement getElement(JsonObject json, String key) {
+        if(json == null){
+           return null;
+        }
         if(json.has(key)){
             return json.get(key);
         }
@@ -153,12 +157,19 @@ public class WebPeerUtils {
         return json;
     }
 
-    private static void addProperty(JsonObject props, String k, Object v) {
+    public static void addProperty(JsonObject props, String k, Object v) {
+      if(v == null){
+          return;
+      }
        wrapException(() ->{
-            if(v instanceof String){
+            if(v instanceof JsonElement){
+                props.add(k, (JsonElement) v);
+            } else if(v instanceof String){
                 props.addProperty(k, (String) v);
             } else if(v instanceof Number){
                 props.addProperty(k, (Number) v);
+            } else if(v instanceof Boolean) {
+                props.addProperty(k, (Boolean) v);
             } else if(v instanceof Map){
                 JsonObject obj = new JsonObject();
                 var map = (Map<String,Object>) v;
@@ -174,5 +185,71 @@ public class WebPeerUtils {
             }
         });
 
+    }
+
+    public static String getExceptionStackTrace(Throwable t) {
+        if (t == null) {
+            return null;
+        }
+        var sb = new StringBuilder(t.getStackTrace().length * 100);
+        printError(t, t.toString(), sb);
+        return sb.toString();
+    }
+
+    private static void printError(Throwable t, String header,
+                                   StringBuilder sb) {
+        if (t == null) {
+            return;
+        }
+        var nl = System.getProperty("line.separator");
+        if (!isBlank(header)) {
+            sb.append(nl).append(header).append(nl).append(nl);
+        }
+        for (var element : t.getStackTrace()) {
+            printStackTraceElement(element, sb).append(nl);
+        }
+        var next = t.getCause();
+        printError(next, String.format("Caused by %s", next), sb);
+        if (t instanceof SQLException) {
+            next = ((SQLException) t).getNextException();
+            printError(next, String.format("Next exception: %s", next), sb);
+        } else if (t instanceof InvocationTargetException) {
+            next = ((InvocationTargetException) t).getTargetException();
+            printError(next, String.format("Target exception: %s",next), sb);
+        }
+    }
+
+    private static StringBuilder printStackTraceElement(StackTraceElement ste, StringBuilder sb) {
+        sb.append(String.format("%s.%s(", ste.getClassName(), ste.getMethodName()));
+        if (ste.isNativeMethod()) {
+            sb.append("Native Method");
+        } else if (ste.getFileName() != null) {
+            sb.append(String.format("%s%s", ste.getFileName(), ste.getLineNumber() > 0 ? ste.getLineNumber() : ""));
+        }
+        sb.append(")");
+        return sb;
+    }
+
+    public static Object getValue(JsonElement pv) {
+        if(pv == null) {
+            return null;
+        }
+        if(pv.isJsonPrimitive()){
+            var pm = pv.getAsJsonPrimitive();
+            if(pm.isBoolean()){
+                return pm.getAsBoolean();
+            }
+            if(pm.isNumber()){
+                return pm.getAsBigDecimal();
+            }
+            if(pm.isJsonNull()){
+                return null;
+            }
+            if (pm.isString()){
+                return pm.getAsString();
+            }
+            return pm;
+        }
+        return pv;
     }
 }

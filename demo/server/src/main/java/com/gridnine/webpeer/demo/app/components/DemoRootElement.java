@@ -1,0 +1,61 @@
+/*
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+ 
+package com.gridnine.webpeer.demo.app.components;
+
+import com.google.gson.JsonElement;
+import com.gridnine.webpeer.core.ui.OperationUiContext;
+import com.gridnine.webpeer.demo.app.data.DemoDataSource;
+import com.gridnine.webpeer.demo.app.data.DemoMessage;
+
+public class DemoRootElement extends BaseDemoUiElement {
+
+    private final DemoTextField userTextField;
+
+    private final DemoTextField messageTextField;
+
+    public DemoRootElement(DemoDataSource demoDataSource, OperationUiContext ctx) {
+        super("root", "root", new String[0], new String[0], ctx);
+        userTextField = new DemoTextField( "user", ctx);
+        addChild(ctx, userTextField, 0);
+        DemoMessagesArea demoMessagesArea = new DemoMessagesArea("messages", demoDataSource,  ctx);
+        addChild(ctx, demoMessagesArea, 0);
+        messageTextField = new DemoTextField("message", ctx);
+        addChild(ctx, messageTextField, 0);
+        DemoButton sendButton = new DemoButton("send", ctx, "Send", (context) ->{
+            var text = messageTextField.getValue();
+            var user = userTextField.getValue();
+            if(text != null && user != null) {
+                var message = new DemoMessage(user, text);
+                demoDataSource.addMessage(message);
+                messageTextField.setValue(null, context);
+            }
+        });
+        addChild(ctx, sendButton, 0);
+    }
+
+    @Override
+    public void restoreFromState(JsonElement state, OperationUiContext ctx) {
+        userTextField.restoreFromState(findStateOfChild(state, "user"), ctx);
+        messageTextField.restoreFromState(findStateOfChild(state, "message"), ctx);
+        super.restoreFromState(state, ctx);
+    }
+}

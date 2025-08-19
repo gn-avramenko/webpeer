@@ -24,99 +24,146 @@ package com.gridnine.webpeer.core.ui;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.gridnine.webpeer.core.utils.WebPeerException;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-public abstract class BaseUiElement implements UiElement {
-
-    private String tag;
-
-    private String key;
+public abstract class BaseUiElement {
 
     private final long id;
 
+    private final String tag;
+
     private BaseUiElement parent;
 
-    private List<UiElement> children = new ArrayList<UiElement>();
+    private final String type;
 
-    public BaseUiElement() {
-        this.id = GlobalUiContext.getParameter(GlobalUiContext.ELEMENT_INDEX_PROVIDER).incrementAndGet();
+    private final List<BaseUiElement> children = new ArrayList<>();
+
+    private final String path;
+
+    private final String clientId;
+
+    private boolean initialized = false;
+
+    private final Logger logger = LoggerFactory.getLogger(BaseUiElement.class);
+
+    public BaseUiElement(String type, String tag, OperationUiContext ctx) {
+        this.path = ctx.getParameter(OperationUiContext.PATH);
+        this.clientId = ctx.getParameter(OperationUiContext.CLIENT_ID);
+        this.type = type;
+        this.id = Objects.requireNonNull(GlobalUiContext.getParameter( path, clientId, GlobalUiContext.ELEMENT_INDEX_PROVIDER)).incrementAndGet();
+        this.tag = tag;
     }
 
-    @Override
+    public void restoreFromState(JsonElement state, OperationUiContext ctx){
+      // noops
+    }
+
+    public BaseUiElement getParent() {
+        return parent;
+    }
+
+    public void destroy() throws Exception{
+        //noops
+    }
+
     public long getId() {
         return id;
     }
 
-    @Override
-    public void setParent(UiElement parent) {
-        this.parent = (BaseUiElement)parent;
+    public List<BaseUiElement> getUnmodifiableListOfChildren() {
+        return Collections.unmodifiableList(children);
     }
 
-    @Override
-    public UiElement getParent() {
-        return parent;
+    public void sendCommand(OperationUiContext ctx, String commandId, Object value){
+        var command = new JsonObject();
+        command.addProperty("id", String.valueOf(getId()));
+        command.addProperty("cmd", commandId);
+        WebPeerUtils.addProperty(command, "data", value);
+        ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
     }
 
-    @Override
-    public void executeCommand(JsonObject command, OperationUiContext operationUiContext) throws Exception {
-        var cmd = command.get("cmd").getAsString();
-        if ("pc".equals(cmd)) {
-            var data = command.get("data").getAsJsonObject();
-            var propertyName = data.get("pn").getAsString();
-            var propertyValue = data.has("pv") ? data.get("pv") : null;
-            updatePropertyValue(propertyName, propertyValue, operationUiContext);
+
+    public void removeChild(OperationUiContext ctx, BaseUiElement child) {
+        if(initialized) {
+            var command = new JsonObject();
+            command.addProperty("cmd", "rc");
+            command.addProperty("id", String.valueOf(child.getId()));
+            ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
         }
-        if ("ac".equals(cmd)) {
-            var data = command.get("data").getAsJsonObject();
-            var actionId = data.get("id").getAsString();
-            var actionData = data.has("data") ? data.get("data") : null;
-            executeAction(actionId, actionData, operationUiContext);
-        }
+        removeElements(this, child);
     }
 
-    @Override
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
-
-    protected void executeAction(String actionId, JsonElement actionData, OperationUiContext operationUiContext) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected void updatePropertyValue(String propertyName, JsonElement propertyValue, OperationUiContext operationUiContext) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public JsonElement serialize() throws Exception {
+    public JsonObject buildState(OperationUiContext context) {
         var result = new JsonObject();
+        initialized = true;
         result.addProperty("id", String.valueOf(getId()));
-        if (getTag() != null) {
-            result.addProperty("tag", getTag());
+        if (tag != null) {
+            result.addProperty("tag", tag);
         }
-        if (!getChildren().isEmpty()) {
-            var chs = new JsonArray();
-            result.add("children", chs);
-            getChildren().forEach(ch -> {
-                WebPeerUtils.wrapException(() -> chs.add(ch.serialize()));
-            });
+        result.addProperty("type", type);
+        if (!this.children.isEmpty()) {
+            var children = new JsonArray();
+            result.add("children", children);
+            getUnmodifiableListOfChildren().forEach(ch -> WebPeerUtils.wrapException(() -> children.add(ch.buildState(context))));
         }
         return result;
     }
 
-    @Override
-    public List<UiElement> getChildren() {
-        return children;
+    private void removeElements(BaseUiElement thisElement, BaseUiElement childElement) {
+        thisElement.getUnmodifiableListOfChildren().remove(childElement);
+        Map<Long, BaseUiElement> elements = Objects.requireNonNull(GlobalUiContext.getParameter(path, clientId, GlobalUiContext.UI_ELEMENTS));
+        elements.remove(childElement.getId());
+        try{
+            childElement.destroy();
+        } catch (Throwable e) {
+            logger.error("unable to destroy child", e);
+        }
+        WebPeerUtils.wrapException(childElement::destroy);
+        childElement.getUnmodifiableListOfChildren().forEach(ch -> BaseUiElement.this.removeElements(childElement, ch));
     }
 
-    public void setChildren(List<UiElement> children) {
-        this.children = children;
+    public void notify(String notificationId, JsonElement data){
+        var session = GlobalUiContext.getParameter(path, clientId, GlobalUiContext.WS_SESSION);
+        if(session == null){
+            throw new IllegalStateException("no session found");
+        }
+        var payload = new JsonObject();
+        payload.addProperty("id", String.valueOf(getId()));
+        payload.addProperty("cmd", notificationId);
+        WebPeerUtils.addProperty(payload, "data", data);
+        var content = payload.toString();
+        session.getAsyncRemote().sendText(content);
     }
+
+    public void addChild(OperationUiContext ctx, BaseUiElement child, int idx) {
+        child.parent = this;
+        children.add(idx, child);
+        if(initialized) {
+            var command = new JsonObject();
+            command.addProperty("cmd", "ac");
+            command.addProperty("id", String.valueOf(id));
+            if(idx > 0){
+                command.addProperty("insertAfterId", idx-2);
+            }
+            WebPeerUtils.wrapException(() -> command.add("data", child.buildState(ctx)));
+            ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
+        }
+        addElements(child);
+    }
+
+    private void addElements(BaseUiElement childElement) {
+        Map<Long, BaseUiElement> elements = Objects.requireNonNull(GlobalUiContext.getParameter(path, clientId, GlobalUiContext.UI_ELEMENTS));
+        elements.put(childElement.getId(), childElement);
+        childElement.getUnmodifiableListOfChildren().forEach(BaseUiElement.this::addElements);
+    }
+
+    public void processCommand(OperationUiContext ctx, String commandId, JsonElement data) throws Exception{
+        throw new WebPeerException("not implemented");
+    }
+
 }

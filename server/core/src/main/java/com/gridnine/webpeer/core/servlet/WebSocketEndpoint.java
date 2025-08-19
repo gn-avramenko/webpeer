@@ -30,6 +30,9 @@ import jakarta.websocket.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 public class WebSocketEndpoint {
 
     private final Logger log = LoggerFactory.getLogger(WebSocketEndpoint.class);
@@ -44,7 +47,7 @@ public class WebSocketEndpoint {
             if(values[0].equals("clientId")){
                 clientId = values[1];
             } else if (values[0].equals("path")) {
-                path = values[1];
+                path = URLEncoder.encode(values[1], StandardCharsets.UTF_8);
             }
         }
         if(path == null){
@@ -56,7 +59,7 @@ public class WebSocketEndpoint {
         session.getUserProperties().put("clientId", clientId);
         session.getUserProperties().put("path", path);
         GlobalUiContext.setParameter(path, clientId, GlobalUiContext.WS_SESSION, session);
-        log.debug("created ws session with path={} cientId={} sessionId={}", path, clientId, session.getId());
+        log.debug("created ws session with path={} clientId={} sessionId={}", path, clientId, session.getId());
     }
 
     @OnClose
@@ -64,6 +67,6 @@ public class WebSocketEndpoint {
         String clientId = (String) session.getUserProperties().get("clientId");
         String path = (String) session.getUserProperties().get("path");
         GlobalUiContext.setParameter(path, clientId, GlobalUiContext.WS_SESSION, null);
-        log.debug("closed ws session with path={} cientId={} sessionId={} reason = {}", path, clientId, session.getId(), reason);
+        log.debug("closed ws session with path={} clientId={} sessionId={} reason = {}", path, clientId, session.getId(), reason);
     }
 }

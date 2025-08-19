@@ -11,11 +11,11 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/demo" />
+            <option value="$PROJECT_DIR$/demo/server" />
+            <option value="$PROJECT_DIR$/demo/web" />
             <option value="$PROJECT_DIR$/server" />
-            <option value="$PROJECT_DIR$/server/antd-admin" />
             <option value="$PROJECT_DIR$/server/core" />
             <option value="$PROJECT_DIR$/web" />
-            <option value="$PROJECT_DIR$/web/antd-admin" />
             <option value="$PROJECT_DIR$/web/core" />
           </set>
         </option>
