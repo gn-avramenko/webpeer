@@ -52,19 +52,25 @@ public class WebPeerUtils {
             throw new Error(e);
         }
     }
+
     public static JsonObject getObject(JsonObject json, String key) {
+        if (json == null) {
+            return null;
+        }
         var elm = getElement(json, key);
-        return elm == null? null: elm.getAsJsonObject();
+        return elm == null ? null : elm.getAsJsonObject();
     }
-    public static JsonElement getElement(JsonObject json, String key) {
-        if(json == null){
-           return null;
+
+    public static JsonElement getElement(JsonElement json, String key) {
+        if (json == null || !json.isJsonObject()) {
+            return null;
         }
-        if(json.has(key)){
-            return json.get(key);
+        var obj = json.getAsJsonObject();
+        if (obj.has(key)) {
+            return obj.get(key);
         }
-        Map.Entry<String, JsonElement> entry = json.entrySet().stream().filter(it -> it.getKey().equalsIgnoreCase(key)).findFirst().orElse(null);
-        if(entry == null){
+        Map.Entry<String, JsonElement> entry = obj.entrySet().stream().filter(it -> it.getKey().equalsIgnoreCase(key)).findFirst().orElse(null);
+        if (entry == null) {
             return null;
         }
         return entry.getValue();
@@ -74,13 +80,14 @@ public class WebPeerUtils {
         JsonElement jsonElement = getElement(json, key);
         return jsonElement == null ? null : jsonElement.getAsString();
     }
+
     public static long getLong(JsonObject json, String key, long defaultValue) {
         JsonElement jsonElement = getElement(json, key);
         return jsonElement == null ? defaultValue : jsonElement.getAsLong();
     }
 
     public static int getInt(JsonObject json, String key, int defaultValue) {
-        JsonElement jsonElement =getElement(json, key);
+        JsonElement jsonElement = getElement(json, key);
         return jsonElement == null ? defaultValue : jsonElement.getAsInt();
     }
 
@@ -94,27 +101,27 @@ public class WebPeerUtils {
         json.iterator().forEachRemaining(res::add);
         return res;
     }
-    public static<C> List<C> getEnumsList(JsonObject json, String key, Function<String, C> converter) {
+
+    public static <C> List<C> getEnumsList(JsonObject json, String key, Function<String, C> converter) {
         JsonElement element = getElement(json, key);
-        if(element == null) {
+        if (element == null) {
             return Collections.emptyList();
         }
         return toList(element.getAsJsonArray()).stream().map(it -> converter.apply(it.getAsString())).collect(Collectors.toList());
     }
-    public static<C> C getEnum(JsonObject json, String key, Function<String, C> converter) {
+
+    public static <C> C getEnum(JsonObject json, String key, Function<String, C> converter) {
         JsonElement element = getElement(json, key);
-        if(element == null) {
+        if (element == null) {
             return null;
         }
         return converter.apply(element.getAsString());
     }
 
 
-
-
     public static List<String> getStringsList(JsonObject json, String key) {
         JsonElement element = getElement(json, key);
-        if(element == null) {
+        if (element == null) {
             return Collections.emptyList();
         }
         return toList(element.getAsJsonArray()).stream().map(JsonElement::getAsString).collect(Collectors.toList());
@@ -123,7 +130,7 @@ public class WebPeerUtils {
 
     public static Instant getInstant(JsonObject json, String key) {
         JsonElement element = getElement(json, key);
-        if(element == null) {
+        if (element == null) {
             return null;
         }
         String str = element.getAsString();
@@ -132,52 +139,64 @@ public class WebPeerUtils {
 
     public static BigDecimal getBigDecimal(JsonObject json, String key) {
         JsonElement element = getElement(json, key);
-        if(element == null) {
+        if (element == null) {
             return null;
         }
         return element.getAsBigDecimal();
     }
 
-    public static JsonElement getDynamic(JsonObject obj, String key) {
+    public static JsonElement getDynamic(JsonElement obj, String key) {
         return getElement(obj, key);
     }
 
-    public static boolean isBlank(String text){
+
+    public static boolean isBlank(String text) {
         return text == null || text.trim().isEmpty();
     }
-    public static boolean isNotBlank(String text){
+
+    public static boolean isNotBlank(String text) {
         return !isBlank(text);
     }
 
-    public static JsonObject serialize(Map<String,Object> map) {
+    public static JsonObject serialize(Map<String, Object> map) {
         JsonObject json = new JsonObject();
-        map.forEach((k,v)->{
+        map.forEach((k, v) -> {
             addProperty(json, k, v);
         });
         return json;
     }
 
     public static void addProperty(JsonObject props, String k, Object v) {
-      if(v == null){
-          return;
-      }
-       wrapException(() ->{
-            if(v instanceof JsonElement){
+        if (v == null) {
+            return;
+        }
+        wrapException(() -> {
+            if (v instanceof JsonElement) {
                 props.add(k, (JsonElement) v);
-            } else if(v instanceof String){
+            } else if (v instanceof String) {
                 props.addProperty(k, (String) v);
-            } else if(v instanceof Number){
+            } else if (v instanceof Number) {
                 props.addProperty(k, (Number) v);
-            } else if(v instanceof Boolean) {
+            } else if (v instanceof Boolean) {
                 props.addProperty(k, (Boolean) v);
-            } else if(v instanceof Map){
+            } else if (v instanceof Map) {
                 JsonObject obj = new JsonObject();
-                var map = (Map<String,Object>) v;
-                map.forEach((k2, v2)->{
-                    WebPeerUtils.wrapException(()->{
+                var map = (Map<String, Object>) v;
+                map.forEach((k2, v2) -> {
+                    WebPeerUtils.wrapException(() -> {
                         addProperty(obj, k2, v2);
                     });
                 });
+                props.add(k, obj);
+            } else if (v instanceof List) {
+                JsonArray obj = new JsonArray();
+                var lst = (List<?>) v;
+                lst.forEach(value -> {
+                            var obj2 = new JsonObject();
+                            WebPeerUtils.addProperty(obj2, "prop", value);
+                            obj.add(WebPeerUtils.getDynamic(obj2, "prop"));
+                        }
+                );
                 props.add(k, obj);
             } else {
                 var s = (GsonSerializable) v;
@@ -215,7 +234,7 @@ public class WebPeerUtils {
             printError(next, String.format("Next exception: %s", next), sb);
         } else if (t instanceof InvocationTargetException) {
             next = ((InvocationTargetException) t).getTargetException();
-            printError(next, String.format("Target exception: %s",next), sb);
+            printError(next, String.format("Target exception: %s", next), sb);
         }
     }
 
@@ -231,21 +250,21 @@ public class WebPeerUtils {
     }
 
     public static Object getValue(JsonElement pv) {
-        if(pv == null) {
+        if (pv == null) {
             return null;
         }
-        if(pv.isJsonPrimitive()){
+        if (pv.isJsonPrimitive()) {
             var pm = pv.getAsJsonPrimitive();
-            if(pm.isBoolean()){
+            if (pm.isBoolean()) {
                 return pm.getAsBoolean();
             }
-            if(pm.isNumber()){
+            if (pm.isNumber()) {
                 return pm.getAsBigDecimal();
             }
-            if(pm.isJsonNull()){
+            if (pm.isJsonNull()) {
                 return null;
             }
-            if (pm.isString()){
+            if (pm.isString()) {
                 return pm.getAsString();
             }
             return pm;

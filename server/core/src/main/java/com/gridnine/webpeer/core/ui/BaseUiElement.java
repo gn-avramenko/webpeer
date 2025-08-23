@@ -115,7 +115,7 @@ public abstract class BaseUiElement {
     }
 
     private void removeElements(BaseUiElement thisElement, BaseUiElement childElement) {
-        thisElement.getUnmodifiableListOfChildren().remove(childElement);
+        thisElement.children.remove(childElement);
         Map<Long, BaseUiElement> elements = Objects.requireNonNull(GlobalUiContext.getParameter(path, clientId, GlobalUiContext.UI_ELEMENTS));
         elements.remove(childElement.getId());
         try{
@@ -124,7 +124,7 @@ public abstract class BaseUiElement {
             logger.error("unable to destroy child", e);
         }
         WebPeerUtils.wrapException(childElement::destroy);
-        childElement.getUnmodifiableListOfChildren().forEach(ch -> BaseUiElement.this.removeElements(childElement, ch));
+        new ArrayList<>(childElement.getUnmodifiableListOfChildren()).forEach(ch -> BaseUiElement.this.removeElements(childElement, ch));
     }
 
     public void notify(String notificationId, JsonElement data){

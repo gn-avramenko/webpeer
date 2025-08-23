@@ -230,11 +230,16 @@ export class API {
             if (cmd.cmd === 'ac') {
                 const model = cmd.data;
                 await this.doLoadAdditionalModules(model);
-                this.uiElementsRegistry.addNode(model, cmd.id, cmd.data.insertAfterId);
+                const childNode = webpeerExt.uiHandler.createElement(model);
+                this.uiElementsRegistry.addNode(
+                    childNode,
+                    cmd.id,
+                    cmd.data.insertAfterId
+                );
                 continue;
             }
             if (cmd.cmd === 'rc') {
-                this.uiElementsRegistry.removeNode(cmd.data.nodeId);
+                this.uiElementsRegistry.removeNode(cmd.id);
                 continue;
             }
             node.processCommandFromServer(cmd.cmd, cmd.data);
@@ -285,10 +290,12 @@ export class API {
         }
         const newType = newTypes[0];
         const req = {
-            request: {
-                cmd: 'get-module-for-type',
-                elementType: newType,
-            },
+            request: [
+                {
+                    cmd: 'get-module-for-type',
+                    elementType: newType,
+                },
+            ],
             context: new Map(),
         } as Context;
         const res = await this.requestWithMiddleware(req, 0);

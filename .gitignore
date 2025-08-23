@@ -28,3 +28,4 @@ replay_pid*
 /dist/
 /build/
 /web/core/package-lock.json
+/package-lock.json

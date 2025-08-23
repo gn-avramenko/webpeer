@@ -52,7 +52,7 @@ export abstract class BaseUiElement {
         await api.closeWebSocket(this.id);
     }
 
-    async sendCommand(commandId: string, commandData: any, deferred?: boolean) {
+    async sendCommand(commandId: string, commandData?: any, deferred?: boolean) {
         await api.sendCommandAsync(this.id, commandId, commandData, deferred);
     }
 
