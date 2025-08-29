@@ -131,6 +131,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         OperationUiContext operationUiContext = new OperationUiContext();
         operationUiContext.setParameter(OperationUiContext.RESPONSE_COMMANDS, new JsonArray());
+        operationUiContext.setParameter(OperationUiContext.POST_PROCESS_COMMANDS, new JsonArray());
         String pathInfo = req.getPathInfo();
         var statusCode = HttpServletResponse.SC_OK;
         var pi = URLEncoder.encode(pathInfo, StandardCharsets.UTF_8);
@@ -192,7 +193,11 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     var command = new JsonObject();
                     command.addProperty("cmd", "init");
                     command.add("data", rootElement.buildState(operationUiContext));
-                    operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
+                    var commands = operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS);
+                    var resultCommands = new JsonArray();
+                    resultCommands.add(command);
+                    resultCommands.addAll(commands);
+                    operationUiContext.setParameter(OperationUiContext.RESPONSE_COMMANDS, resultCommands);
                     return;
                 } else if ("get-module-for-type".equals(WebPeerUtils.getString(firstCommand, "cmd"))) {
                     var elementType = WebPeerUtils.getString(firstCommand, "elementType");
@@ -236,6 +241,8 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
             resp.setHeader("Content-Type", "application/json");
             var result = new JsonObject();
             var commands = operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS);
+            var postProcessCommands = operationUiContext.getParameter(OperationUiContext.POST_PROCESS_COMMANDS);
+            commands.addAll(postProcessCommands);
             result.add("commands", commands);
             if (error != null) {
                 var exc = new JsonObject();
@@ -322,3 +329,4 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
         return getClass().getClassLoader().getResource("webpeerCore/index.html");
     }
 }
+

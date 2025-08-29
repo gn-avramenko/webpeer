@@ -87,6 +87,14 @@ public abstract class BaseUiElement {
         ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
     }
 
+    public void sendPostProcessCommand(OperationUiContext ctx, String commandId, Object value){
+        var command = new JsonObject();
+        command.addProperty("id", String.valueOf(getId()));
+        command.addProperty("cmd", commandId);
+        WebPeerUtils.addProperty(command, "data", value);
+        ctx.getParameter(OperationUiContext.POST_PROCESS_COMMANDS).add(command);
+    }
+
 
     public void removeChild(OperationUiContext ctx, BaseUiElement child) {
         if(initialized) {

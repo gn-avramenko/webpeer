@@ -166,6 +166,16 @@ public class WebPeerUtils {
         return json;
     }
 
+    public static JsonArray serialize(List<?> lst) {
+        JsonArray json = new JsonArray();
+        lst.forEach((v) -> {
+            var obj = new JsonObject();
+            addProperty(obj,"key", v);
+            json.add(getDynamic(obj, "key"));
+        });
+        return json;
+    }
+
     public static void addProperty(JsonObject props, String k, Object v) {
         if (v == null) {
             return;

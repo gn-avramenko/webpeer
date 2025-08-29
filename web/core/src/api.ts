@@ -216,7 +216,7 @@ export class API {
         return await prom;
     }
 
-    private async processCommands(commands: any[]) {
+    private async processCommands(commands: any[], item?: QueueItem, response?: any) {
         if (commands.find((it) => it.cmd === 'resync')) {
             window.localStorage.setItem(
                 'webpeer-state',
@@ -227,7 +227,11 @@ export class API {
         }
         for (const cmd of commands) {
             const node = this.uiElementsRegistry.findNode(cmd.id)!;
-            if (cmd.cmd === 'ac') {
+            if (cmd.cmd === 'init') {
+                const model = cmd.data;
+                await this.doInit(model, item, response);
+                continue;
+            } else if (cmd.cmd === 'ac') {
                 const model = cmd.data;
                 await this.doLoadAdditionalModules(model);
                 const childNode = webpeerExt.uiHandler.createElement(model);
@@ -360,12 +364,7 @@ export class API {
                     item.initOverrides
                 );
                 const commands = (res.response?.commands || []) as any[];
-                if (commands.find((it) => it.cmd === 'init')) {
-                    const model = commands.find((it) => it.cmd === 'init').data;
-                    await this.doInit(model, item, res.response);
-                    break;
-                }
-                await this.processCommands(commands);
+                await this.processCommands(commands, item, res.response);
                 if (item.resolve) {
                     item.resolve(res.response);
                 }
