@@ -35,6 +35,7 @@ public class OperationUiContext extends HashMap<String, Object> {
     public final static TypedParameter<JsonArray> RESPONSE_COMMANDS = new TypedParameter<>("response-commands") ;
     public final static TypedParameter<JsonArray> POST_PROCESS_COMMANDS = new TypedParameter<>("post-process-commands") ;
     public final static TypedParameter<JsonObject> LOCAL_STORAGE_DATA = new TypedParameter<>("local-storage-data") ;
+    public final static TypedParameter<JsonObject> INIT_STATE = new TypedParameter<>("state") ;
     public final static TypedParameter<JsonObject> PARAMS = new TypedParameter<>("params") ;
     public final static TypedParameter<String> PATH = new TypedParameter<>("path") ;
     public final static TypedParameter<String> CLIENT_ID = new TypedParameter<>("client-id") ;

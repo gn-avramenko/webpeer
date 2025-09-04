@@ -23,6 +23,7 @@ package com.gridnine.webpeer.core.servlet;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.gridnine.webpeer.core.ui.*;
@@ -127,6 +128,11 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
 
     protected abstract T createRootElement(OperationUiContext operationUiContext) throws Exception;
 
+    private JsonObject readData(HttpServletRequest req) throws IOException {
+        try (var is = req.getInputStream()) {
+            return new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonObject.class);
+        }
+    }
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         OperationUiContext operationUiContext = new OperationUiContext();
@@ -135,11 +141,15 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
         String pathInfo = req.getPathInfo();
         var statusCode = HttpServletResponse.SC_OK;
         var pi = URLEncoder.encode(pathInfo, StandardCharsets.UTF_8);
-        var clientId = "";
+        var clientId = req.getHeader("x-client-id");
         Throwable error = null;
+        RequestType requestType = null;
+        JsonElement response = null;
         try {
             if (pathInfo.startsWith("/_ui")) {
-                if ("action=destroy".equals(req.getQueryString())) {
+                var queryString = req.getQueryString();
+                if (queryString != null && queryString.contains("action=destroy")) {
+                    requestType = RequestType.DESTROY;
                     JsonObject destroyData;
                     try (var is = req.getInputStream()) {
                         destroyData = new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonObject.class);
@@ -161,12 +171,49 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     }
                     return;
                 }
+                if (queryString != null && queryString.contains("action=get-module-for-type")) {
+                    requestType = RequestType.REQUEST;
+                    JsonObject request = readData(req);
+                    var elementType = WebPeerUtils.getString(request, "type");
+                    var moduleId = findAdditionalModuleByElementType(elementType);
+                    var module = getAllModules().stream().filter(it -> moduleId.equals(it.moduleId)).findFirst().get();
+                    var command = new JsonObject();
+                    command.addProperty("cmd", "load-module");
+                    var scripts = new JsonArray();
+                    module.scripts.forEach(it -> scripts.add(it.name));
+                    command.add("scripts", scripts);
+                    var css = new JsonArray();
+                    module.css.forEach(it -> css.add(it.name));
+                    command.add("css", css);
+                    response = command;
+                    return;
+                }
+                if (queryString != null && queryString.contains("action=request")) {
+                    requestType = RequestType.REQUEST;
+                    var data = readData(req);
+                    var  nodeId = WebPeerUtils.getLong(data, "id", 0);
+                    var cmd = WebPeerUtils.getString(data, "cmd");
+                    var cmdData = WebPeerUtils.getDynamic(data, "data");
+                    var uiElements = GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.UI_ELEMENTS);
+                    if (uiElements == null) {
+                        uiElements = new ConcurrentHashMap<>();
+                        GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.UI_ELEMENTS, uiElements);
+                        GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.ELEMENT_INDEX_PROVIDER, new AtomicLong(-1));
+                        GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.VERSION_PROVIDER, new AtomicInteger(-1));
+                    }
+                    operationUiContext.setParameter(OperationUiContext.PATH, pi);
+                    operationUiContext.setParameter(OperationUiContext.CLIENT_ID, clientId);
+                    operationUiContext.setParameter(OperationUiContext.REQUEST, req);
+                    operationUiContext.setParameter(OperationUiContext.RESPONSE, resp);
+                    response = uiElements.get(nodeId).doService(cmd, cmdData, operationUiContext);
+                    return;
+                }
+                requestType = RequestType.COMMAND;
                 List<JsonObject> requestCommands;
                 try (var is = req.getInputStream()) {
                     //noinspection unchecked,rawtypes
                     requestCommands = (List) new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonArray.class).asList();
                 }
-                clientId = req.getHeader("x-client-id");
                 GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.LAST_UPDATED, Instant.now());
                 var uiElements = GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.UI_ELEMENTS);
                 if (uiElements == null) {
@@ -186,6 +233,9 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     operationUiContext.setParameter(OperationUiContext.LOCAL_STORAGE_DATA, WebPeerUtils.getObject(data, "ls"));
                     operationUiContext.setParameter(OperationUiContext.PARAMS, WebPeerUtils.getObject(data, "params"));
                     var state = WebPeerUtils.getObject(data, "state");
+                    if(state!=null){
+                        operationUiContext.setParameter(OperationUiContext.INIT_STATE, state);
+                    }
                     var rootElement = createRootElement(operationUiContext);
                     if (state != null) {
                         rootElement.restoreFromState(state, operationUiContext);
@@ -198,20 +248,6 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     resultCommands.add(command);
                     resultCommands.addAll(commands);
                     operationUiContext.setParameter(OperationUiContext.RESPONSE_COMMANDS, resultCommands);
-                    return;
-                } else if ("get-module-for-type".equals(WebPeerUtils.getString(firstCommand, "cmd"))) {
-                    var elementType = WebPeerUtils.getString(firstCommand, "elementType");
-                    var moduleId = findAdditionalModuleByElementType(elementType);
-                    var module = getAllModules().stream().filter(it -> moduleId.equals(it.moduleId)).findFirst().get();
-                    var command = new JsonObject();
-                    command.addProperty("cmd", "load-module");
-                    var scripts = new JsonArray();
-                    module.scripts.forEach(it -> scripts.add(it.name));
-                    command.add("scripts", scripts);
-                    var css = new JsonArray();
-                    module.css.forEach(it -> css.add(it.name));
-                    command.add("css", css);
-                    operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
                     return;
                 } else {
                     long xVersion = Long.parseLong(req.getHeader("x-version"));
@@ -228,7 +264,6 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                         }));
                     }
                 }
-                resp.setHeader("x-version", String.valueOf(Objects.requireNonNull(GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.VERSION_PROVIDER)).incrementAndGet()));
                 return;
             }
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -237,23 +272,33 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
             statusCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
             error = e;
         } finally {
-            resp.setStatus(statusCode);
-            resp.setHeader("Content-Type", "application/json");
-            var result = new JsonObject();
-            var commands = operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS);
-            var postProcessCommands = operationUiContext.getParameter(OperationUiContext.POST_PROCESS_COMMANDS);
-            commands.addAll(postProcessCommands);
-            result.add("commands", commands);
-            if (error != null) {
-                var exc = new JsonObject();
-                WebPeerUtils.addProperty(exc, "message", error.getMessage());
-                WebPeerUtils.addProperty(exc, "stacktrace", WebPeerUtils.getExceptionStackTrace(error));
-                result.add("error", exc);
-            }
-            try (var os = resp.getOutputStream()) {
-                var jw = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
-                new Gson().toJson(result, jw);
-                jw.flush();
+            if(requestType == RequestType.DESTROY){
+                resp.setStatus(HttpServletResponse.SC_OK);
+                resp.getOutputStream().close();
+            } else {
+                resp.setStatus(statusCode);
+                resp.setHeader("Content-Type", "application/json");
+                var result = new JsonObject();
+                if(requestType == RequestType.COMMAND){
+                    resp.setHeader("x-version", String.valueOf(Objects.requireNonNull(GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.VERSION_PROVIDER)).incrementAndGet()));
+                    var commands = operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS);
+                    var postProcessCommands = operationUiContext.getParameter(OperationUiContext.POST_PROCESS_COMMANDS);
+                    commands.addAll(postProcessCommands);
+                    result.add("commands", commands);
+                } else {
+                    result.add("result", response);
+                }
+              if (error != null) {
+                    var exc = new JsonObject();
+                    WebPeerUtils.addProperty(exc, "message", error.getMessage());
+                    WebPeerUtils.addProperty(exc, "stacktrace", WebPeerUtils.getExceptionStackTrace(error));
+                    result.add("error", exc);
+                }
+                try (var os = resp.getOutputStream()) {
+                    var jw = new JsonWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
+                    new Gson().toJson(result, jw);
+                    jw.flush();
+                }
             }
         }
     }
@@ -327,6 +372,12 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
 
     protected URL getIndexHtmlUrl() {
         return getClass().getClassLoader().getResource("webpeerCore/index.html");
+    }
+
+    enum RequestType {
+        DESTROY,
+        REQUEST,
+        COMMAND
     }
 }
 

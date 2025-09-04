@@ -56,6 +56,10 @@ export abstract class BaseUiElement {
         await api.sendCommandAsync(this.id, commandId, commandData, deferred);
     }
 
+    async makeRequest(commandId: string, commandData?: any) {
+        return await api.makeRequest(this.id, commandId, commandData);
+    }
+
     processCommandFromServer(commandId: string, data?: any) {
         throw new Error(
             `unsupported operation exception: command id = ${commandId} data=${data}`

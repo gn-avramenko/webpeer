@@ -17,6 +17,7 @@ export { webpeerExt } from './config';
 export type { PreloaderHandler, PreloaderParams } from './preloader';
 export { PreloaderMiddleware } from './preloader';
 export { isNull, generateUUID } from './utils';
+export { api };
 
 async function init() {
     await api.sendCommandAsync(

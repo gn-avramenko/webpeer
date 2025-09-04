@@ -35,7 +35,7 @@ export class PreloaderMiddleware implements Middleware {
             } catch (e) {
                 reject(e);
             } finally {
-                this.operations.slice(
+                this.operations.splice(
                     this.operations.indexOf(operationId),
                     this.operations.indexOf(operationId) + 1
                 );
@@ -52,7 +52,7 @@ export class PreloaderMiddleware implements Middleware {
     }
 
     private hidePreloader() {
-        if (this.preloaderShown && this.operations.length > 0) {
+        if (this.preloaderShown && this.operations.length === 0) {
             this.handler.hidePreloader();
             this.preloaderShown = false;
         }

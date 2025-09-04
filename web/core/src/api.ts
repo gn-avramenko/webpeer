@@ -52,7 +52,6 @@ export class Configuration {
     clientId: string = '';
     restPath: string = ''; // override base path
     webSocketUrl?: string;
-    middleware?: Middleware[]; // middleware to apply before/after fetch requests
     headers?: HTTPHeaders; //header params we want to use on every request
 }
 
@@ -89,13 +88,14 @@ class UiElementsRegistry {
 
     removeNode(nodeId: string) {
         const node = this.findNode(nodeId);
-        if (!node || !node.parent) {
+        const parent = node?.parent;
+        if (!node || !parent) {
             return;
         }
-        const idx = node.parent.children!.indexOf(node);
-        node.parent.children!.splice(idx, 1);
+        const idx = parent.children!.indexOf(node);
+        parent.children!.splice(idx, 1);
         this.disposeAndDeleteId(node);
-        node.redraw();
+        parent.redraw();
     }
 
     private registerAndInitNode(node: BaseUiElement) {
@@ -111,6 +111,7 @@ class UiElementsRegistry {
             return;
         }
         const parent = this.findNode(parentId)!;
+        node.parent = parent;
         parent.children = parent.children || [];
         if (!insertAfterId) {
             parent.children = [node, ...parent.children];
@@ -149,13 +150,12 @@ export class API {
 
     private uiElementsRegistry = new UiElementsRegistry();
 
-    private sortMiddleware() {
+    setMiddleware(middleware?:Middleware[]) {
+        this.middleware = middleware
         this.middleware?.sort((a, b) => a.priority - b.priority);
     }
 
     constructor(protected configuration: Configuration) {
-        this.middleware = configuration.middleware;
-        this.sortMiddleware();
     }
 
     destroy() {
@@ -302,11 +302,12 @@ export class API {
             ],
             context: new Map(),
         } as Context;
-        const res = await this.requestWithMiddleware(req, 0);
-        const command = res.response.commands[0];
-        if (command.cmd !== 'load-module') {
-            throw new Error(`unable to load module for type ${newType}`);
-        }
+        const res = await this.requestWithMiddleware(
+            req,
+            0,
+            'action=get-module-for-type'
+        );
+        const command = res.response.response;
         const scripts = command.scripts ?? ([] as string[]);
         for (const resource of scripts) {
             await this.loadScript(
@@ -318,6 +319,29 @@ export class API {
             await this.loadCss(`${this.configuration.restPath}/_resources/${resource}`);
         }
         await this.doLoadAdditionalModules(model);
+    }
+
+    async makeRequest(
+        elementId: string,
+        commandId: string,
+        commandData?: any,
+        initOverrides?: RequestInit | InitOverrideFunction
+    ) {
+        const req = {
+            request: {
+                id: elementId,
+                cmd: commandId,
+                data: commandData,
+            },
+            context: new Map(),
+        } as Context;
+        const res = await this.requestWithMiddleware(
+            req,
+            0,
+            'action=request',
+            initOverrides
+        );
+        return res.response.result;
     }
 
     private collectNewTypes(newTypes: string[], model: any) {
@@ -361,6 +385,7 @@ export class API {
                 const res = await this.requestWithMiddleware(
                     req,
                     0,
+                    undefined,
                     item.initOverrides
                 );
                 const commands = (res.response?.commands || []) as any[];
@@ -447,6 +472,7 @@ export class API {
     private async requestWithMiddleware(
         context: Context,
         idx: number,
+        queryString?: string,
         initOverrides?: RequestInit | InitOverrideFunction
     ): Promise<Context> {
         if (isNull(context.context)) {
@@ -481,17 +507,22 @@ export class API {
             const requestInit = { ...initParams, ...overrides };
             let result: Response;
             try {
-                result = await fetch(this.configuration.restPath, requestInit);
+                result = await fetch(
+                    `${this.configuration.restPath}${queryString ? `?${queryString}` : ''}`,
+                    requestInit
+                );
             } catch (e) {
                 throw new FetchError(e as Error, 'Response returned an error code');
             }
             context.rawResponse = result;
             context.response = await result.json();
-            this.serverVersion = result.headers.get('x-version') ?? '-1';
+            if (result.headers.has('x-version')) {
+                this.serverVersion = result.headers.get('x-version') as string;
+            }
             return context;
         }
         return await this.middleware[idx].advice(context, (request) =>
-            this.requestWithMiddleware(request, idx + 1, initOverrides)
+            this.requestWithMiddleware(request, idx + 1, queryString, initOverrides)
         );
     }
 }
@@ -500,5 +531,6 @@ export const api = new API({
     clientId: generateUUID(),
     restPath: webpeerExt.parameters.restPath,
     webSocketUrl: webpeerExt.parameters.webSocketUrl,
-    middleware: webpeerExt.middleware,
 });
+
+webpeerExt.setMiddleware = (middleware) => api.setMiddleware(middleware)

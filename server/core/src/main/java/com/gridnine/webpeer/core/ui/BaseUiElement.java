@@ -148,6 +148,10 @@ public abstract class BaseUiElement {
         session.getAsyncRemote().sendText(content);
     }
 
+    public JsonElement doService(String commandId, JsonElement request, OperationUiContext context) throws Exception{
+        throw new WebPeerException("not implemented");
+    }
+
     public void addChild(OperationUiContext ctx, BaseUiElement child, int idx) {
         child.parent = this;
         children.add(idx, child);

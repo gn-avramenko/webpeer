@@ -9,7 +9,7 @@ export interface UiHandler {
 
 export type WebPeerExtension = {
     parameters: any;
-    middleware?: Middleware[];
+    setMiddleware: (middleware?: Middleware[]) => void;
     uiHandler: UiHandler;
     elementTypes: string[];
 };
