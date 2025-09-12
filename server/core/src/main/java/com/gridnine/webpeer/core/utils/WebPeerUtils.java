@@ -260,7 +260,7 @@ public class WebPeerUtils {
     }
 
     public static Object getValue(JsonElement pv) {
-        if (pv == null) {
+        if (pv == null || pv.isJsonNull()) {
             return null;
         }
         if (pv.isJsonPrimitive()) {
