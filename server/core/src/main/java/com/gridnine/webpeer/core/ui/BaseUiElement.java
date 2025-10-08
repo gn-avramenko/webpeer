@@ -178,6 +178,9 @@ public abstract class BaseUiElement {
         throw new WebPeerException("not implemented");
     }
 
+    public boolean isInitialized() {
+        return initialized;
+    }
     public String getTag() {
         return tag;
     }
