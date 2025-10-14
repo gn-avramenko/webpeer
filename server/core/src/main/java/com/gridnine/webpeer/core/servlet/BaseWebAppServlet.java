@@ -188,6 +188,14 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     response = command;
                     return;
                 }
+                if (queryString != null && queryString.contains("action=ping")) {
+                    requestType = RequestType.REQUEST;
+                    response = new JsonObject();
+                    if(pi != null && clientId != null) {
+                        GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.LAST_UPDATED, Instant.now());
+                    }
+                    return;
+                }
                 if (queryString != null && queryString.contains("action=request")) {
                     requestType = RequestType.REQUEST;
                     var data = readData(req);

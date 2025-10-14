@@ -150,12 +150,13 @@ export class API {
 
     private uiElementsRegistry = new UiElementsRegistry();
 
-    setMiddleware(middleware?:Middleware[]) {
-        this.middleware = middleware
+    setMiddleware(middleware?: Middleware[]) {
+        this.middleware = middleware;
         this.middleware?.sort((a, b) => a.priority - b.priority);
     }
 
     constructor(protected configuration: Configuration) {
+        setInterval(() => this.ping(), 60 * 1000);
     }
 
     destroy() {
@@ -319,6 +320,21 @@ export class API {
             await this.loadCss(`${this.configuration.restPath}/_resources/${resource}`);
         }
         await this.doLoadAdditionalModules(model);
+    }
+
+    private ping() {
+        const headers = Object.assign(
+            {
+                'x-version': this.serverVersion,
+                'x-client-id': this.configuration.clientId,
+            },
+            this.configuration.headers || {}
+        );
+        const httpRequestInit = {
+            method: 'POST',
+            headers,
+        } as HTTPRequestInit;
+        fetch(`${this.configuration.restPath}?action=ping`, httpRequestInit);
     }
 
     async makeRequest(
@@ -533,4 +549,4 @@ export const api = new API({
     webSocketUrl: webpeerExt.parameters.webSocketUrl,
 });
 
-webpeerExt.setMiddleware = (middleware) => api.setMiddleware(middleware)
+webpeerExt.setMiddleware = (middleware) => api.setMiddleware(middleware);
