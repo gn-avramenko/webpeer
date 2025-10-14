@@ -222,7 +222,6 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     //noinspection unchecked,rawtypes
                     requestCommands = (List) new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), JsonArray.class).asList();
                 }
-                GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.LAST_UPDATED, Instant.now());
                 var uiElements = GlobalUiContext.getParameter(pi, clientId, GlobalUiContext.UI_ELEMENTS);
                 if (uiElements == null) {
                     uiElements = new ConcurrentHashMap<>();
