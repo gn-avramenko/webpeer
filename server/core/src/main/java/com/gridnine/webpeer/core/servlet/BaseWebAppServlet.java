@@ -27,6 +27,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 import com.gridnine.webpeer.core.ui.*;
+import com.gridnine.webpeer.core.utils.CallableWithExceptionAnd2Arguments;
+import com.gridnine.webpeer.core.utils.CallableWithExceptionAnd3Arguments;
+import com.gridnine.webpeer.core.utils.RunnableWithExceptionAndTwoArguments;
 import com.gridnine.webpeer.core.utils.WebPeerUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -213,7 +216,8 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     operationUiContext.setParameter(OperationUiContext.CLIENT_ID, clientId);
                     operationUiContext.setParameter(OperationUiContext.REQUEST, req);
                     operationUiContext.setParameter(OperationUiContext.RESPONSE, resp);
-                    response = uiElements.get(nodeId).doService(cmd, cmdData, operationUiContext);
+                    var fuiElements = uiElements;
+                    response = requestWithInterceptors(cmd, cmdData, operationUiContext, getInterceptors(), 0, (cmd2, cmdData2, ctx2)-> fuiElements.get(nodeId).doService(cmd2, cmdData2, ctx2));
                     return;
                 }
                 requestType = RequestType.COMMAND;
@@ -243,10 +247,14 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     if(state!=null){
                         operationUiContext.setParameter(OperationUiContext.INIT_STATE, state);
                     }
-                    var rootElement = createRootElement(operationUiContext);
-                    if (state != null) {
-                        rootElement.restoreFromState(state, operationUiContext);
-                    }
+                    var rootElement =  initWithInterceptors(operationUiContext, state, getInterceptors(), 0, (ctx2, state2)->{
+                        var result = createRootElement(ctx2);
+                        if (state2 != null) {
+                            result.restoreFromState(state2, ctx2);
+                        }
+                        return result;
+                    });
+                    GlobalUiContext.setParameter(pi, clientId, GlobalUiContext.LAST_UPDATED, Instant.now());
                     var command = new JsonObject();
                     command.addProperty("cmd", "init");
                     command.add("data", rootElement.buildState(operationUiContext));
@@ -264,11 +272,13 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                         operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
                     } else {
                         var fUiElements = uiElements;
-                        requestCommands.forEach(cmdData -> WebPeerUtils.wrapException(() -> {
-                            var elementId = Long.parseLong(Objects.requireNonNull(WebPeerUtils.getString(cmdData, "id")));
-                            var commandId = Objects.requireNonNull(WebPeerUtils.getString(cmdData, "cmd"));
-                            fUiElements.get(elementId).processCommand(operationUiContext, commandId, WebPeerUtils.getElement(cmdData, "data"));
-                        }));
+                        processCommandsWithInterceptors(requestCommands, operationUiContext, getInterceptors(), 0, (cmds2, ctx2) -> {
+                            cmds2.forEach(cmdData -> WebPeerUtils.wrapException(() -> {
+                                var elementId = Long.parseLong(Objects.requireNonNull(WebPeerUtils.getString(cmdData, "id")));
+                                var commandId = Objects.requireNonNull(WebPeerUtils.getString(cmdData, "cmd"));
+                                fUiElements.get(elementId).processCommand(ctx2, commandId, WebPeerUtils.getElement(cmdData, "data"));
+                            }));
+                        });
                     }
                 }
                 return;
@@ -385,6 +395,35 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
         DESTROY,
         REQUEST,
         COMMAND
+    }
+
+    private JsonElement requestWithInterceptors(String commandId, JsonElement request, OperationUiContext context, List<UiServletInterceptor<T>> interceptors, int idx, CallableWithExceptionAnd3Arguments<JsonElement, String, JsonElement, OperationUiContext> callback) throws Exception {
+        init();
+        if (idx == interceptors.size()) {
+            return callback.call(commandId, request, context);
+        }
+        return interceptors.get(idx).onRequest(commandId, request, context, (commandId2, request2, context2)->requestWithInterceptors(commandId2, request2, context2, interceptors, idx+1, callback));
+    }
+
+    private T initWithInterceptors(OperationUiContext context, JsonObject state, List<UiServletInterceptor<T>> interceptors, int idx, CallableWithExceptionAnd2Arguments<T, OperationUiContext, JsonObject> callback) throws Exception {
+        init();
+        if (idx == interceptors.size()) {
+            return callback.call(context, state);
+        }
+        return interceptors.get(idx).onInit(context, state, (ctx2, state2)->initWithInterceptors(ctx2, state2, interceptors, idx+1, callback));
+    }
+
+    private void processCommandsWithInterceptors(List<JsonObject> commands, OperationUiContext context, List<UiServletInterceptor<T>> interceptors, int idx, RunnableWithExceptionAndTwoArguments<List<JsonObject>, OperationUiContext> callback) throws Exception {
+        init();
+        if (idx == interceptors.size()) {
+            callback.run(commands, context);;
+            return;
+        }
+        interceptors.get(idx).onCommand(commands,context, (cmds2, ctx2)->processCommandsWithInterceptors(cmds2, ctx2, interceptors, idx+1, callback));
+    }
+
+    protected List<UiServletInterceptor<T>> getInterceptors() {
+        return Collections.emptyList();
     }
 }
 
