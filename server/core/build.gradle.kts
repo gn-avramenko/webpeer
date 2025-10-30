@@ -6,12 +6,6 @@ repositories {
     mavenCentral()
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
-    }
-}
-
 dependencies {
     implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
     implementation("jakarta.websocket:jakarta.websocket-client-api:2.1.1")
