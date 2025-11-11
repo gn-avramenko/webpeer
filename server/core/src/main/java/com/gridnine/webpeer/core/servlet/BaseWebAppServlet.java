@@ -55,6 +55,8 @@ import java.util.stream.Collectors;
 public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpServlet {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    
+    private volatile List<UiServletInterceptor<T>> interceptors;
 
     public BaseWebAppServlet() {
         var timerTask = new TimerTask() {
@@ -123,7 +125,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            doGetIndexHtml(resp);
         } catch (Throwable e) {
             throw new ServletException(e);
         }
@@ -217,7 +219,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     operationUiContext.setParameter(OperationUiContext.REQUEST, req);
                     operationUiContext.setParameter(OperationUiContext.RESPONSE, resp);
                     var fuiElements = uiElements;
-                    response = requestWithInterceptors(cmd, cmdData, operationUiContext, getInterceptors(), 0, (cmd2, cmdData2, ctx2)-> fuiElements.get(nodeId).doService(cmd2, cmdData2, ctx2));
+                    response = requestWithInterceptors(cmd, cmdData, operationUiContext, 0, (cmd2, cmdData2, ctx2)-> fuiElements.get(nodeId).doService(cmd2, cmdData2, ctx2));
                     return;
                 }
                 requestType = RequestType.COMMAND;
@@ -247,7 +249,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     if(state!=null){
                         operationUiContext.setParameter(OperationUiContext.INIT_STATE, state);
                     }
-                    var rootElement =  initWithInterceptors(operationUiContext, state, getInterceptors(), 0, (ctx2, state2)->{
+                    var rootElement =  initWithInterceptors(operationUiContext, state, 0, (ctx2, state2)->{
                         var result = createRootElement(ctx2);
                         if (state2 != null) {
                             result.restoreFromState(state2, ctx2);
@@ -272,7 +274,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                         operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
                     } else {
                         var fUiElements = uiElements;
-                        processCommandsWithInterceptors(requestCommands, operationUiContext, getInterceptors(), 0, (cmds2, ctx2) -> {
+                        processCommandsWithInterceptors(requestCommands, operationUiContext, 0, (cmds2, ctx2) -> {
                             cmds2.forEach(cmdData -> WebPeerUtils.wrapException(() -> {
                                 var elementId = Long.parseLong(Objects.requireNonNull(WebPeerUtils.getString(cmdData, "id")));
                                 var commandId = Objects.requireNonNull(WebPeerUtils.getString(cmdData, "cmd"));
@@ -357,10 +359,10 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                 .map(it -> String.format("<link rel=\"%s\" type=\"%s\" href=\"_resources/%s\"></link>\n", it.rel, it.type, it.name)).reduce("", (a, b) -> a + b);
         String parameters = getWebAppParameters().entrySet().stream()
                 .map(it -> String.format("%s: \"%s\",\n", it.getKey(), it.getValue())).reduce("", (a, b) -> a + b);
-        content = content.replace("${favicon}", getFaviconUrl() == null ? "" : "<link rel=\"icon\" type=\"image/x-icon\" href=\"/fav.ico\">");
+        content = content.replace("${favicon}", getFaviconUrl() == null ? "" : "<link rel=\"icon\" type=\"image/x-icon\" href=\"%s\">".formatted(getFaviconUrl()));
         content = content.replace("${links}", links);
         content = content.replace("${scripts}", scripts);
-        content = content.replace("${parameters}", String.format("<script>\nwindow.webPeer = {parameters: {\n%s\n},\ninitPath: window.location.pathname}\n</script>", parameters));
+        content = content.replace("${parameters}", String.format("<script>\nwindow.webPeer = {\nparameters: {\n%sinitPath: window.location.pathname\n}\n}\n</script>", parameters));
         writeStringContent(content, resp);
     }
 
@@ -397,30 +399,41 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
         COMMAND
     }
 
-    private JsonElement requestWithInterceptors(String commandId, JsonElement request, OperationUiContext context, List<UiServletInterceptor<T>> interceptors, int idx, CallableWithExceptionAnd3Arguments<JsonElement, String, JsonElement, OperationUiContext> callback) throws Exception {
-        init();
+    private JsonElement requestWithInterceptors(String commandId, JsonElement request, OperationUiContext context, int idx, CallableWithExceptionAnd3Arguments<JsonElement, String, JsonElement, OperationUiContext> callback) throws Exception {
+        initialize();
         if (idx == interceptors.size()) {
             return callback.call(commandId, request, context);
         }
-        return interceptors.get(idx).onRequest(commandId, request, context, (commandId2, request2, context2)->requestWithInterceptors(commandId2, request2, context2, interceptors, idx+1, callback));
+        return interceptors.get(idx).onRequest(commandId, request, context, (commandId2, request2, context2)->requestWithInterceptors(commandId2, request2, context2, idx+1, callback));
     }
 
-    private T initWithInterceptors(OperationUiContext context, JsonObject state, List<UiServletInterceptor<T>> interceptors, int idx, CallableWithExceptionAnd2Arguments<T, OperationUiContext, JsonObject> callback) throws Exception {
-        init();
+    private T initWithInterceptors(OperationUiContext context, JsonObject state, int idx, CallableWithExceptionAnd2Arguments<T, OperationUiContext, JsonObject> callback) throws Exception {
+        initialize();
         if (idx == interceptors.size()) {
             return callback.call(context, state);
         }
-        return interceptors.get(idx).onInit(context, state, (ctx2, state2)->initWithInterceptors(ctx2, state2, interceptors, idx+1, callback));
+        return interceptors.get(idx).onInit(context, state, (ctx2, state2)->initWithInterceptors(ctx2, state2, idx+1, callback));
     }
 
-    private void processCommandsWithInterceptors(List<JsonObject> commands, OperationUiContext context, List<UiServletInterceptor<T>> interceptors, int idx, RunnableWithExceptionAndTwoArguments<List<JsonObject>, OperationUiContext> callback) throws Exception {
-        init();
+    private void processCommandsWithInterceptors(List<JsonObject> commands, OperationUiContext context,  int idx, RunnableWithExceptionAndTwoArguments<List<JsonObject>, OperationUiContext> callback) throws Exception {
+        initialize();
         if (idx == interceptors.size()) {
             callback.run(commands, context);;
             return;
         }
-        interceptors.get(idx).onCommand(commands,context, (cmds2, ctx2)->processCommandsWithInterceptors(cmds2, ctx2, interceptors, idx+1, callback));
+        interceptors.get(idx).onCommand(commands,context, (cmds2, ctx2)->processCommandsWithInterceptors(cmds2, ctx2, idx+1, callback));
     }
+
+    private void initialize() {
+        if(interceptors == null){
+            synchronized (this) {
+                if(interceptors == null){
+                    interceptors = getInterceptors();
+                }
+            }
+        }
+    }
+
 
     protected List<UiServletInterceptor<T>> getInterceptors() {
         return Collections.emptyList();
