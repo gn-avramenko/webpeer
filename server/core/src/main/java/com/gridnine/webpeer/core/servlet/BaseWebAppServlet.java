@@ -58,6 +58,8 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
     
     private volatile List<UiServletInterceptor<T>> interceptors;
 
+    private volatile List<WebAppModule> allModules;
+
     public BaseWebAppServlet() {
         var timerTask = new TimerTask() {
 
@@ -90,6 +92,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
         try {
+            initialize();
             String pathInfo = req.getPathInfo();
             if (pathInfo == null || pathInfo.isEmpty() || pathInfo.equals("/")) {
                 doGetIndexHtml(resp);
@@ -110,13 +113,13 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     return;
                 }
                 String resourceName = pathInfo.substring(pathInfo.lastIndexOf("/") + 1);
-                HtmlLinkWrapper linkWrapper = getAllModules().stream().flatMap(it -> it.css.stream())
+                HtmlLinkWrapper linkWrapper = allModules.stream().flatMap(it -> it.css.stream())
                         .filter(it -> it.name.equals(resourceName)).findFirst().orElse(null);
                 if (linkWrapper != null) {
                     writeResource(linkWrapper.url, resp);
                     return;
                 }
-                HtmlScriptWrapper scriptWrapper = getAllModules().stream().flatMap(it -> it.scripts.stream())
+                HtmlScriptWrapper scriptWrapper = allModules.stream().flatMap(it -> it.scripts.stream())
                         .filter(it -> it.name.equals(resourceName) || resourceName.equals(it.jsMapName)).findFirst().orElse(null);
                 if (scriptWrapper != null) {
                     writeResource(resourceName.equals(scriptWrapper.name) ? scriptWrapper.url : scriptWrapper.jsMapUrl, resp);
@@ -151,6 +154,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
         RequestType requestType = null;
         JsonElement response = null;
         try {
+            initialize();
             if (pathInfo.startsWith("/_ui")) {
                 var queryString = req.getQueryString();
                 if (queryString != null && queryString.contains("action=destroy")) {
@@ -181,7 +185,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     JsonObject request = readData(req);
                     var elementType = WebPeerUtils.getString(request, "type");
                     var moduleId = findAdditionalModuleByElementType(elementType);
-                    var module = getAllModules().stream().filter(it -> moduleId.equals(it.moduleId)).findFirst().get();
+                    var module = allModules.stream().filter(it -> moduleId.equals(it.moduleId)).findFirst().get();
                     var command = new JsonObject();
                     command.addProperty("cmd", "load-module");
                     var scripts = new JsonArray();
@@ -325,7 +329,8 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
     protected abstract List<WebAppModule> getAllModules() throws Exception;
 
     protected List<String> getBootstrapModulesIds() throws Exception {
-        return getAllModules().stream().map(it -> it.moduleId).collect(Collectors.toList());
+        initialize();
+        return allModules.stream().map(it -> it.moduleId).collect(Collectors.toList());
     }
 
     protected String findAdditionalModuleByElementType(String elementType) {
@@ -353,9 +358,9 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
     protected void doGetIndexHtml(HttpServletResponse resp) throws Exception {
         String content = getContent(getIndexHtmlUrl());
         content = content.replace("${title}", getTitle());
-        String scripts = getAllModules().stream().flatMap(it -> it.scripts.stream())
+        String scripts = allModules.stream().flatMap(it -> it.scripts.stream())
                 .map(it -> String.format("<script type=\"module\" src=\"_resources/%s\"></script>\n", it.name)).reduce("", (a, b) -> a + b);
-        String links = getAllModules().stream().flatMap(it -> it.css.stream())
+        String links = allModules.stream().flatMap(it -> it.css.stream())
                 .map(it -> String.format("<link rel=\"%s\" type=\"%s\" href=\"_resources/%s\"></link>\n", it.rel, it.type, it.name)).reduce("", (a, b) -> a + b);
         String parameters = getWebAppParameters().entrySet().stream()
                 .map(it -> String.format("%s: \"%s\",\n", it.getKey(), it.getValue())).reduce("", (a, b) -> a + b);
@@ -424,11 +429,12 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
         interceptors.get(idx).onCommand(commands,context, (cmds2, ctx2)->processCommandsWithInterceptors(cmds2, ctx2, idx+1, callback));
     }
 
-    private void initialize() {
+    private void initialize() throws Exception {
         if(interceptors == null){
             synchronized (this) {
                 if(interceptors == null){
                     interceptors = getInterceptors();
+                    allModules = getAllModules();
                 }
             }
         }

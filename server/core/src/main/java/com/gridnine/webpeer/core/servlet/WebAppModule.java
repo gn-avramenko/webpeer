@@ -21,8 +21,10 @@
 
 package com.gridnine.webpeer.core.servlet;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileSystems;
@@ -36,8 +38,7 @@ public class WebAppModule {
     public final List<HtmlScriptWrapper> scripts;
     public final List<HtmlLinkWrapper> css;
 
-
-    private static List<String> getResourcesFromJar(URL jarUrl, String path) throws IOException, URISyntaxException {
+    private static synchronized List<String> getResourcesFromJar(URL jarUrl, String path) throws IOException, URISyntaxException {
         var resourceNames = new ArrayList<String>();
 
         try (var fileSystem = FileSystems.newFileSystem(jarUrl.toURI(), Collections.emptyMap())) {
