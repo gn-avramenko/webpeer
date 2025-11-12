@@ -98,7 +98,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                 doGetIndexHtml(resp);
                 return;
             }
-            if (pathInfo.equals("/fav.ico") || pathInfo.equals("/favicon.ico")) {
+            if (pathInfo.equals("/fav.ico") || pathInfo.equals("/favicon.ico")|| pathInfo.equals("/favicon.svg")) {
                 if (getFaviconUrl() != null) {
                     writeResource(getFaviconUrl(), resp);
                     return;
@@ -367,7 +367,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
         content = content.replace("${favicon}", getFaviconUrl() == null ? "" : "<link rel=\"icon\" type=\"image/x-icon\" href=\"%s\">".formatted(getFaviconUrl()));
         content = content.replace("${links}", links);
         content = content.replace("${scripts}", scripts);
-        content = content.replace("${parameters}", String.format("<script>\nwindow.webPeer = {\nparameters: {\n%sinitPath: window.location.pathname\n}\n}\n</script>", parameters));
+        content = content.replace("${parameters}", String.format("<script>\nwindow.webPeer = {\nparameters: {\n%sinitPath:  window.location.pathname+(window.location.search? window.location.search: '')\n}\n}\n</script>", parameters));
         writeStringContent(content, resp);
     }
 

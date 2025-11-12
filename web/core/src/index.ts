@@ -9,6 +9,7 @@ export type {
     HTTPMethod,
     HTTPRequestInit,
     InitOverrideFunction,
+    Context,
 } from './api';
 
 export type { UiHandler, WebPeerExtension } from './config';
