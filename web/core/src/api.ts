@@ -520,7 +520,10 @@ export class API {
             } else if (initOverrides) {
                 overrides = initOverrides;
             }
-            const requestInit = { ...initParams, ...overrides };
+            const requestInit = {
+                ...initParams,
+                ...overrides,
+            } as any;
             let result: Response;
             try {
                 result = await fetch(
@@ -529,6 +532,10 @@ export class API {
                 );
             } catch (e) {
                 throw new FetchError(e as Error, 'Response returned an error code');
+            }
+            if (result.redirected) {
+                window.location.href = result.url;
+                return context;
             }
             context.rawResponse = result;
             context.response = await result.json();
