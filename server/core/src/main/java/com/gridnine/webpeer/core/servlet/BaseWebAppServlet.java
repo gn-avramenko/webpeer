@@ -359,9 +359,9 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
         String content = getContent(getIndexHtmlUrl());
         content = content.replace("${title}", getTitle());
         String scripts = allModules.stream().flatMap(it -> it.scripts.stream())
-                .map(it -> String.format("<script type=\"module\" src=\"_resources/%s\"></script>\n", it.name)).reduce("", (a, b) -> a + b);
+                .map(it -> String.format("<script type=\"module\" src=\"/_resources/%s\"></script>\n", it.name)).reduce("", (a, b) -> a + b);
         String links = allModules.stream().flatMap(it -> it.css.stream())
-                .map(it -> String.format("<link rel=\"%s\" type=\"%s\" href=\"_resources/%s\"></link>\n", it.rel, it.type, it.name)).reduce("", (a, b) -> a + b);
+                .map(it -> String.format("<link rel=\"%s\" type=\"%s\" href=\"/_resources/%s\"></link>\n", it.rel, it.type, it.name)).reduce("", (a, b) -> a + b);
         String parameters = getWebAppParameters().entrySet().stream()
                 .map(it -> String.format("%s: \"%s\",\n", it.getKey(), it.getValue())).reduce("", (a, b) -> a + b);
         content = content.replace("${favicon}", getFaviconUrl() == null ? "" : "<link rel=\"icon\" type=\"image/x-icon\" href=\"%s\">".formatted(getFaviconUrl()));
