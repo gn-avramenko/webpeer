@@ -253,8 +253,10 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                     if(state!=null){
                         operationUiContext.setParameter(OperationUiContext.INIT_STATE, state);
                     }
+                    var fuiElements = uiElements;
                     var rootElement =  initWithInterceptors(operationUiContext, state, 0, (ctx2, state2)->{
                         var result = createRootElement(ctx2);
+                        fuiElements.put(result.getId(), result);
                         if (state2 != null) {
                             result.restoreFromState(state2, ctx2);
                         }
