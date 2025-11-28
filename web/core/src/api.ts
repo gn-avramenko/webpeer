@@ -227,6 +227,11 @@ export class API {
             return;
         }
         for (const cmd of commands) {
+            if (cmd.cmd === 'show-error') {
+                const model = cmd.data;
+                webpeerExt.uiHandler.handleRemotingError(model.message, model.details);
+                continue;
+            }
             const node = this.uiElementsRegistry.findNode(cmd.id)!;
             if (cmd.cmd === 'init') {
                 const model = cmd.data;

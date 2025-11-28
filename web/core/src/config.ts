@@ -5,6 +5,7 @@ export interface UiHandler {
     drawUi(rootElm: BaseUiElement): void;
     createElement(model: any): BaseUiElement;
     handleServerUpdate(): void;
+    handleRemotingError(message: string, details: string): void;
 }
 
 export type WebPeerExtension = {

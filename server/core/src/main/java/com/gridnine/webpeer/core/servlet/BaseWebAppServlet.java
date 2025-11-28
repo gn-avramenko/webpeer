@@ -280,13 +280,25 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                         operationUiContext.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
                     } else {
                         var fUiElements = uiElements;
-                        processCommandsWithInterceptors(requestCommands, operationUiContext, 0, (cmds2, ctx2) -> {
-                            cmds2.forEach(cmdData -> WebPeerUtils.wrapException(() -> {
-                                var elementId = Long.parseLong(Objects.requireNonNull(WebPeerUtils.getString(cmdData, "id")));
-                                var commandId = Objects.requireNonNull(WebPeerUtils.getString(cmdData, "cmd"));
-                                fUiElements.get(elementId).processCommand(ctx2, commandId, WebPeerUtils.getElement(cmdData, "data"));
-                            }));
-                        });
+                        try {
+                            processCommandsWithInterceptors(requestCommands, operationUiContext, 0, (cmds2, ctx2) -> {
+                                cmds2.forEach(cmdData -> WebPeerUtils.wrapException(() -> {
+                                    var elementId = Long.parseLong(Objects.requireNonNull(WebPeerUtils.getString(cmdData, "id")));
+                                    var commandId = Objects.requireNonNull(WebPeerUtils.getString(cmdData, "cmd"));
+                                    fUiElements.get(elementId).processCommand(ctx2, commandId, WebPeerUtils.getElement(cmdData, "data"));
+                                }));
+                            });
+                        } catch (Throwable throwable) {
+                            var postProcessCommands = operationUiContext.getParameter(OperationUiContext.POST_PROCESS_COMMANDS);
+                            var errorCmd = new JsonObject();
+                            errorCmd.addProperty("id", "-1");
+                            errorCmd.addProperty("cmd", "show-error");
+                            var data = new JsonObject();
+                            data.addProperty("message", throwable.getMessage());
+                            data.addProperty("details", WebPeerUtils.getExceptionStackTrace(throwable));
+                            errorCmd.add("data", data);
+                            postProcessCommands.add(errorCmd);
+                        }
                     }
                 }
                 return;
