@@ -289,6 +289,7 @@ public abstract class BaseWebAppServlet<T extends BaseUiElement> extends HttpSer
                                 }));
                             });
                         } catch (Throwable throwable) {
+                            logger.error(throwable.getMessage(), throwable);
                             var postProcessCommands = operationUiContext.getParameter(OperationUiContext.POST_PROCESS_COMMANDS);
                             var errorCmd = new JsonObject();
                             errorCmd.addProperty("id", "-1");
