@@ -154,13 +154,17 @@ public abstract class BaseUiElement {
 
     public void addChild(OperationUiContext ctx, BaseUiElement child, int idx) {
         child.parent = this;
+        var insertAfterId = -1L;
+        if(idx > 0){
+            insertAfterId = children.get(idx-1).id;
+        }
         children.add(idx, child);
         if(initialized) {
             var command = new JsonObject();
             command.addProperty("cmd", "ac");
             command.addProperty("id", String.valueOf(id));
-            if(idx > 0){
-                command.addProperty("insertAfterId", idx-2);
+            if(insertAfterId > -1){
+                command.addProperty("insertAfterId", String.valueOf(insertAfterId));
             }
             WebPeerUtils.wrapException(() -> command.add("data", child.buildState(ctx)));
             ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);

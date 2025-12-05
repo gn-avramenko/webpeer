@@ -244,7 +244,7 @@ export class API {
                 this.uiElementsRegistry.addNode(
                     childNode,
                     cmd.id,
-                    cmd.data.insertAfterId
+                    cmd.insertAfterId
                 );
                 continue;
             }
