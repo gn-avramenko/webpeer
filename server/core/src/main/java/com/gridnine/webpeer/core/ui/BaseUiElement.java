@@ -95,6 +95,33 @@ public abstract class BaseUiElement {
         ctx.getParameter(OperationUiContext.POST_PROCESS_COMMANDS).add(command);
     }
 
+    public void moveChild(OperationUiContext ctx, long childId, int position){
+        var child = children.stream().filter(it -> it.getId() == childId).findFirst().get();
+        var insertAfterId = -1L;
+        if(position>0) {
+            insertAfterId = children.get(position-1).id;
+        }
+        children.remove(child);
+        children.add(position, child);
+        if(initialized){
+            {
+                var command = new JsonObject();
+                command.addProperty("cmd", "rc");
+                command.addProperty("id", String.valueOf(child.getId()));
+                ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
+            }
+            {
+                var command = new JsonObject();
+                command.addProperty("cmd", "ac");
+                command.addProperty("id", String.valueOf(id));
+                if(insertAfterId > -1){
+                    command.addProperty("insertAfterId", String.valueOf(insertAfterId));
+                }
+                WebPeerUtils.wrapException(() -> command.add("data", child.buildState(ctx)));
+                ctx.getParameter(OperationUiContext.RESPONSE_COMMANDS).add(command);
+            }
+        }
+    }
 
     public void removeChild(OperationUiContext ctx, BaseUiElement child) {
         if(initialized) {
@@ -187,5 +214,8 @@ public abstract class BaseUiElement {
     }
     public String getTag() {
         return tag;
+    }
+    public BaseUiElement findChildByTag(String tag) {
+        return children.stream().filter(it -> it.getTag().equals(tag)).findFirst().orElse(null);
     }
 }
