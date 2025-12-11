@@ -119,7 +119,9 @@ class UiElementsRegistry {
             const idx = parent.children.findIndex((it) => it.id === insertAfterId)!;
             const arr1 = [...parent.children];
             const arr2 = [...parent.children];
-            parent.children = [...arr1.splice(idx), node, ...arr2.splice(0, idx)];
+            arr1.splice(idx + 1);
+            arr2.splice(0, idx + 1);
+            parent.children = [...arr1, node, ...arr2];
         }
         this.registerAndInitNode(node);
         parent.redraw();
@@ -241,11 +243,7 @@ export class API {
                 const model = cmd.data;
                 await this.doLoadAdditionalModules(model);
                 const childNode = webpeerExt.uiHandler.createElement(model);
-                this.uiElementsRegistry.addNode(
-                    childNode,
-                    cmd.id,
-                    cmd.insertAfterId
-                );
+                this.uiElementsRegistry.addNode(childNode, cmd.id, cmd.insertAfterId);
                 continue;
             }
             if (cmd.cmd === 'rc') {
